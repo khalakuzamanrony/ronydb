@@ -8,7 +8,7 @@ async function updateKeepalive() {
   const now = new Date().toISOString();
   const { error } = await supabase
     .from('keepalive')
-    .upsert([{ id: 1, last_ping: now }], { onConflict: ['id'] });
+    .upsert([{ id: 'main', updated: now }], { onConflict: ['id'] });
 
   if (error) {
     console.error('Failed to update keepalive:', error.message);
