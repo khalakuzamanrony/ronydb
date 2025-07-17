@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Copy, Download, ChevronDown, ExternalLink, Mail, Phone, MapPin, Calendar, GraduationCap, Briefcase, Award, Globe, FileText, Settings } from 'lucide-react';
 import { FaLinkedin, FaGithub, FaTwitter, FaFacebook, FaInstagram, FaYoutube, FaTiktok, FaWhatsapp, FaTelegram, FaReddit, FaDiscord, FaSnapchatGhost, FaPinterest, FaMedium, FaDribbble, FaBehance, FaStackOverflow, FaFacebookMessenger, FaGlobe } from 'react-icons/fa';
 import CopyButton from './CopyButton';
@@ -6,13 +6,15 @@ import CustomFieldRenderer from './CustomFieldRenderer';
 import { CVData } from '../types/cv';
 import { supabase } from '../utils/supabaseClient';
 import { downloadFile } from '../utils/cvData';
+import { fetchCVDataFromSupabase } from '../utils/cvData';
 
 interface HomePageProps {
   cvData: CVData;
+  setCvData: (data: CVData) => void;
   onNavigateToDashboard: () => void;
 }
 
-export const HomePage: React.FC<HomePageProps> = ({ cvData, onNavigateToDashboard }) => {
+export const HomePage: React.FC<HomePageProps> = ({ cvData, setCvData, onNavigateToDashboard }) => {
   const [showDownloadMenu, setShowDownloadMenu] = React.useState(false);
   const [resumeUrl, setResumeUrl] = React.useState<string | null>(null);
   const [imageUrl, setImageUrl] = React.useState<string | null>(null);
@@ -27,6 +29,28 @@ export const HomePage: React.FC<HomePageProps> = ({ cvData, onNavigateToDashboar
     };
     fetchUrls();
   }, []);
+
+  React.useEffect(() => {
+    // Subscribe to realtime changes on cv_data table
+    const channel = supabase
+      .channel('public:cv_data')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'cv_data' },
+        async (payload) => {
+          console.log('Realtime event:', payload);
+          const latest = await fetchCVDataFromSupabase();
+          if (latest) {
+            setCvData(latest); // This updates the UI!
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [setCvData]);
 
   // Expand/collapse state for sections and custom tabs
   const tabOrder = cvData.tabOrder || ['basics', 'contacts', 'work', 'education', 'skills', 'projects', 'certificates', 'languages', 'coverLetters'];
