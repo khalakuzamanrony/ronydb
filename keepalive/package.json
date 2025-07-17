@@ -1,0 +1,9 @@
+{
+  "name": "supabase-keepalive",
+  "version": "1.0.0",
+  "main": "keepalive.js",
+  "type": "commonjs",
+  "dependencies": {
+    "node-fetch": "^2.6.7"
+  }
+} 
