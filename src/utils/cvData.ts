@@ -1,4 +1,5 @@
 import { CVData } from '../types/cv';
+import { supabase } from './supabaseClient';
 
 export const defaultCVData: CVData = {
   "basics": {
@@ -158,7 +159,36 @@ export const defaultCVData: CVData = {
   "assets": {
     "images": {},
     "pdfs": {}
+  },
+  "tools": []
+};
+
+// Fetch CV data from Supabase
+export const fetchCVDataFromSupabase = async (): Promise<CVData | null> => {
+  const { data, error } = await supabase.from('cv_data').select('data').eq('id', 'main').single();
+  if (error) {
+    console.error('Error fetching CV data from Supabase:', error);
+    return null;
   }
+  if (!data?.data) return defaultCVData;
+  // Merge with defaultCVData to ensure all fields exist
+  return {
+    ...defaultCVData,
+    ...data.data,
+    customTabs: data.data.customTabs || defaultCVData.customTabs,
+    tabOrder: data.data.tabOrder || defaultCVData.tabOrder,
+    assets: data.data.assets || defaultCVData.assets,
+    coverLetters: data.data.coverLetters || defaultCVData.coverLetters,
+    tools: data.data.tools || defaultCVData.tools,
+    basics: { ...defaultCVData.basics, ...(data.data.basics || {}) },
+    contacts: { ...defaultCVData.contacts, ...(data.data.contacts || {}) },
+    work: data.data.work || defaultCVData.work,
+    education: data.data.education || defaultCVData.education,
+    skills: { ...defaultCVData.skills, ...(data.data.skills || {}) },
+    projects: data.data.projects || defaultCVData.projects,
+    certificates: data.data.certificates || defaultCVData.certificates,
+    languages: data.data.languages || defaultCVData.languages,
+  };
 };
 
 export const getCVData = (): CVData => {
@@ -183,8 +213,15 @@ export const getCVData = (): CVData => {
   return defaultCVData;
 };
 
-export const saveCVData = (data: CVData): void => {
-  localStorage.setItem('cvData', JSON.stringify(data));
+export const saveCVData = async (data: CVData): Promise<void> => {
+  // localStorage.setItem('cvData', JSON.stringify(data)); // No longer save to localStorage
+  try {
+    await supabase.from('cv_data').upsert([
+      { id: 'main', data }
+    ], { onConflict: 'id' });
+  } catch (error) {
+    console.error('Error saving CV data to Supabase:', error);
+  }
 };
 
 export const copyToClipboard = async (text: string): Promise<boolean> => {
@@ -232,5 +269,23 @@ export const downloadImage = async (imageUrl: string, filename: string): Promise
     window.URL.revokeObjectURL(url);
   } catch (error) {
     console.error('Error downloading image:', error);
+  }
+};
+
+// Generic forced download for any file type
+export const downloadFile = async (fileUrl: string, filename: string): Promise<void> => {
+  try {
+    const response = await fetch(fileUrl);
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+  } catch (error) {
+    console.error('Error downloading file:', error);
   }
 };

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { LogOut, Save, Plus, Trash2, GripVertical, Edit, Linkedin, Github, Twitter, Facebook, Instagram, Globe, Hash, Layers } from 'lucide-react';
+import { LogOut, Save, Plus, Trash2, GripVertical, Edit, Linkedin, Github, Twitter, Facebook, Instagram, Globe, Hash, Layers, ExternalLink } from 'lucide-react';
 import { FaLinkedin, FaGithub, FaTwitter, FaFacebook, FaInstagram, FaYoutube, FaTiktok, FaWhatsapp, FaTelegram, FaReddit, FaDiscord, FaSnapchatGhost, FaPinterest, FaMedium, FaDribbble, FaBehance, FaStackOverflow, FaFacebookMessenger, FaGlobe } from 'react-icons/fa';
-import { getCVData, saveCVData } from '../utils/cvData';
+import { getCVData, saveCVData, fetchCVDataFromSupabase } from '../utils/cvData';
 import { CVData, CustomTab, CustomField } from '../types/cv';
 import FileUpload from './FileUpload';
 import { CustomFieldEditor } from './CustomFieldEditor';
@@ -14,22 +14,25 @@ interface DashboardProps {
 }
 
 const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
-  const [cvData, setCvData] = useState<CVData>(getCVData());
+  // All hooks at the top
+  const [cvData, setCvData] = useState<CVData | null>(null);
+  const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('basics');
   const [showSuccess, setShowSuccess] = useState(false);
   const [editingTabName, setEditingTabName] = useState<string | null>(null);
   const [newTabName, setNewTabName] = useState('');
   let saveTimeout: any = null;
 
-  const handleSave = () => {
-    saveCVData(cvData);
-    setShowSuccess(true);
-    setTimeout(() => setShowSuccess(false), 3000);
-    if (onDataChange) onDataChange();
-  };
-
-  // Auto-save on cvData change (debounced)
   useEffect(() => {
+    (async () => {
+      const supabaseData = await fetchCVDataFromSupabase();
+      setCvData(supabaseData);
+      setLoading(false);
+    })();
+  }, []);
+
+  useEffect(() => {
+    if (!cvData) return;
     if (saveTimeout) clearTimeout(saveTimeout);
     saveTimeout = setTimeout(() => {
       handleSave();
@@ -39,6 +42,20 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
     };
   }, [cvData]);
 
+  // Immediately after hooks, do the loading/null check
+  if (loading || !cvData) {
+    return <div className="min-h-screen flex items-center justify-center text-xl text-gray-600">Loading...</div>;
+  }
+
+  // Now it's safe to use cvData in variables, arrays, etc.
+  const handleSave = () => {
+    if (!cvData) return;
+    saveCVData(cvData);
+    setShowSuccess(true);
+    setTimeout(() => setShowSuccess(false), 3000);
+    if (onDataChange) onDataChange();
+  };
+
   const addCustomTab = () => {
     const newTab: CustomTab = {
       id: Date.now().toString(),
@@ -46,16 +63,16 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
       customFields: []
     };
     setCvData({
-      ...cvData,
-      customTabs: [...cvData.customTabs, newTab],
-      tabOrder: [...cvData.tabOrder, newTab.id]
+      ...cvData!,
+      customTabs: [...cvData!.customTabs, newTab],
+      tabOrder: [...cvData!.tabOrder, newTab.id]
     });
   };
 
   const updateCustomTab = (tabId: string, updates: Partial<CustomTab>) => {
     setCvData({
-      ...cvData,
-      customTabs: cvData.customTabs.map(tab =>
+      ...cvData!,
+      customTabs: cvData!.customTabs.map(tab =>
         tab.id === tabId ? { ...tab, ...updates } : tab
       )
     });
@@ -63,9 +80,9 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
 
   const deleteCustomTab = (tabId: string) => {
     setCvData({
-      ...cvData,
-      customTabs: cvData.customTabs.filter(tab => tab.id !== tabId),
-      tabOrder: cvData.tabOrder.filter(id => id !== tabId)
+      ...cvData!,
+      customTabs: cvData!.customTabs.filter(tab => tab.id !== tabId),
+      tabOrder: cvData!.tabOrder.filter(id => id !== tabId)
     });
   };
 
@@ -80,7 +97,9 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
     { value: 'Other', label: 'Other', icon: <FaGlobe className="w-4 h-4 inline mr-1 text-gray-400" /> },
   ];
 
-  const tabs = [
+  // Now it's safe to use cvData, including in the tabs array
+  // Build tabs array from tabOrder, mapping ids to built-in and custom tabs
+  const builtInTabs = [
     { id: 'basics', label: 'Basic Info' },
     { id: 'contacts', label: 'Contacts' },
     { id: 'tools', label: 'My Tools' },
@@ -90,11 +109,25 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
     { id: 'certificates', label: 'Certificates' },
     { id: 'languages', label: 'Languages' },
     { id: 'coverLetters', label: 'Cover Letters' },
-    ...cvData.customTabs.map(tab => ({ id: tab.id, label: tab.name })),
   ];
+  const customTabsMap = Object.fromEntries(cvData.customTabs.map(tab => [tab.id, tab]));
+  const tabs = cvData.tabOrder.map(id => {
+    const builtIn = builtInTabs.find(t => t.id === id);
+    if (builtIn) return builtIn;
+    const custom = customTabsMap[id];
+    if (custom) return { id: custom.id, label: custom.name };
+    return { id, label: id };
+  });
 
   const reorderTabs = (newOrder: string[]) => {
-    setCvData({...cvData, tabOrder: newOrder});
+    setCvData(cvData => {
+      if (!cvData) return cvData;
+      const updated = { ...cvData, tabOrder: newOrder };
+      // Auto-save after reordering
+      saveCVData(updated);
+      if (onDataChange) onDataChange();
+      return updated;
+    });
   };
 
   const renderBasicsTab = () => (
@@ -105,7 +138,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
           <input
             type="text"
             value={cvData.basics.name}
-            onChange={(e) => setCvData({...cvData, basics: {...cvData.basics, name: e.target.value}})}
+            onChange={(e) => setCvData({...cvData!, basics: {...cvData!.basics, name: e.target.value}})}
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
@@ -114,7 +147,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
           <input
             type="text"
             value={cvData.basics.label}
-            onChange={(e) => setCvData({...cvData, basics: {...cvData.basics, label: e.target.value}})}
+            onChange={(e) => setCvData({...cvData!, basics: {...cvData!.basics, label: e.target.value}})}
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
@@ -123,7 +156,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
       <FileUpload
         label="Profile Image"
         value={cvData.basics.image}
-        onChange={(value, file) => setCvData({...cvData, basics: {...cvData.basics, image: value, imageFile: file}})}
+        onChange={(value, file) => setCvData({...cvData!, basics: {...cvData!.basics, image: value, imageFile: file}})}
         accept="image/*"
         type="image"
       />
@@ -131,7 +164,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
       <FileUpload
         label="Resume"
         value={cvData.basics.resume || ''}
-        onChange={(value, file) => setCvData({...cvData, basics: {...cvData.basics, resume: value, resumeFile: file}})}
+        onChange={(value, file) => setCvData({...cvData!, basics: {...cvData!.basics, resume: value, resumeFile: file}})}
         accept=".pdf,.doc,.docx"
       />
       
@@ -139,7 +172,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
         <label className="block text-sm font-medium text-gray-700 mb-2">Summary</label>
         <textarea
           value={cvData.basics.summary}
-          onChange={(e) => setCvData({...cvData, basics: {...cvData.basics, summary: e.target.value}})}
+          onChange={(e) => setCvData({...cvData!, basics: {...cvData!.basics, summary: e.target.value}})}
           rows={4}
           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
@@ -147,7 +180,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
       
       <CustomFieldEditor
         fields={cvData.basics.customFields}
-        onFieldsChange={(fields: CustomField[]) => setCvData({...cvData, basics: {...cvData.basics, customFields: fields}})}
+        onFieldsChange={(fields: CustomField[]) => setCvData({...cvData!, basics: {...cvData!.basics, customFields: fields}})}
       />
     </div>
   );
@@ -184,7 +217,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
             <input
               type="email"
               value={cvData.contacts.email}
-              onChange={(e) => setCvData({...cvData, contacts: {...cvData.contacts, email: e.target.value}})}
+              onChange={(e) => setCvData({...cvData!, contacts: {...cvData!.contacts, email: e.target.value}})}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
@@ -193,7 +226,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
             <input
               type="text"
               value={cvData.contacts.phone}
-              onChange={(e) => setCvData({...cvData, contacts: {...cvData.contacts, phone: e.target.value}})}
+              onChange={(e) => setCvData({...cvData!, contacts: {...cvData!.contacts, phone: e.target.value}})}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
@@ -202,7 +235,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
             <input
               type="url"
               value={cvData.contacts.url}
-              onChange={(e) => setCvData({...cvData, contacts: {...cvData.contacts, url: e.target.value}})}
+              onChange={(e) => setCvData({...cvData!, contacts: {...cvData!.contacts, url: e.target.value}})}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
@@ -211,7 +244,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
             <input
               type="text"
               value={cvData.contacts.location.city}
-              onChange={(e) => setCvData({...cvData, contacts: {...cvData.contacts, location: {...cvData.contacts.location, city: e.target.value}}})}
+              onChange={(e) => setCvData({...cvData!, contacts: {...cvData!.contacts, location: {...cvData!.contacts.location, city: e.target.value}}})}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
@@ -220,7 +253,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
             <input
               type="text"
               value={cvData.contacts.location.country}
-              onChange={(e) => setCvData({...cvData, contacts: {...cvData.contacts, location: {...cvData.contacts.location, country: e.target.value}}})}
+              onChange={(e) => setCvData({...cvData!, contacts: {...cvData!.contacts, location: {...cvData!.contacts.location, country: e.target.value}}})}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
@@ -232,7 +265,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
             <button
               onClick={() => {
                 const newProfile = { network: '', username: '', url: '' };
-                setCvData({...cvData, contacts: {...cvData.contacts, profiles: [...cvData.contacts.profiles, newProfile]}});
+                setCvData({...cvData!, contacts: {...cvData!.contacts, profiles: [...cvData!.contacts.profiles, newProfile]}});
               }}
               className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
             >
@@ -243,7 +276,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
           
           <DragDropList
             items={cvData.contacts.profiles}
-            onReorder={(newOrder) => setCvData({ ...cvData, contacts: { ...cvData.contacts, profiles: newOrder } })}
+            onReorder={(newOrder) => setCvData({ ...cvData!, contacts: { ...cvData!.contacts, profiles: newOrder } })}
             renderItem={(profile, index) => (
               <div className="flex items-center gap-2 w-full">
                 <div className="flex-1 min-w-0">
@@ -253,7 +286,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
                     onChange={(selected) => {
                       const newProfiles = [...cvData.contacts.profiles];
                       newProfiles[index] = { ...profile, network: selected ? selected.value : '' };
-                      setCvData({ ...cvData, contacts: { ...cvData.contacts, profiles: newProfiles } });
+                      setCvData({ ...cvData!, contacts: { ...cvData!.contacts, profiles: newProfiles } });
                     }}
                     options={socialNetworks}
                     isClearable
@@ -277,7 +310,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
                     onChange={(e) => {
                       const newProfiles = [...cvData.contacts.profiles];
                       newProfiles[index] = { ...profile, username: e.target.value };
-                      setCvData({ ...cvData, contacts: { ...cvData.contacts, profiles: newProfiles } });
+                      setCvData({ ...cvData!, contacts: { ...cvData!.contacts, profiles: newProfiles } });
                     }}
                     placeholder="Username"
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -290,7 +323,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
                     onChange={(e) => {
                       const newProfiles = [...cvData.contacts.profiles];
                       newProfiles[index] = { ...profile, url: e.target.value };
-                      setCvData({ ...cvData, contacts: { ...cvData.contacts, profiles: newProfiles } });
+                      setCvData({ ...cvData!, contacts: { ...cvData!.contacts, profiles: newProfiles } });
                     }}
                     placeholder="Profile URL"
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -299,7 +332,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
                 <button
                   onClick={() => {
                     const newProfiles = cvData.contacts.profiles.filter((_, i) => i !== index);
-                    setCvData({ ...cvData, contacts: { ...cvData.contacts, profiles: newProfiles } });
+                    setCvData({ ...cvData!, contacts: { ...cvData!.contacts, profiles: newProfiles } });
                   }}
                   className="ml-2 text-red-600 hover:text-red-800"
                   title="Delete profile"
@@ -318,7 +351,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
             <button
               onClick={() => {
                 const newTool = { name: '', username: '', url: '', customFields: [] };
-                setCvData({ ...cvData, tools: [...(cvData.tools || []), newTool] });
+                setCvData({ ...cvData!, tools: [...(cvData!.tools || []), newTool] });
               }}
               className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
             >
@@ -328,7 +361,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
           </div>
           <DragDropList
             items={cvData.tools || []}
-            onReorder={(newOrder) => setCvData({ ...cvData, tools: newOrder })}
+            onReorder={(newOrder) => setCvData({ ...cvData!, tools: newOrder })}
             renderItem={(tool, index) => (
               <div className="flex items-center gap-2 w-full">
                 <div className="flex-1 min-w-0">
@@ -338,7 +371,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
                     onChange={(selected) => {
                       const newTools = [...cvData.tools];
                       newTools[index] = { ...tool, name: selected ? selected.value : '' };
-                      setCvData({ ...cvData, tools: newTools });
+                      setCvData({ ...cvData!, tools: newTools });
                     }}
                     options={toolOptions}
                     isClearable
@@ -359,7 +392,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
                     onChange={(e) => {
                       const newTools = [...cvData.tools];
                       newTools[index] = { ...tool, username: e.target.value };
-                      setCvData({ ...cvData, tools: newTools });
+                      setCvData({ ...cvData!, tools: newTools });
                     }}
                     placeholder="Username"
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -372,7 +405,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
                     onChange={(e) => {
                       const newTools = [...cvData.tools];
                       newTools[index] = { ...tool, url: e.target.value };
-                      setCvData({ ...cvData, tools: newTools });
+                      setCvData({ ...cvData!, tools: newTools });
                     }}
                     placeholder="Tool URL"
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -381,7 +414,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
                 <button
                   onClick={() => {
                     const newTools = cvData.tools.filter((_, i) => i !== index);
-                    setCvData({ ...cvData, tools: newTools });
+                    setCvData({ ...cvData!, tools: newTools });
                   }}
                   className="ml-2 text-red-600 hover:text-red-800"
                   title="Delete tool"
@@ -395,7 +428,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
 
         <CustomFieldEditor
           fields={cvData.contacts.customFields}
-          onFieldsChange={(fields: CustomField[]) => setCvData({...cvData, contacts: {...cvData.contacts, customFields: fields}})}
+          onFieldsChange={(fields: CustomField[]) => setCvData({...cvData!, contacts: {...cvData!.contacts, customFields: fields}})}
         />
       </div>
     );
@@ -408,7 +441,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
         <button
           onClick={() => {
             const newTool = { name: '', username: '', url: '', customFields: [] };
-            setCvData({ ...cvData, tools: [...(cvData.tools || []), newTool] });
+            setCvData({ ...cvData!, tools: [...(cvData!.tools || []), newTool] });
           }}
           className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
         >
@@ -418,7 +451,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
       </div>
       <DragDropList
         items={cvData.tools || []}
-        onReorder={(newOrder) => setCvData({ ...cvData, tools: newOrder })}
+        onReorder={(newOrder) => setCvData({ ...cvData!, tools: newOrder })}
         renderItem={(tool, index) => (
           <div className="flex items-center gap-2 w-full">
             <div className="flex-1 min-w-0">
@@ -428,7 +461,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
                 onChange={(selected) => {
                   const newTools = [...cvData.tools];
                   newTools[index] = { ...tool, name: selected ? selected.value : '' };
-                  setCvData({ ...cvData, tools: newTools });
+                  setCvData({ ...cvData!, tools: newTools });
                 }}
                 options={toolOptions}
                 isClearable
@@ -449,7 +482,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
                 onChange={(e) => {
                   const newTools = [...cvData.tools];
                   newTools[index] = { ...tool, username: e.target.value };
-                  setCvData({ ...cvData, tools: newTools });
+                  setCvData({ ...cvData!, tools: newTools });
                 }}
                 placeholder="Username"
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -462,7 +495,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
                 onChange={(e) => {
                   const newTools = [...cvData.tools];
                   newTools[index] = { ...tool, url: e.target.value };
-                  setCvData({ ...cvData, tools: newTools });
+                  setCvData({ ...cvData!, tools: newTools });
                 }}
                 placeholder="Tool URL"
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -471,7 +504,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
             <button
               onClick={() => {
                 const newTools = cvData.tools.filter((_, i) => i !== index);
-                setCvData({ ...cvData, tools: newTools });
+                setCvData({ ...cvData!, tools: newTools });
               }}
               className="ml-2 text-red-600 hover:text-red-800"
               title="Delete tool"
@@ -506,7 +539,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
               highlights: [''],
               customFields: []
             };
-            setCvData({...cvData, work: [...cvData.work, newWork]});
+            setCvData({...cvData!, work: [...cvData!.work, newWork]});
           }}
           className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
         >
@@ -517,7 +550,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
       
       <DragDropList
         items={cvData.work}
-        onReorder={(newOrder) => setCvData({...cvData, work: newOrder})}
+        onReorder={(newOrder) => setCvData({...cvData!, work: newOrder})}
         renderItem={(work, index) => (
           <div className="space-y-4">
             <div className="flex justify-between items-start">
@@ -525,7 +558,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
               <button
                 onClick={() => {
                   const newWork = cvData.work.filter((_, i) => i !== index);
-                  setCvData({...cvData, work: newWork});
+                  setCvData({...cvData!, work: newWork});
                 }}
                 className="text-red-600 hover:text-red-800"
               >
@@ -542,7 +575,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
                   onChange={(e) => {
                     const newWork = [...cvData.work];
                     newWork[index] = {...work, name: e.target.value};
-                    setCvData({...cvData, work: newWork});
+                    setCvData({...cvData!, work: newWork});
                   }}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
@@ -555,7 +588,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
                   onChange={(e) => {
                     const newWork = [...cvData.work];
                     newWork[index] = {...work, position: e.target.value};
-                    setCvData({...cvData, work: newWork});
+                    setCvData({...cvData!, work: newWork});
                   }}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
@@ -567,7 +600,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
                   onChange={(e) => {
                     const newWork = [...cvData.work];
                     newWork[index] = {...work, jobType: e.target.value};
-                    setCvData({...cvData, work: newWork});
+                    setCvData({...cvData!, work: newWork});
                   }}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
@@ -586,7 +619,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
                   onChange={(e) => {
                     const newWork = [...cvData.work];
                     newWork[index] = {...work, employeeType: e.target.value};
-                    setCvData({...cvData, work: newWork});
+                    setCvData({...cvData!, work: newWork});
                   }}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
@@ -604,7 +637,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
                   onChange={(e) => {
                     const newWork = [...cvData.work];
                     newWork[index] = {...work, location: e.target.value};
-                    setCvData({...cvData, work: newWork});
+                    setCvData({...cvData!, work: newWork});
                   }}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
@@ -617,7 +650,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
                   onChange={(e) => {
                     const newWork = [...cvData.work];
                     newWork[index] = {...work, url: e.target.value};
-                    setCvData({...cvData, work: newWork});
+                    setCvData({...cvData!, work: newWork});
                   }}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
@@ -630,7 +663,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
                   onChange={(e) => {
                     const newWork = [...cvData.work];
                     newWork[index] = {...work, startDate: e.target.value};
-                    setCvData({...cvData, work: newWork});
+                    setCvData({...cvData!, work: newWork});
                   }}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
@@ -643,7 +676,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
                   onChange={(e) => {
                     const newWork = [...cvData.work];
                     newWork[index] = {...work, endDate: e.target.value};
-                    setCvData({...cvData, work: newWork});
+                    setCvData({...cvData!, work: newWork});
                   }}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Leave empty for current position"
@@ -661,7 +694,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
                     onChange={(e) => {
                       const newWork = [...cvData.work];
                       newWork[index].highlights[highlightIndex] = e.target.value;
-                      setCvData({...cvData, work: newWork});
+                      setCvData({...cvData!, work: newWork});
                     }}
                     className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
@@ -669,7 +702,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
                     onClick={() => {
                       const newWork = [...cvData.work];
                       newWork[index].highlights = newWork[index].highlights.filter((_, i) => i !== highlightIndex);
-                      setCvData({...cvData, work: newWork});
+                      setCvData({...cvData!, work: newWork});
                     }}
                     className="text-red-600 hover:text-red-800"
                   >
@@ -681,7 +714,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
                 onClick={() => {
                   const newWork = [...cvData.work];
                   newWork[index].highlights.push('');
-                  setCvData({...cvData, work: newWork});
+                  setCvData({...cvData!, work: newWork});
                 }}
                 className="text-blue-600 hover:text-blue-800 text-sm"
               >
@@ -694,7 +727,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
               onFieldsChange={(fields: CustomField[]) => {
                 const newWork = [...cvData.work];
                 newWork[index] = {...work, customFields: fields};
-                setCvData({...cvData, work: newWork});
+                setCvData({...cvData!, work: newWork});
               }}
             />
           </div>
@@ -720,7 +753,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
               scale: '',
               customFields: []
             };
-            setCvData({...cvData, education: [...cvData.education, newEducation]});
+            setCvData({...cvData!, education: [...cvData!.education, newEducation]});
           }}
           className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
         >
@@ -731,7 +764,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
 
       <DragDropList
         items={cvData.education}
-        onReorder={(newOrder) => setCvData({...cvData, education: newOrder})}
+        onReorder={(newOrder) => setCvData({...cvData!, education: newOrder})}
         renderItem={(edu, index) => (
           <div className="space-y-4">
             <div className="flex justify-between items-start">
@@ -739,7 +772,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
               <button
                 onClick={() => {
                   const newEducation = cvData.education.filter((_, i) => i !== index);
-                  setCvData({...cvData, education: newEducation});
+                  setCvData({...cvData!, education: newEducation});
                 }}
                 className="text-red-600 hover:text-red-800"
               >
@@ -756,7 +789,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
                   onChange={(e) => {
                     const newEducation = [...cvData.education];
                     newEducation[index] = {...edu, institution: e.target.value};
-                    setCvData({...cvData, education: newEducation});
+                    setCvData({...cvData!, education: newEducation});
                   }}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
@@ -769,7 +802,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
                   onChange={(e) => {
                     const newEducation = [...cvData.education];
                     newEducation[index] = {...edu, studyType: e.target.value};
-                    setCvData({...cvData, education: newEducation});
+                    setCvData({...cvData!, education: newEducation});
                   }}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
@@ -782,7 +815,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
                   onChange={(e) => {
                     const newEducation = [...cvData.education];
                     newEducation[index] = {...edu, area: e.target.value};
-                    setCvData({...cvData, education: newEducation});
+                    setCvData({...cvData!, education: newEducation});
                   }}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
@@ -795,7 +828,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
                   onChange={(e) => {
                     const newEducation = [...cvData.education];
                     newEducation[index] = {...edu, cgpa: e.target.value};
-                    setCvData({...cvData, education: newEducation});
+                    setCvData({...cvData!, education: newEducation});
                   }}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
@@ -808,7 +841,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
                   onChange={(e) => {
                     const newEducation = [...cvData.education];
                     newEducation[index] = {...edu, scale: e.target.value};
-                    setCvData({...cvData, education: newEducation});
+                    setCvData({...cvData!, education: newEducation});
                   }}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
@@ -821,7 +854,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
                   onChange={(e) => {
                     const newEducation = [...cvData.education];
                     newEducation[index] = {...edu, startDate: e.target.value};
-                    setCvData({...cvData, education: newEducation});
+                    setCvData({...cvData!, education: newEducation});
                   }}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
@@ -834,7 +867,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
                   onChange={(e) => {
                     const newEducation = [...cvData.education];
                     newEducation[index] = {...edu, endDate: e.target.value};
-                    setCvData({...cvData, education: newEducation});
+                    setCvData({...cvData!, education: newEducation});
                   }}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
@@ -846,7 +879,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
               onFieldsChange={(fields: CustomField[]) => {
                 const newEducation = [...cvData.education];
                 newEducation[index] = {...edu, customFields: fields};
-                setCvData({...cvData, education: newEducation});
+                setCvData({...cvData!, education: newEducation});
               }}
             />
           </div>
@@ -863,7 +896,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
           <button
             onClick={() => {
               const newSkill = { name: '', keywords: [''] };
-              setCvData({...cvData, skills: {...cvData.skills, technical: [...cvData.skills.technical, newSkill]}});
+              setCvData({...cvData!, skills: {...cvData!.skills, technical: [...cvData!.skills.technical, newSkill]}});
             }}
             className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
           >
@@ -874,7 +907,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
 
         <DragDropList
           items={cvData.skills.technical}
-          onReorder={(newOrder) => setCvData({...cvData, skills: {...cvData.skills, technical: newOrder}})}
+          onReorder={(newOrder) => setCvData({...cvData!, skills: {...cvData!.skills, technical: newOrder}})}
           renderItem={(skill, index) => (
             <div className="space-y-4">
               <div className="flex justify-between items-start">
@@ -886,7 +919,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
                     onChange={(e) => {
                       const newSkills = [...cvData.skills.technical];
                       newSkills[index] = {...skill, name: e.target.value};
-                      setCvData({...cvData, skills: {...cvData.skills, technical: newSkills}});
+                      setCvData({...cvData!, skills: {...cvData!.skills, technical: newSkills}});
                     }}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
@@ -894,7 +927,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
                 <button
                   onClick={() => {
                     const newSkills = cvData.skills.technical.filter((_, i) => i !== index);
-                    setCvData({...cvData, skills: {...cvData.skills, technical: newSkills}});
+                    setCvData({...cvData!, skills: {...cvData!.skills, technical: newSkills}});
                   }}
                   className="ml-4 text-red-600 hover:text-red-800"
                 >
@@ -912,7 +945,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
                       onChange={(e) => {
                         const newSkills = [...cvData.skills.technical];
                         newSkills[index].keywords[keywordIndex] = e.target.value;
-                        setCvData({...cvData, skills: {...cvData.skills, technical: newSkills}});
+                        setCvData({...cvData!, skills: {...cvData!.skills, technical: newSkills}});
                       }}
                       className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
@@ -920,7 +953,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
                       onClick={() => {
                         const newSkills = [...cvData.skills.technical];
                         newSkills[index].keywords = newSkills[index].keywords.filter((_, i) => i !== keywordIndex);
-                        setCvData({...cvData, skills: {...cvData.skills, technical: newSkills}});
+                        setCvData({...cvData!, skills: {...cvData!.skills, technical: newSkills}});
                       }}
                       className="text-red-600 hover:text-red-800"
                     >
@@ -932,7 +965,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
                   onClick={() => {
                     const newSkills = [...cvData.skills.technical];
                     newSkills[index].keywords.push('');
-                    setCvData({...cvData, skills: {...cvData.skills, technical: newSkills}});
+                    setCvData({...cvData!, skills: {...cvData!.skills, technical: newSkills}});
                   }}
                   className="text-blue-600 hover:text-blue-800 text-sm"
                 >
@@ -955,14 +988,14 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
                 onChange={(e) => {
                   const newMethodologies = [...cvData.skills.methodologies];
                   newMethodologies[index] = e.target.value;
-                  setCvData({...cvData, skills: {...cvData.skills, methodologies: newMethodologies}});
+                  setCvData({...cvData!, skills: {...cvData!.skills, methodologies: newMethodologies}});
                 }}
                 className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
               <button
                 onClick={() => {
                   const newMethodologies = cvData.skills.methodologies.filter((_, i) => i !== index);
-                  setCvData({...cvData, skills: {...cvData.skills, methodologies: newMethodologies}});
+                  setCvData({...cvData!, skills: {...cvData!.skills, methodologies: newMethodologies}});
                 }}
                 className="text-red-600 hover:text-red-800"
               >
@@ -972,7 +1005,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
           ))}
           <button
             onClick={() => {
-              setCvData({...cvData, skills: {...cvData.skills, methodologies: [...cvData.skills.methodologies, '']}});
+              setCvData({...cvData!, skills: {...cvData!.skills, methodologies: [...cvData!.skills.methodologies, '']}});
             }}
             className="text-blue-600 hover:text-blue-800 text-sm"
           >
@@ -983,7 +1016,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
       
       <CustomFieldEditor
         fields={cvData.skills.customFields}
-        onFieldsChange={(fields: CustomField[]) => setCvData({...cvData, skills: {...cvData.skills, customFields: fields}})}
+        onFieldsChange={(fields: CustomField[]) => setCvData({...cvData!, skills: {...cvData!.skills, customFields: fields}})}
       />
     </div>
   );
@@ -1001,7 +1034,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
               url: '',
               customFields: []
             };
-            setCvData({...cvData, certificates: [...cvData.certificates, newCertificate]});
+            setCvData({...cvData!, certificates: [...cvData!.certificates, newCertificate]});
           }}
           className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
         >
@@ -1012,7 +1045,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
 
       <DragDropList
         items={cvData.certificates}
-        onReorder={(newOrder) => setCvData({...cvData, certificates: newOrder})}
+        onReorder={(newOrder) => setCvData({...cvData!, certificates: newOrder})}
         renderItem={(cert, index) => (
           <div className="space-y-4">
             <div className="flex justify-between items-start">
@@ -1020,7 +1053,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
               <button
                 onClick={() => {
                   const newCertificates = cvData.certificates.filter((_, i) => i !== index);
-                  setCvData({...cvData, certificates: newCertificates});
+                  setCvData({...cvData!, certificates: newCertificates});
                 }}
                 className="text-red-600 hover:text-red-800"
               >
@@ -1037,7 +1070,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
                   onChange={(e) => {
                     const newCertificates = [...cvData.certificates];
                     newCertificates[index] = {...cert, name: e.target.value};
-                    setCvData({...cvData, certificates: newCertificates});
+                    setCvData({...cvData!, certificates: newCertificates});
                   }}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
@@ -1050,7 +1083,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
                   onChange={(e) => {
                     const newCertificates = [...cvData.certificates];
                     newCertificates[index] = {...cert, issuer: e.target.value};
-                    setCvData({...cvData, certificates: newCertificates});
+                    setCvData({...cvData!, certificates: newCertificates});
                   }}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
@@ -1063,7 +1096,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
                   onChange={(e) => {
                     const newCertificates = [...cvData.certificates];
                     newCertificates[index] = {...cert, date: e.target.value};
-                    setCvData({...cvData, certificates: newCertificates});
+                    setCvData({...cvData!, certificates: newCertificates});
                   }}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
@@ -1076,7 +1109,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
                   onChange={(e) => {
                     const newCertificates = [...cvData.certificates];
                     newCertificates[index] = {...cert, url: e.target.value};
-                    setCvData({...cvData, certificates: newCertificates});
+                    setCvData({...cvData!, certificates: newCertificates});
                   }}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
@@ -1088,7 +1121,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
               onFieldsChange={(fields: CustomField[]) => {
                 const newCertificates = [...cvData.certificates];
                 newCertificates[index] = {...cert, customFields: fields};
-                setCvData({...cvData, certificates: newCertificates});
+                setCvData({...cvData!, certificates: newCertificates});
               }}
             />
           </div>
@@ -1108,7 +1141,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
               fluency: '',
               customFields: []
             };
-            setCvData({...cvData, languages: [...cvData.languages, newLanguage]});
+            setCvData({...cvData!, languages: [...cvData!.languages, newLanguage]});
           }}
           className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
         >
@@ -1119,7 +1152,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
 
       <DragDropList
         items={cvData.languages}
-        onReorder={(newOrder) => setCvData({...cvData, languages: newOrder})}
+        onReorder={(newOrder) => setCvData({...cvData!, languages: newOrder})}
         renderItem={(lang, index) => (
           <div className="space-y-4">
             <div className="flex justify-between items-start">
@@ -1127,7 +1160,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
               <button
                 onClick={() => {
                   const newLanguages = cvData.languages.filter((_, i) => i !== index);
-                  setCvData({...cvData, languages: newLanguages});
+                  setCvData({...cvData!, languages: newLanguages});
                 }}
                 className="text-red-600 hover:text-red-800"
               >
@@ -1144,7 +1177,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
                   onChange={(e) => {
                     const newLanguages = [...cvData.languages];
                     newLanguages[index] = {...lang, language: e.target.value};
-                    setCvData({...cvData, languages: newLanguages});
+                    setCvData({...cvData!, languages: newLanguages});
                   }}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
@@ -1157,7 +1190,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
                   onChange={(e) => {
                     const newLanguages = [...cvData.languages];
                     newLanguages[index] = {...lang, fluency: e.target.value};
-                    setCvData({...cvData, languages: newLanguages});
+                    setCvData({...cvData!, languages: newLanguages});
                   }}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
@@ -1169,7 +1202,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
               onFieldsChange={(fields: CustomField[]) => {
                 const newLanguages = [...cvData.languages];
                 newLanguages[index] = {...lang, customFields: fields};
-                setCvData({...cvData, languages: newLanguages});
+                setCvData({...cvData!, languages: newLanguages});
               }}
             />
           </div>
@@ -1189,7 +1222,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
               title: `Cover Letter ${cvData.coverLetters.length + 1}`,
               content: ''
             };
-            setCvData({...cvData, coverLetters: [...cvData.coverLetters, newCoverLetter]});
+            setCvData({...cvData!, coverLetters: [...cvData!.coverLetters, newCoverLetter]});
           }}
           className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
         >
@@ -1200,7 +1233,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
 
       <DragDropList
         items={cvData.coverLetters}
-        onReorder={(newOrder) => setCvData({...cvData, coverLetters: newOrder})}
+        onReorder={(newOrder) => setCvData({...cvData!, coverLetters: newOrder})}
         renderItem={(coverLetter, index) => (
           <div className="space-y-4">
             <div className="flex justify-between items-start">
@@ -1212,7 +1245,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
                   onChange={(e) => {
                     const newCoverLetters = [...cvData.coverLetters];
                     newCoverLetters[index] = {...coverLetter, title: e.target.value};
-                    setCvData({...cvData, coverLetters: newCoverLetters});
+                    setCvData({...cvData!, coverLetters: newCoverLetters});
                   }}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
@@ -1220,7 +1253,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
               <button
                 onClick={() => {
                   const newCoverLetters = cvData.coverLetters.filter((_, i) => i !== index);
-                  setCvData({...cvData, coverLetters: newCoverLetters});
+                  setCvData({...cvData!, coverLetters: newCoverLetters});
                 }}
                 className="ml-4 text-red-600 hover:text-red-800"
               >
@@ -1234,7 +1267,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
                 onChange={(e) => {
                   const newCoverLetters = [...cvData.coverLetters];
                   newCoverLetters[index] = {...coverLetter, content: e.target.value};
-                  setCvData({...cvData, coverLetters: newCoverLetters});
+                  setCvData({...cvData!, coverLetters: newCoverLetters});
                 }}
                 rows={15}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -1286,20 +1319,21 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
                   setNewTabName(tab.name);
                 }}
                 className="p-1 text-gray-500 hover:text-gray-700"
+                title="Edit Tab Name"
               >
                 <Edit className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => deleteCustomTab(tab.id)}
+                className="p-1 text-red-500 hover:text-red-700"
+                title="Delete Tab"
+              >
+                <Trash2 className="w-4 h-4" />
               </button>
             </>
           )}
         </div>
-        <button
-          onClick={() => deleteCustomTab(tab.id)}
-          className="px-3 py-1 bg-red-600 text-white rounded-md hover:bg-red-700"
-        >
-          Delete Tab
-        </button>
       </div>
-      
       <CustomFieldEditor
         fields={tab.customFields}
         onFieldsChange={(fields: CustomField[]) => updateCustomTab(tab.id, { customFields: fields })}
@@ -1337,99 +1371,101 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-6xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <h1 className="text-2xl font-bold text-gray-900">CV Dashboard</h1>
-              <a
-                href="/"
-                className="text-blue-600 hover:text-blue-800 text-sm font-medium"
-              >
-                View CV
-              </a>
+    <>
+      {/* Toast for data saved */}
+      {showSuccess && (
+        <div className="fixed top-6 right-6 z-50 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-2 animate-fade-in">
+          <Save className="w-5 h-5 mr-2" />
+          Data saved successfully!
+        </div>
+      )}
+      <div className="min-h-screen bg-gray-50">
+        <div className="max-w-6xl mx-auto px-6 py-8">
+          {/* Tab Order Card at the Top */}
+          <section className="mb-8">
+            <div className="bg-white rounded-lg shadow-md px-6 py-4">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Tab Order</h3>
+              <DragDropList
+                items={cvData.tabOrder.map(id => ({ id, label: tabs.find(t => t.id === id)?.label || id }))}
+                onReorder={(newOrder) => reorderTabs(newOrder.map(item => item.id))}
+                renderItem={(item) => (
+                  <div className="flex items-center gap-3">
+                    <span className="font-medium">{item.label}</span>
+                  </div>
+                )}
+                className="grid grid-cols-2 md:grid-cols-4 gap-3"
+              />
             </div>
-            <div className="flex items-center gap-4">
-              {showSuccess && (
-                <div className="text-green-600 text-sm font-medium">
-                  Data saved successfully!
+          </section>
+
+          {/* Dashboard Header and Tabs Card */}
+          <section className="mb-8">
+            <div className="bg-white rounded-lg shadow-md">
+              {/* Header with title, view CV, save, logout */}
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between bg-gray-100 px-6 py-4 rounded-t-lg border-b border-gray-200">
+                <div className="flex items-center gap-4 mb-4 md:mb-0">
+                  <h1 className="text-2xl font-bold text-gray-900">Rony.DB Dashboard</h1>
                 </div>
-              )}
-              <button
-                onClick={handleSave}
-                className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
-              >
-                <Save className="w-4 h-4" />
-                Save Changes
-              </button>
-              <button
-                onClick={onLogout}
-                className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
-              >
-                <LogOut className="w-4 h-4" />
-                Logout
-              </button>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      <div className="max-w-6xl mx-auto px-6 py-8">
-        {/* Tab Reordering */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-semibold text-gray-900">Tab Order</h3>
-            <button
-              onClick={addCustomTab}
-              className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
-            >
-              <Plus className="w-4 h-4" />
-              Add Custom Tab
-            </button>
-          </div>
-          <DragDropList
-            items={cvData.tabOrder.map(id => ({ id, label: tabs.find(t => t.id === id)?.label || id }))}
-            onReorder={(newOrder) => reorderTabs(newOrder.map(item => item.id))}
-            renderItem={(item) => (
-              <div className="flex items-center gap-3">
-                <span className="font-medium">{item.label}</span>
+                <div className="flex items-center gap-2 ml-auto">
+                  <button
+                    onClick={() => {
+                      window.history.pushState({}, '', '/');
+                      const navEvent = new PopStateEvent('popstate');
+                      window.dispatchEvent(navEvent);
+                    }}
+                    className="p-2 bg-blue-600 text-white rounded-full hover:bg-blue-700"
+                    title="View CV"
+                  >
+                    <ExternalLink className="w-5 h-5" />
+                  </button>
+                  <button
+                    onClick={handleSave}
+                    className="p-2 bg-green-600 text-white rounded-full hover:bg-green-700"
+                    title="Save Changes"
+                  >
+                    <Save className="w-5 h-5" />
+                  </button>
+                  <button
+                    onClick={onLogout}
+                    className="p-2 bg-red-600 text-white rounded-full hover:bg-red-700"
+                    title="Logout"
+                  >
+                    <LogOut className="w-5 h-5" />
+                  </button>
+                </div>
               </div>
-            )}
-            className="grid grid-cols-2 md:grid-cols-4 gap-3"
-          />
-        </div>
-
-        {/* Tabs */}
-        <div className="bg-white rounded-lg shadow-sm mb-8">
-          <div className="border-b">
-            <nav className="flex space-x-8 px-6 overflow-x-auto">
-              {cvData.tabOrder.map((tabId) => {
-                const tab = tabs.find(t => t.id === tabId);
-                if (!tab) return null;
-                return (
+              {/* Tabs */}
+              <div className="flex flex-wrap gap-2 px-6 py-4 bg-white rounded-b-lg">
+                {tabs.map((tab) => (
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
-                    className={`py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${
+                    className={`px-4 py-2 rounded-lg font-medium transition-colors duration-200 ${
                       activeTab === tab.id
-                        ? 'border-blue-500 text-blue-600'
-                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                        ? 'bg-blue-600 text-white shadow'
+                        : 'bg-gray-100 text-gray-800 hover:bg-blue-50'
                     }`}
                   >
                     {tab.label}
                   </button>
-                );
-              })}
-            </nav>
-          </div>
-          <div className="p-6">
-            {renderTabContent()}
-          </div>
+                ))}
+                <button
+                  onClick={addCustomTab}
+                  className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 ml-2"
+                >
+                  <Plus className="w-4 h-4" />
+                  Add Custom Tab
+                </button>
+              </div>
+              {/* Tab Content */}
+              <div className="p-6">
+                {renderTabContent()}
+              </div>
+            </div>
+          </section>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 
