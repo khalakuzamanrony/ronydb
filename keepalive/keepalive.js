@@ -6,9 +6,10 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 
 async function updateKeepalive() {
   const now = new Date().toISOString();
+  const message = `updated at ${now}`;
   const { error } = await supabase
     .from('keepalive')
-    .upsert([{ id: 'main', updated: now }], { onConflict: ['id'] });
+    .upsert([{ id: 'main', updated: message }], { onConflict: ['id'] });
 
   if (error) {
     console.error('Failed to update keepalive:', error.message);
