@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Copy, Download, ChevronDown, ExternalLink, Mail, Phone, MapPin, Calendar, GraduationCap, Briefcase, Award, Globe, FileText, Settings } from 'lucide-react';
 import { FaLinkedin, FaGithub, FaTwitter, FaFacebook, FaInstagram, FaYoutube, FaTiktok, FaWhatsapp, FaTelegram, FaReddit, FaDiscord, FaSnapchatGhost, FaPinterest, FaMedium, FaDribbble, FaBehance, FaStackOverflow, FaFacebookMessenger, FaGlobe } from 'react-icons/fa';
 import CopyButton from './CopyButton';
@@ -26,6 +26,30 @@ export const HomePage: React.FC<HomePageProps> = ({ cvData, onNavigateToDashboar
       setImageUrl(imgData.publicUrl);
     };
     fetchUrls();
+  }, []);
+
+  React.useEffect(() => {
+    // Subscribe to realtime changes on cv_data table
+    const channel = supabase
+      .channel('public:cv_data')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'cv_data' },
+        async (payload) => {
+          // Refetch the latest CV data when any change happens
+          const latest = await fetchCVDataFromSupabase();
+          if (latest) {
+            // You may need to call a prop or set state, depending on your structure
+            // For example, if you have setCvData:
+            // setCvData(latest); // This line was removed as per the edit hint
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   // Expand/collapse state for sections and custom tabs
