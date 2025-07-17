@@ -2,7 +2,7 @@ name: Keepalive Cron Job
 
 on:
   schedule:
-    - cron: '*/5 * * * *' # Every 5 minutes
+    - cron: '*/2 * * * *' # Every 2 minutes
   workflow_dispatch:
 
 jobs:
@@ -18,7 +18,7 @@ jobs:
           node-version: '18'
 
       - name: Install dependencies
-        run: npm ci --prefix keepalive
+        run: npm install --prefix keepalive
 
       - name: Run keepalive script
         env:

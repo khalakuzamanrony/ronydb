@@ -14,7 +14,7 @@ async function updateKeepalive() {
     console.error('Failed to update keepalive:', error.message);
     process.exit(1);
   } else {
-    console.log('Keepalive updated at', now);
+    console.log('keepalive updated @', now);
   }
 }
 
