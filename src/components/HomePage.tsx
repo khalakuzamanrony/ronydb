@@ -323,17 +323,23 @@ ${lang.language}: ${lang.fluency}
                       </div>
                     </div>
                     <div className="flex-1">
-                      <div className="flex items-center mb-2">
-                        <h1 className="text-3xl font-bold text-gray-800">{cvData.basics.name}</h1>
-                        <CopyButton text={cvData.basics.name} className="ml-1" />
+                      <div className="flex items-center justify-between mb-2 w-full overflow-hidden">
+                        <div className="flex-1 min-w-0">
+                          <h1 className="text-3xl font-bold text-gray-800 truncate min-w-0">{cvData.basics.name}</h1>
+                        </div>
+                        <CopyButton text={cvData.basics.name} className="ml-1 flex-shrink-0" />
                       </div>
-                      <div className="flex items-center mb-4">
-                        <p className="text-xl text-blue-600 font-medium">{cvData.basics.label}</p>
-                        <CopyButton text={cvData.basics.label} className="ml-1" />
+                      <div className="flex items-center justify-between mb-4 w-full overflow-hidden">
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xl text-blue-600 font-medium truncate">{cvData.basics.label}</p>
+                        </div>
+                        <CopyButton text={cvData.basics.label} className="ml-1 flex-shrink-0" />
                       </div>
-                      <div className="flex items-center">
-                        <p className="text-gray-600">{cvData.basics.summary}</p>
-                        <CopyButton text={cvData.basics.summary} className="ml-1" />
+                      <div className="flex items-center justify-between w-full overflow-hidden">
+                        <div className="flex-1 min-w-0">
+                          <p className="text-gray-600 break-words whitespace-pre-line">{cvData.basics.summary}</p>
+                        </div>
+                        <CopyButton text={cvData.basics.summary} className="ml-1 flex-shrink-0" />
                       </div>
                     </div>
                   </div>
@@ -541,41 +547,35 @@ ${lang.language}: ${lang.fluency}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                     <div className="space-y-4">
                       {basicCol1.map((item: typeof basicContacts[number], idx: number) => (
-                        <div key={idx} className="flex items-center">
-                          {item.icon}
-                          {item.isLink ? (
-                            <>
-                              <a href={item.value} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                        <div key={idx} className="flex items-center w-full justify-between">
+                          <div className="flex items-center flex-grow min-w-0">
+                            {item.icon}
+                            {item.isLink ? (
+                              <a href={item.value} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline truncate">
                                 {item.label}
                               </a>
-                              <CopyButton text={item.value} className="ml-1" />
-                            </>
-                          ) : (
-                            <>
-                              <span className="text-gray-600">{item.label}</span>
-                              <CopyButton text={item.value} className="ml-1" />
-                            </>
-                          )}
+                            ) : (
+                              <span className="text-gray-600 truncate">{item.label}</span>
+                            )}
+                          </div>
+                          <CopyButton text={item.value} className="ml-1 flex-shrink-0" />
                         </div>
                       ))}
                     </div>
                     <div className="space-y-4">
                       {basicCol2.map((item: typeof basicContacts[number], idx: number) => (
-                        <div key={idx} className="flex items-center">
-                          {item.icon}
-                          {item.isLink ? (
-                            <>
-                              <a href={item.value} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                        <div key={idx} className="flex items-center w-full justify-between">
+                          <div className="flex items-center flex-grow min-w-0">
+                            {item.icon}
+                            {item.isLink ? (
+                              <a href={item.value} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline truncate">
                                 {item.label}
                               </a>
-                              <CopyButton text={item.value} className="ml-1" />
-                            </>
-                          ) : (
-                            <>
-                              <span className="text-gray-600">{item.label}</span>
-                              <CopyButton text={item.value} className="ml-1" />
-                            </>
-                          )}
+                            ) : (
+                              <span className="text-gray-600 truncate">{item.label}</span>
+                            )}
+                          </div>
+                          <CopyButton text={item.value} className="ml-1 flex-shrink-0" />
                         </div>
                       ))}
                     </div>
@@ -585,25 +585,29 @@ ${lang.language}: ${lang.fluency}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                     <div className="space-y-4">
                       {socialCol1.map((item: typeof socialProfiles[number], idx: number) => (
-                        <div key={idx} className="flex items-center">
-                          {item.icon}
-                          <span className="text-gray-600 mr-1">{item.network}:</span>
-                          <a href={item.value} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
-                            {item.username}
-                          </a>
-                          <CopyButton text={item.value} className="ml-1" />
+                        <div key={idx} className="flex items-center w-full justify-between">
+                          <div className="flex items-center flex-grow min-w-0">
+                            {item.icon}
+                            <span className="text-gray-600 mr-1">{item.network}:</span>
+                            <a href={item.value} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline truncate">
+                              {item.username}
+                            </a>
+                          </div>
+                          <CopyButton text={item.value} className="ml-1 flex-shrink-0" />
                         </div>
                       ))}
                     </div>
                     <div className="space-y-4">
                       {socialCol2.map((item: typeof socialProfiles[number], idx: number) => (
-                        <div key={idx} className="flex items-center">
-                          {item.icon}
-                          <span className="text-gray-600 mr-1">{item.network}:</span>
-                          <a href={item.value} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
-                            {item.username}
-                          </a>
-                          <CopyButton text={item.value} className="ml-1" />
+                        <div key={idx} className="flex items-center w-full justify-between">
+                          <div className="flex items-center flex-grow min-w-0">
+                            {item.icon}
+                            <span className="text-gray-600 mr-1">{item.network}:</span>
+                            <a href={item.value} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline truncate">
+                              {item.username}
+                            </a>
+                          </div>
+                          <CopyButton text={item.value} className="ml-1 flex-shrink-0" />
                         </div>
                       ))}
                     </div>
@@ -613,25 +617,29 @@ ${lang.language}: ${lang.fluency}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-4">
                       {toolCol1.map((item: typeof toolProfiles[number], idx: number) => (
-                        <div key={idx} className="flex items-center">
-                          {item.icon}
-                          <span className="text-gray-600 mr-1">{item.name}:</span>
-                          <a href={item.value} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
-                            {item.username}
-                          </a>
-                          <CopyButton text={item.value} className="ml-1" />
+                        <div key={idx} className="flex items-center w-full justify-between">
+                          <div className="flex items-center flex-grow min-w-0">
+                            {item.icon}
+                            <span className="text-gray-600 mr-1">{item.name}:</span>
+                            <a href={item.value} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline truncate">
+                              {item.username}
+                            </a>
+                          </div>
+                          <CopyButton text={item.value} className="ml-1 flex-shrink-0" />
                         </div>
                       ))}
                     </div>
                     <div className="space-y-4">
                       {toolCol2.map((item: typeof toolProfiles[number], idx: number) => (
-                        <div key={idx} className="flex items-center">
-                          {item.icon}
-                          <span className="text-gray-600 mr-1">{item.name}:</span>
-                          <a href={item.value} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
-                            {item.username}
-                          </a>
-                          <CopyButton text={item.value} className="ml-1" />
+                        <div key={idx} className="flex items-center w-full justify-between">
+                          <div className="flex items-center flex-grow min-w-0">
+                            {item.icon}
+                            <span className="text-gray-600 mr-1">{item.name}:</span>
+                            <a href={item.value} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline truncate">
+                              {item.username}
+                            </a>
+                          </div>
+                          <CopyButton text={item.value} className="ml-1 flex-shrink-0" />
                         </div>
                       ))}
                     </div>
@@ -674,54 +682,68 @@ ${lang.language}: ${lang.fluency}
                     <div key={index} className="bg-white rounded-lg shadow-md p-6">
                       <div className="flex justify-between items-start mb-4">
                         <div className="flex-1">
-                          <div className="flex items-center mb-2">
-                            <h3 className="text-xl font-semibold text-gray-800">{job.position}</h3>
-                            <CopyButton text={job.position} className="ml-1" />
+                          <div className="flex items-center justify-between mb-2 w-full overflow-hidden">
+                            <div className="flex-1 min-w-0">
+                              <h3 className="text-xl font-semibold text-gray-800 truncate">{job.position}</h3>
+                            </div>
+                            <CopyButton text={job.position} className="ml-1 flex-shrink-0" />
                           </div>
-                          <div className="flex items-center mb-2">
-                            <p className="text-blue-600 font-medium">{job.name}</p>
-                            <CopyButton text={job.name} className="ml-1" />
-                            {job.url && (
-                              <a href={job.url} target="_blank" rel="noopener noreferrer" className="ml-2 text-blue-600 hover:text-blue-800">
-                                <ExternalLink className="w-4 h-4" />
-                              </a>
-                            )}
+                          <div className="flex items-center justify-between mb-2 w-full overflow-hidden">
+                            <div className="flex items-center flex-1 min-w-0">
+                              <p className="text-blue-600 font-medium truncate">{job.name}</p>
+                              {job.url && (
+                                <a href={job.url} target="_blank" rel="noopener noreferrer" className="ml-2 text-blue-600 hover:text-blue-800">
+                                  <ExternalLink className="w-4 h-4" />
+                                </a>
+                              )}
+                            </div>
+                            <CopyButton text={job.name} className="ml-1 flex-shrink-0" />
                           </div>
-                          <div className="flex items-center text-gray-600 mb-2">
-                            <MapPin className="w-4 h-4 mr-1" />
-                            <span>{job.location}</span>
-                            <CopyButton text={job.location} className="ml-1" />
+                          <div className="flex items-center text-gray-600 mb-2 w-full overflow-hidden">
+                            <div className="flex items-center flex-1 min-w-0">
+                              <MapPin className="w-4 h-4 mr-1" />
+                              <span className="truncate">{job.location}</span>
+                            </div>
+                            <CopyButton text={job.location} className="ml-1 flex-shrink-0" />
                           </div>
-                          <div className="flex items-center text-gray-600 mb-2">
-                            <Calendar className="w-4 h-4 mr-1" />
-                            <span>{job.startDate} - {job.endDate || 'Present'}</span>
-                            <span className="ml-2 text-sm text-gray-500">
-                              ({calculateDuration(job.startDate, job.endDate)})
-                            </span>
-                            <CopyButton text={`${job.startDate} - ${job.endDate || 'Present'}`} className="ml-1" />
+                          <div className="flex items-center text-gray-600 mb-2 w-full overflow-hidden">
+                            <div className="flex items-center flex-1 min-w-0">
+                              <Calendar className="w-4 h-4 mr-1" />
+                              <span className="truncate">{job.startDate} - {job.endDate || 'Present'}</span>
+                              <span className="ml-2 text-sm text-gray-500 truncate">
+                                ({calculateDuration(job.startDate, job.endDate)})
+                              </span>
+                            </div>
+                            <CopyButton text={`${job.startDate} - ${job.endDate || 'Present'}`} className="ml-1 flex-shrink-0" />
                           </div>
                           {job.jobType && (
-                            <div className="flex items-center text-gray-600 mb-2">
-                              <span className="font-medium">Job Type:</span>
-                              <span className="ml-2">{job.jobType}</span>
-                              <CopyButton text={job.jobType} className="ml-1" />
+                            <div className="flex items-center text-gray-600 mb-2 w-full overflow-hidden">
+                              <div className="flex items-center flex-1 min-w-0">
+                                <span className="font-medium">Job Type:</span>
+                                <span className="ml-2 truncate">{job.jobType}</span>
+                              </div>
+                              <CopyButton text={job.jobType} className="ml-1 flex-shrink-0" />
                             </div>
                           )}
                           {job.employeeType && (
-                            <div className="flex items-center text-gray-600 mb-2">
-                              <span className="font-medium">Employee Type:</span>
-                              <span className="ml-2">{job.employeeType}</span>
-                              <CopyButton text={job.employeeType} className="ml-1" />
+                            <div className="flex items-center text-gray-600 mb-2 w-full overflow-hidden">
+                              <div className="flex items-center flex-1 min-w-0">
+                                <span className="font-medium">Employee Type:</span>
+                                <span className="ml-2 truncate">{job.employeeType}</span>
+                              </div>
+                              <CopyButton text={job.employeeType} className="ml-1 flex-shrink-0" />
                             </div>
                           )}
                         </div>
                       </div>
                       <ul className="space-y-2">
                         {job.highlights.map((highlight, highlightIndex) => (
-                          <li key={highlightIndex} className="flex items-start">
-                            <span className="text-blue-600 mr-2">•</span>
-                            <span className="text-gray-700 flex-1">{highlight}</span>
-                            <CopyButton text={highlight} className="ml-1" />
+                          <li key={highlightIndex} className="flex items-start w-full justify-between">
+                            <div className="flex items-start flex-1 min-w-0">
+                              <span className="text-blue-600 mr-2">•</span>
+                              <span className="text-gray-700 flex-1 min-w-0 truncate">{highlight}</span>
+                            </div>
+                            <CopyButton text={highlight} className="ml-1 flex-shrink-0" />
                           </li>
                         ))}
                       </ul>
@@ -763,21 +785,27 @@ ${lang.language}: ${lang.fluency}
                 <div className="p-6 pt-4">
                   {cvData.education.map((edu, index) => (
                     <div key={index} className="bg-white rounded-lg shadow-md p-6">
-                      <div className="flex items-center mb-2">
-                        <h3 className="text-xl font-semibold text-gray-800">{edu.studyType} in {edu.area}</h3>
-                        <CopyButton text={`${edu.studyType} in ${edu.area}`} className="ml-1" />
+                      <div className="flex items-center justify-between mb-2 w-full overflow-hidden">
+                        <div className="flex-1 min-w-0">
+                          <h3 className="text-xl font-semibold text-gray-800 truncate">{edu.studyType} in {edu.area}</h3>
+                        </div>
+                        <CopyButton text={`${edu.studyType} in ${edu.area}`} className="ml-1 flex-shrink-0" />
                       </div>
-                      <div className="flex items-center mb-2">
-                        <p className="text-blue-600 font-medium">{edu.institution}</p>
-                        <CopyButton text={edu.institution} className="ml-1" />
+                      <div className="flex items-center justify-between mb-2 w-full overflow-hidden">
+                        <div className="flex-1 min-w-0">
+                          <p className="text-blue-600 font-medium truncate">{edu.institution}</p>
+                        </div>
+                        <CopyButton text={edu.institution} className="ml-1 flex-shrink-0" />
                       </div>
-                      <div className="flex items-center text-gray-600 mb-2">
-                        <Calendar className="w-4 h-4 mr-1" />
-                        <span>{edu.startDate} - {edu.endDate}</span>
-                        <CopyButton text={`${edu.startDate} - ${edu.endDate}`} className="ml-1" />
+                      <div className="flex items-center text-gray-600 mb-2 w-full overflow-hidden">
+                        <div className="flex items-center flex-1 min-w-0">
+                          <Calendar className="w-4 h-4 mr-1" />
+                          <span className="truncate">{edu.startDate} - {edu.endDate}</span>
+                        </div>
+                        <CopyButton text={`${edu.startDate} - ${edu.endDate}`} className="ml-1 flex-shrink-0" />
                       </div>
                       {edu.score && (
-                        <div className="flex items-center text-gray-600">
+                        <div className="flex items-center text-gray-600 overflow-hidden">
                           <span className="font-medium">Score:</span>
                           <span className="ml-2">{edu.cgpa && edu.scale ? `CGPA: ${edu.cgpa}/${edu.scale}` : edu.score}</span>
                           <CopyButton text={edu.cgpa && edu.scale ? `CGPA: ${edu.cgpa}/${edu.scale}` : edu.score} className="ml-1" />
@@ -822,17 +850,17 @@ ${lang.language}: ${lang.fluency}
                   <div className="space-y-6">
                     {cvData.skills.technical.map((skillGroup, index) => (
                       <div key={index}>
-                        <div className="flex items-center mb-3">
-                          <h3 className="text-lg font-semibold text-gray-800">{skillGroup.name}</h3>
-                          <CopyButton text={skillGroup.name} className="ml-1" />
+                        <div className="flex items-center justify-between mb-3 w-full overflow-hidden">
+                          <div className="flex-1 min-w-0">
+                            <h3 className="text-lg font-semibold text-gray-800 truncate">{skillGroup.name}</h3>
+                          </div>
+                          <CopyButton text={skillGroup.name} className="ml-1 flex-shrink-0" />
                         </div>
                         <div className="flex flex-wrap gap-2">
                           {skillGroup.keywords.map((skill, skillIndex) => (
-                            <div key={skillIndex} className="flex items-center">
-                              <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
-                                {skill}
-                              </span>
-                              <CopyButton text={skill} className="ml-1" />
+                            <div key={skillIndex} className="flex flex-row items-center bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium gap-1">
+                              <span className="truncate">{skill}</span>
+                              <CopyButton text={skill} className="flex-shrink-0" />
                             </div>
                           ))}
                         </div>
@@ -841,17 +869,15 @@ ${lang.language}: ${lang.fluency}
                     
                     {cvData.skills.methodologies.length > 0 && (
                       <div>
-                        <div className="flex items-center mb-3">
-                          <h3 className="text-lg font-semibold text-gray-800">Methodologies</h3>
+                        <div className="flex items-center mb-3 overflow-hidden">
+                          <h3 className="text-lg font-semibold text-gray-800 truncate">Methodologies</h3>
                           <CopyButton text="Methodologies" className="ml-1" />
                         </div>
                         <div className="flex flex-wrap gap-2">
                           {cvData.skills.methodologies.map((methodology, index) => (
-                            <div key={index} className="flex items-center">
-                              <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
-                                {methodology}
-                              </span>
-                              <CopyButton text={methodology} className="ml-1" />
+                            <div key={index} className="flex flex-row items-center bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium gap-1">
+                              <span className="truncate">{methodology}</span>
+                              <CopyButton text={methodology} className="flex-shrink-0" />
                             </div>
                           ))}
                         </div>
@@ -895,22 +921,28 @@ ${lang.language}: ${lang.fluency}
                 <div className="p-6 pt-4">
                   {cvData.projects.map((project, index) => (
                     <div key={index} className="bg-white rounded-lg shadow-md p-6">
-                      <div className="flex items-center mb-2">
-                        <h3 className="text-xl font-semibold text-gray-800">{project.name}</h3>
-                        <CopyButton text={project.name} className="ml-1" />
+                      <div className="flex items-center justify-between mb-2 w-full overflow-hidden">
+                        <div className="flex-1 min-w-0">
+                          <h3 className="text-xl font-semibold text-gray-800 truncate">{project.name}</h3>
+                        </div>
+                        <CopyButton text={project.name} className="ml-1 flex-shrink-0" />
                       </div>
                       {project.description && (
-                        <div className="flex items-center mb-2">
-                          <p className="text-gray-600">{project.description}</p>
-                          <CopyButton text={project.description} className="ml-1" />
+                        <div className="flex items-center justify-between mb-2 w-full overflow-hidden">
+                          <div className="flex-1 min-w-0">
+                            <p className="text-gray-600 truncate">{project.description}</p>
+                          </div>
+                          <CopyButton text={project.description} className="ml-1 flex-shrink-0" />
                         </div>
                       )}
                       {project.url && (
-                        <div className="flex items-center mb-2">
-                          <a href={project.url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
-                            {project.url}
-                          </a>
-                          <CopyButton text={project.url} className="ml-1" />
+                        <div className="flex items-center justify-between mb-2 w-full overflow-hidden">
+                          <div className="flex-1 min-w-0">
+                            <a href={project.url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline truncate">
+                              {project.url}
+                            </a>
+                          </div>
+                          <CopyButton text={project.url} className="ml-1 flex-shrink-0" />
                         </div>
                       )}
 
@@ -951,22 +983,28 @@ ${lang.language}: ${lang.fluency}
                 <div className="p-6 pt-4">
                   {cvData.certificates.map((cert, index) => (
                     <div key={index} className="bg-white rounded-lg shadow-md p-6">
-                      <div className="flex items-center mb-2">
-                        <h3 className="text-lg font-semibold text-gray-800">{cert.name}</h3>
-                        <CopyButton text={cert.name} className="ml-1" />
+                      <div className="flex items-center justify-between mb-2 w-full overflow-hidden">
+                        <div className="flex-1 min-w-0">
+                          <h3 className="text-lg font-semibold text-gray-800 truncate">{cert.name}</h3>
+                        </div>
+                        <CopyButton text={cert.name} className="ml-1 flex-shrink-0" />
                       </div>
-                      <div className="flex items-center mb-2">
-                        <p className="text-blue-600 font-medium">{cert.issuer}</p>
-                        <CopyButton text={cert.issuer} className="ml-1" />
+                      <div className="flex items-center justify-between mb-2 w-full overflow-hidden">
+                        <div className="flex-1 min-w-0">
+                          <p className="text-blue-600 font-medium truncate">{cert.issuer}</p>
+                        </div>
+                        <CopyButton text={cert.issuer} className="ml-1 flex-shrink-0" />
                       </div>
-                      <div className="flex items-center mb-2">
-                        <Calendar className="w-4 h-4 mr-1 text-gray-600" />
-                        <span className="text-gray-600">{cert.date}</span>
-                        <CopyButton text={cert.date} className="ml-1" />
+                      <div className="flex items-center mb-2 w-full overflow-hidden">
+                        <div className="flex items-center flex-1 min-w-0">
+                          <Calendar className="w-4 h-4 mr-1 text-gray-600" />
+                          <span className="text-gray-600 truncate">{cert.date}</span>
+                        </div>
+                        <CopyButton text={cert.date} className="ml-1 flex-shrink-0" />
                       </div>
                       {cert.url && (
-                        <div className="flex items-center">
-                          <a href={cert.url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                        <div className="flex items-center overflow-hidden">
+                          <a href={cert.url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline truncate">
                             View Certificate
                           </a>
                           <CopyButton text={cert.url} className="ml-1" />
@@ -1010,12 +1048,12 @@ ${lang.language}: ${lang.fluency}
                 <div className="p-6 pt-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {cvData.languages.map((lang, index) => (
-                      <div key={index} className="flex items-center justify-between">
-                        <div>
-                          <span className="font-medium text-gray-800">{lang.language}</span>
-                          <span className="text-gray-600 ml-2">({lang.fluency})</span>
+                      <div key={index} className="flex items-center justify-between w-full overflow-hidden">
+                        <div className="flex-1 min-w-0">
+                          <span className="font-medium text-gray-800 truncate">{lang.language}</span>
+                          <span className="text-gray-600 ml-2 truncate">({lang.fluency})</span>
                         </div>
-                        <CopyButton text={`${lang.language} - ${lang.fluency}`} />
+                        <CopyButton text={`${lang.language} - ${lang.fluency}`} className="flex-shrink-0" />
                       </div>
                     ))}
                   </div>
@@ -1056,13 +1094,15 @@ ${lang.language}: ${lang.fluency}
                 <div className="p-6 pt-4">
                   {cvData.coverLetters.map((coverLetter: { id: string; title: string; content: string; customFields?: import('../types/cv').CustomField[] }, index: number) => (
                     <div key={index} className="bg-white rounded-lg shadow-md p-6">
-                      <div className="flex items-center mb-4">
-                        <h3 className="text-xl font-semibold text-gray-800">{coverLetter.title}</h3>
-                        <CopyButton text={coverLetter.title} className="ml-1" />
+                      <div className="flex items-center justify-between mb-4 w-full overflow-hidden">
+                        <div className="flex-1 min-w-0">
+                          <h3 className="text-xl font-semibold text-gray-800 truncate">{coverLetter.title}</h3>
+                        </div>
+                        <CopyButton text={coverLetter.title} className="ml-1 flex-shrink-0" />
                       </div>
-                      <div className="flex items-start">
-                        <p className="text-gray-700 whitespace-pre-wrap flex-1">{coverLetter.content}</p>
-                        <CopyButton text={coverLetter.content} className="ml-1" />
+                      <div className="flex items-start justify-between w-full overflow-hidden">
+                        <p className="text-gray-700 whitespace-pre-wrap flex-1 min-w-0 truncate">{coverLetter.content}</p>
+                        <CopyButton text={coverLetter.content} className="ml-1 flex-shrink-0" />
                       </div>
                       {coverLetter.customFields && coverLetter.customFields.length > 0 && (
                         <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
