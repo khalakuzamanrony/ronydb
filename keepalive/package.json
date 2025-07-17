@@ -1,0 +1,9 @@
+{
+  "name": "keepalive",
+  "version": "1.0.0",
+  "main": "keepalive.js",
+  "type": "commonjs",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.7"
+  }
+} 
