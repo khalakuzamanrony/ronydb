@@ -4,6 +4,8 @@ import { FaLinkedin, FaGithub, FaTwitter, FaFacebook, FaInstagram, FaYoutube, Fa
 import CopyButton from './CopyButton';
 import CustomFieldRenderer from './CustomFieldRenderer';
 import { CVData } from '../types/cv';
+import { supabase } from '../utils/supabaseClient';
+import { downloadFile } from '../utils/cvData';
 
 interface HomePageProps {
   cvData: CVData;
@@ -12,6 +14,19 @@ interface HomePageProps {
 
 export const HomePage: React.FC<HomePageProps> = ({ cvData, onNavigateToDashboard }) => {
   const [showDownloadMenu, setShowDownloadMenu] = React.useState(false);
+  const [resumeUrl, setResumeUrl] = React.useState<string | null>(null);
+  const [imageUrl, setImageUrl] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    // Fetch public URLs from Supabase Storage
+    const fetchUrls = async () => {
+      const { data: pdfData } = supabase.storage.from('files').getPublicUrl('Khalekuzzaman_Rony-SQA.pdf');
+      setResumeUrl(pdfData.publicUrl);
+      const { data: imgData } = supabase.storage.from('files').getPublicUrl('khalekuzzamanRony.png');
+      setImageUrl(imgData.publicUrl);
+    };
+    fetchUrls();
+  }, []);
 
   // Expand/collapse state for sections and custom tabs
   const tabOrder = cvData.tabOrder || ['basics', 'contacts', 'work', 'education', 'skills', 'projects', 'certificates', 'languages', 'coverLetters'];
@@ -120,6 +135,54 @@ ${lang.language}: ${lang.fluency}
     link.click();
   };
 
+  // Forced download handler for Supabase Storage files
+  const handleDownload = async (filePath: string, filename: string) => {
+    const { data, error } = await supabase.storage.from('files').download(filePath);
+    if (error) {
+      alert('Download failed!');
+      return;
+    }
+    const url = window.URL.createObjectURL(data);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.URL.revokeObjectURL(url);
+  };
+
+  // Helper to force download from a public URL with a given filename
+  const forceDownloadFromUrl = async (url: string, filename: string) => {
+    try {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = blobUrl;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(blobUrl);
+    } catch (err) {
+      alert('Download failed!');
+    }
+  };
+
+  // Helper to extract the exact filename from a Supabase Storage public URL
+  const getFilenameFromUrl = (url: string) => {
+    try {
+      const u = new URL(url);
+      return u.pathname.split('/').pop() || 'resume';
+    } catch {
+      return url.split('/').pop() || 'resume';
+    }
+  };
+
+  // Helper to add cache-busting param to a URL
+  const cacheBustedUrl = (url: string) => url ? url + (url.includes('?') ? '&' : '?') + 't=' + Date.now() : url;
+
   const renderCustomTab = (tab: import('../types/cv').CustomTab) => {
     if (!tab.customFields || tab.customFields.length === 0) return null;
     const expanded = expandedSections[tab.id] ?? true;
@@ -184,7 +247,7 @@ ${lang.language}: ${lang.fluency}
                         <div className="flex flex-row items-center mt-3 gap-2">
                           <CopyButton text={cvData.basics.image} className="h-10" />
                           <button
-                            onClick={() => handleImageDownload(cvData.basics.image, 'profile-image.jpg')}
+                            onClick={() => downloadFile(cvData.basics.image, getFilenameFromUrl(cvData.basics.image))}
                             className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-green-50 hover:bg-green-100 text-green-600 hover:text-green-700 transition-colors duration-200"
                             title="Download image"
                           >
@@ -219,7 +282,7 @@ ${lang.language}: ${lang.fluency}
                         <div className="flex space-x-2 items-center">
                           <CopyButton text={cvData.basics.resume} />
                           <a
-                            href={cvData.basics.resume}
+                            href={cacheBustedUrl(cvData.basics.resume)}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
@@ -227,67 +290,55 @@ ${lang.language}: ${lang.fluency}
                           >
                             <ExternalLink className="w-4 h-4" />
                           </a>
-                          <a
-                            href={cvData.basics.resume}
-                            download
+                          <button
+                            onClick={() => forceDownloadFromUrl(cacheBustedUrl(cvData.basics.resume), getFilenameFromUrl(cvData.basics.resume))}
                             className="p-2 text-gray-600 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
                             title="Download resume"
                           >
                             <Download className="w-4 h-4" />
-                          </a>
+                          </button>
                         </div>
                       </div>
                     </div>
                   )}
                   {/* New local files row */}
                   <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {/* Local PDF column */}
+                    {/* PDF Download */}
                     <div className="p-4 bg-gray-50 rounded-lg flex flex-col justify-center">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center">
                           <FileText className="w-5 h-5 text-blue-600 mr-2" />
-                          <span className="font-medium text-gray-700">Local Resume (PDF)</span>
+                          <span className="font-medium text-gray-700">Resume (PDF)</span>
                         </div>
                         <div className="flex space-x-2 items-center">
-                          <CopyButton text={"/src/files/Khalekuzzaman_Rony-SQA.pdf"} />
-                          <a
-                            href={"/src/files/Khalekuzzaman_Rony-SQA.pdf"}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                            title="Open local resume"
-                          >
-                            <ExternalLink className="w-4 h-4" />
-                          </a>
-                          <a
-                            href={"/src/files/Khalekuzzaman_Rony-SQA.pdf"}
-                            download
+                          <CopyButton text={resumeUrl || ''} />
+                          <button
+                            onClick={() => downloadFile(resumeUrl || '', getFilenameFromUrl(resumeUrl || 'resume.pdf'))}
                             className="p-2 text-gray-600 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
-                            title="Download local resume"
+                            title="Download resume"
                           >
                             <Download className="w-4 h-4" />
-                          </a>
+                          </button>
                         </div>
                       </div>
                     </div>
-                    {/* Local Image column */}
+                    {/* Image Download */}
                     <div className="p-4 bg-gray-50 rounded-lg flex flex-row items-center justify-between">
                       <div className="flex items-center">
                         <img
-                          src={"/src/files/khalekuzzamanRony.png"}
+                          src={imageUrl || ''}
                           alt="Khalekuzzaman Rony"
                           className="w-20 h-20 object-cover rounded border mr-3"
                         />
                         <div className="flex space-x-2 items-center">
-                          <CopyButton text={"/src/files/khalekuzzamanRony.png"} />
-                          <a
-                            href={"/src/files/khalekuzzamanRony.png"}
-                            download
+                          <CopyButton text={imageUrl || ''} />
+                          <button
+                            onClick={() => downloadFile(imageUrl || '', getFilenameFromUrl(imageUrl || 'image.png'))}
                             className="p-2 text-gray-600 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
                             title="Download image"
                           >
                             <Download className="w-4 h-4" />
-                          </a>
+                          </button>
                         </div>
                       </div>
                     </div>
@@ -559,77 +610,75 @@ ${lang.language}: ${lang.fluency}
               </div>
               {expanded && (
                 <div className="p-6 pt-4">
-                  <div className="space-y-6">
-                    {cvData.work.map((job, index) => (
-                      <div key={index} className="bg-white rounded-lg shadow-md p-6">
-                        <div className="flex justify-between items-start mb-4">
-                          <div className="flex-1">
-                            <div className="flex items-center mb-2">
-                              <h3 className="text-xl font-semibold text-gray-800">{job.position}</h3>
-                              <CopyButton text={job.position} className="ml-1" />
-                            </div>
-                            <div className="flex items-center mb-2">
-                              <p className="text-blue-600 font-medium">{job.name}</p>
-                              <CopyButton text={job.name} className="ml-1" />
-                              {job.url && (
-                                <a href={job.url} target="_blank" rel="noopener noreferrer" className="ml-2 text-blue-600 hover:text-blue-800">
-                                  <ExternalLink className="w-4 h-4" />
-                                </a>
-                              )}
-                            </div>
-                            <div className="flex items-center text-gray-600 mb-2">
-                              <MapPin className="w-4 h-4 mr-1" />
-                              <span>{job.location}</span>
-                              <CopyButton text={job.location} className="ml-1" />
-                            </div>
-                            <div className="flex items-center text-gray-600 mb-2">
-                              <Calendar className="w-4 h-4 mr-1" />
-                              <span>{job.startDate} - {job.endDate || 'Present'}</span>
-                              <span className="ml-2 text-sm text-gray-500">
-                                ({calculateDuration(job.startDate, job.endDate)})
-                              </span>
-                              <CopyButton text={`${job.startDate} - ${job.endDate || 'Present'}`} className="ml-1" />
-                            </div>
-                            {job.jobType && (
-                              <div className="flex items-center text-gray-600 mb-2">
-                                <span className="font-medium">Job Type:</span>
-                                <span className="ml-2">{job.jobType}</span>
-                                <CopyButton text={job.jobType} className="ml-1" />
-                              </div>
-                            )}
-                            {job.employeeType && (
-                              <div className="flex items-center text-gray-600 mb-2">
-                                <span className="font-medium">Employee Type:</span>
-                                <span className="ml-2">{job.employeeType}</span>
-                                <CopyButton text={job.employeeType} className="ml-1" />
-                              </div>
+                  {cvData.work.map((job, index) => (
+                    <div key={index} className="bg-white rounded-lg shadow-md p-6">
+                      <div className="flex justify-between items-start mb-4">
+                        <div className="flex-1">
+                          <div className="flex items-center mb-2">
+                            <h3 className="text-xl font-semibold text-gray-800">{job.position}</h3>
+                            <CopyButton text={job.position} className="ml-1" />
+                          </div>
+                          <div className="flex items-center mb-2">
+                            <p className="text-blue-600 font-medium">{job.name}</p>
+                            <CopyButton text={job.name} className="ml-1" />
+                            {job.url && (
+                              <a href={job.url} target="_blank" rel="noopener noreferrer" className="ml-2 text-blue-600 hover:text-blue-800">
+                                <ExternalLink className="w-4 h-4" />
+                              </a>
                             )}
                           </div>
+                          <div className="flex items-center text-gray-600 mb-2">
+                            <MapPin className="w-4 h-4 mr-1" />
+                            <span>{job.location}</span>
+                            <CopyButton text={job.location} className="ml-1" />
+                          </div>
+                          <div className="flex items-center text-gray-600 mb-2">
+                            <Calendar className="w-4 h-4 mr-1" />
+                            <span>{job.startDate} - {job.endDate || 'Present'}</span>
+                            <span className="ml-2 text-sm text-gray-500">
+                              ({calculateDuration(job.startDate, job.endDate)})
+                            </span>
+                            <CopyButton text={`${job.startDate} - ${job.endDate || 'Present'}`} className="ml-1" />
+                          </div>
+                          {job.jobType && (
+                            <div className="flex items-center text-gray-600 mb-2">
+                              <span className="font-medium">Job Type:</span>
+                              <span className="ml-2">{job.jobType}</span>
+                              <CopyButton text={job.jobType} className="ml-1" />
+                            </div>
+                          )}
+                          {job.employeeType && (
+                            <div className="flex items-center text-gray-600 mb-2">
+                              <span className="font-medium">Employee Type:</span>
+                              <span className="ml-2">{job.employeeType}</span>
+                              <CopyButton text={job.employeeType} className="ml-1" />
+                            </div>
+                          )}
                         </div>
-                        <ul className="space-y-2">
-                          {job.highlights.map((highlight, highlightIndex) => (
-                            <li key={highlightIndex} className="flex items-start">
-                              <span className="text-blue-600 mr-2">•</span>
-                              <span className="text-gray-700 flex-1">{highlight}</span>
-                              <CopyButton text={highlight} className="ml-1" />
-                            </li>
-                          ))}
-                        </ul>
-
-                        {job.customFields && job.customFields.length > 0 && (
-                          <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {job.customFields.map((field) => (
-                              <div key={field.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg break-inside-avoid overflow-hidden break-words">
-                                <div className="flex-1">
-                                  <CustomFieldRenderer field={field} />
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        )}
                       </div>
-                    ))}
-                  </div>
+                      <ul className="space-y-2">
+                        {job.highlights.map((highlight, highlightIndex) => (
+                          <li key={highlightIndex} className="flex items-start">
+                            <span className="text-blue-600 mr-2">•</span>
+                            <span className="text-gray-700 flex-1">{highlight}</span>
+                            <CopyButton text={highlight} className="ml-1" />
+                          </li>
+                        ))}
+                      </ul>
+
+                      {job.customFields && job.customFields.length > 0 && (
+                        <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                          {job.customFields.map((field) => (
+                            <div key={field.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg break-inside-avoid overflow-hidden break-words">
+                              <div className="flex-1">
+                                <CustomFieldRenderer field={field} />
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
@@ -652,44 +701,42 @@ ${lang.language}: ${lang.fluency}
               </div>
               {expanded && (
                 <div className="p-6 pt-4">
-                  <div className="space-y-6">
-                    {cvData.education.map((edu, index) => (
-                      <div key={index} className="bg-white rounded-lg shadow-md p-6">
-                        <div className="flex items-center mb-2">
-                          <h3 className="text-xl font-semibold text-gray-800">{edu.studyType} in {edu.area}</h3>
-                          <CopyButton text={`${edu.studyType} in ${edu.area}`} className="ml-1" />
-                        </div>
-                        <div className="flex items-center mb-2">
-                          <p className="text-blue-600 font-medium">{edu.institution}</p>
-                          <CopyButton text={edu.institution} className="ml-1" />
-                        </div>
-                        <div className="flex items-center text-gray-600 mb-2">
-                          <Calendar className="w-4 h-4 mr-1" />
-                          <span>{edu.startDate} - {edu.endDate}</span>
-                          <CopyButton text={`${edu.startDate} - ${edu.endDate}`} className="ml-1" />
-                        </div>
-                        {edu.score && (
-                          <div className="flex items-center text-gray-600">
-                            <span className="font-medium">Score:</span>
-                            <span className="ml-2">{edu.cgpa && edu.scale ? `CGPA: ${edu.cgpa}/${edu.scale}` : edu.score}</span>
-                            <CopyButton text={edu.cgpa && edu.scale ? `CGPA: ${edu.cgpa}/${edu.scale}` : edu.score} className="ml-1" />
-                          </div>
-                        )}
-
-                        {edu.customFields && edu.customFields.length > 0 && (
-                          <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {edu.customFields.map((field) => (
-                              <div key={field.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg break-inside-avoid overflow-hidden break-words">
-                                <div className="flex-1">
-                                  <CustomFieldRenderer field={field} />
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        )}
+                  {cvData.education.map((edu, index) => (
+                    <div key={index} className="bg-white rounded-lg shadow-md p-6">
+                      <div className="flex items-center mb-2">
+                        <h3 className="text-xl font-semibold text-gray-800">{edu.studyType} in {edu.area}</h3>
+                        <CopyButton text={`${edu.studyType} in ${edu.area}`} className="ml-1" />
                       </div>
-                    ))}
-                  </div>
+                      <div className="flex items-center mb-2">
+                        <p className="text-blue-600 font-medium">{edu.institution}</p>
+                        <CopyButton text={edu.institution} className="ml-1" />
+                      </div>
+                      <div className="flex items-center text-gray-600 mb-2">
+                        <Calendar className="w-4 h-4 mr-1" />
+                        <span>{edu.startDate} - {edu.endDate}</span>
+                        <CopyButton text={`${edu.startDate} - ${edu.endDate}`} className="ml-1" />
+                      </div>
+                      {edu.score && (
+                        <div className="flex items-center text-gray-600">
+                          <span className="font-medium">Score:</span>
+                          <span className="ml-2">{edu.cgpa && edu.scale ? `CGPA: ${edu.cgpa}/${edu.scale}` : edu.score}</span>
+                          <CopyButton text={edu.cgpa && edu.scale ? `CGPA: ${edu.cgpa}/${edu.scale}` : edu.score} className="ml-1" />
+                        </div>
+                      )}
+
+                      {edu.customFields && edu.customFields.length > 0 && (
+                        <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                          {edu.customFields.map((field) => (
+                            <div key={field.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg break-inside-avoid overflow-hidden break-words">
+                              <div className="flex-1">
+                                <CustomFieldRenderer field={field} />
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
@@ -842,45 +889,43 @@ ${lang.language}: ${lang.fluency}
               </div>
               {expanded && (
                 <div className="p-6 pt-4">
-                  <div className="space-y-6">
-                    {cvData.certificates.map((cert, index) => (
-                      <div key={index} className="bg-white rounded-lg shadow-md p-6">
-                        <div className="flex items-center mb-2">
-                          <h3 className="text-lg font-semibold text-gray-800">{cert.name}</h3>
-                          <CopyButton text={cert.name} className="ml-1" />
-                        </div>
-                        <div className="flex items-center mb-2">
-                          <p className="text-blue-600 font-medium">{cert.issuer}</p>
-                          <CopyButton text={cert.issuer} className="ml-1" />
-                        </div>
-                        <div className="flex items-center mb-2">
-                          <Calendar className="w-4 h-4 mr-1 text-gray-600" />
-                          <span className="text-gray-600">{cert.date}</span>
-                          <CopyButton text={cert.date} className="ml-1" />
-                        </div>
-                        {cert.url && (
-                          <div className="flex items-center">
-                            <a href={cert.url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
-                              View Certificate
-                            </a>
-                            <CopyButton text={cert.url} className="ml-1" />
-                          </div>
-                        )}
-
-                        {cert.customFields && cert.customFields.length > 0 && (
-                          <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {cert.customFields.map((field) => (
-                              <div key={field.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg break-inside-avoid overflow-hidden break-words">
-                                <div className="flex-1">
-                                  <CustomFieldRenderer field={field} />
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        )}
+                  {cvData.certificates.map((cert, index) => (
+                    <div key={index} className="bg-white rounded-lg shadow-md p-6">
+                      <div className="flex items-center mb-2">
+                        <h3 className="text-lg font-semibold text-gray-800">{cert.name}</h3>
+                        <CopyButton text={cert.name} className="ml-1" />
                       </div>
-                    ))}
-                  </div>
+                      <div className="flex items-center mb-2">
+                        <p className="text-blue-600 font-medium">{cert.issuer}</p>
+                        <CopyButton text={cert.issuer} className="ml-1" />
+                      </div>
+                      <div className="flex items-center mb-2">
+                        <Calendar className="w-4 h-4 mr-1 text-gray-600" />
+                        <span className="text-gray-600">{cert.date}</span>
+                        <CopyButton text={cert.date} className="ml-1" />
+                      </div>
+                      {cert.url && (
+                        <div className="flex items-center">
+                          <a href={cert.url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                            View Certificate
+                          </a>
+                          <CopyButton text={cert.url} className="ml-1" />
+                        </div>
+                      )}
+
+                      {cert.customFields && cert.customFields.length > 0 && (
+                        <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                          {cert.customFields.map((field) => (
+                            <div key={field.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg break-inside-avoid overflow-hidden break-words">
+                              <div className="flex-1">
+                                <CustomFieldRenderer field={field} />
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
@@ -949,31 +994,29 @@ ${lang.language}: ${lang.fluency}
               </div>
               {expanded && (
                 <div className="p-6 pt-4">
-                  <div className="space-y-6">
-                    {cvData.coverLetters.map((coverLetter: { id: string; title: string; content: string; customFields?: import('../types/cv').CustomField[] }, index: number) => (
-                      <div key={index} className="bg-white rounded-lg shadow-md p-6">
-                        <div className="flex items-center mb-4">
-                          <h3 className="text-xl font-semibold text-gray-800">{coverLetter.title}</h3>
-                          <CopyButton text={coverLetter.title} className="ml-1" />
-                        </div>
-                        <div className="flex items-start">
-                          <p className="text-gray-700 whitespace-pre-wrap flex-1">{coverLetter.content}</p>
-                          <CopyButton text={coverLetter.content} className="ml-1" />
-                        </div>
-                        {coverLetter.customFields && coverLetter.customFields.length > 0 && (
-                          <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {coverLetter.customFields.map((field: import('../types/cv').CustomField) => (
-                              <div key={field.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg break-inside-avoid overflow-hidden break-words">
-                                <div className="flex-1">
-                                  <CustomFieldRenderer field={field} />
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        )}
+                  {cvData.coverLetters.map((coverLetter: { id: string; title: string; content: string; customFields?: import('../types/cv').CustomField[] }, index: number) => (
+                    <div key={index} className="bg-white rounded-lg shadow-md p-6">
+                      <div className="flex items-center mb-4">
+                        <h3 className="text-xl font-semibold text-gray-800">{coverLetter.title}</h3>
+                        <CopyButton text={coverLetter.title} className="ml-1" />
                       </div>
-                    ))}
-                  </div>
+                      <div className="flex items-start">
+                        <p className="text-gray-700 whitespace-pre-wrap flex-1">{coverLetter.content}</p>
+                        <CopyButton text={coverLetter.content} className="ml-1" />
+                      </div>
+                      {coverLetter.customFields && coverLetter.customFields.length > 0 && (
+                        <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                          {coverLetter.customFields.map((field: import('../types/cv').CustomField) => (
+                            <div key={field.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg break-inside-avoid overflow-hidden break-words">
+                              <div className="flex-1">
+                                <CustomFieldRenderer field={field} />
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
@@ -984,6 +1027,24 @@ ${lang.language}: ${lang.fluency}
         return null;
     }
   };
+
+  // Build a map for custom tabs
+  const customTabsMap = Object.fromEntries(customTabs.map(tab => [tab.id, tab]));
+  // List of built-in section names
+  const builtInSections = [
+    'basics', 'contacts', 'tools', 'work', 'education', 'skills', 'certificates', 'languages', 'coverLetters', 'projects'
+  ];
+  // Render all sections (built-in and custom) in tabOrder
+  const renderAllSections = () =>
+    tabOrder.map(sectionName => {
+      if (builtInSections.includes(sectionName)) {
+        return renderSection(sectionName);
+      }
+      // Custom tab
+      const customTab = customTabsMap[sectionName];
+      if (customTab) return renderCustomTab(customTab);
+      return null;
+    });
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -1023,11 +1084,8 @@ ${lang.language}: ${lang.fluency}
           </div>
         </header>
 
-        {/* Render sections based on tab order */}
-        {tabOrder.map((sectionName) => renderSection(sectionName))}
-        
-        {/* Render custom tabs */}
-        {customTabs.map((tab) => renderCustomTab(tab))}
+        {/* Render all sections in tabOrder (built-in and custom) */}
+        {renderAllSections()}
       </div>
     </div>
   );

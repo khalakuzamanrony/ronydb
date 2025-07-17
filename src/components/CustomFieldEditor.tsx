@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Plus, X, Upload, Link } from 'lucide-react';
+import { Plus, X, Upload, Link, Trash2 } from 'lucide-react';
 import { CustomField } from '../types/cv';
+import { supabase } from '../utils/supabaseClient';
 
 interface CustomFieldEditorProps {
   fields: CustomField[];
@@ -55,29 +56,32 @@ export const CustomFieldEditor: React.FC<CustomFieldEditorProps> = ({
     );
   };
 
-  const handleFileUpload = (file: File, fieldId?: string) => {
+  const handleFileUpload = async (file: File, fieldId?: string) => {
     setUploading(true);
     setUploadProgress(0);
-    const reader = new FileReader();
-    reader.onloadstart = () => setUploadProgress(10);
-    reader.onprogress = (e) => {
-      if (e.lengthComputable) {
-        setUploadProgress(Math.round((e.loaded / e.total) * 100));
-      }
-    };
-    reader.onloadend = () => {
+    const filePath = file.name;
+    const { data, error } = await supabase.storage.from('files').upload(filePath, file, {
+      cacheControl: '3600',
+      upsert: true
+    });
+    if (error) {
+      alert('Upload failed: ' + error.message);
       setUploading(false);
-      setUploadProgress(100);
-    };
-    reader.onload = (e) => {
-      const result = e.target?.result as string;
+      return;
+    }
+    // Get public URL
+    const { data: publicData } = supabase.storage.from('files').getPublicUrl(filePath);
+    if (publicData?.publicUrl) {
       if (fieldId) {
-        handleUpdateField(fieldId, { value: result });
+        handleUpdateField(fieldId, { value: publicData.publicUrl });
       } else {
-        setNewField((prev) => ({ ...prev, value: result }));
+        setNewField((prev) => ({ ...prev, value: publicData.publicUrl }));
       }
-    };
-    reader.readAsDataURL(file);
+    } else {
+      alert('Failed to get public URL');
+    }
+    setUploading(false);
+    setUploadProgress(0);
   };
 
   const renderFieldInput = (field: CustomField | Partial<CustomField>, isNew = false) => {
@@ -205,8 +209,9 @@ export const CustomFieldEditor: React.FC<CustomFieldEditorProps> = ({
             <button
               onClick={() => handleRemoveField(field.id)}
               className="ml-4 p-2 text-red-600 hover:bg-red-50 rounded-md"
+              title="Delete Field"
             >
-              <X className="w-4 h-4" />
+              <Trash2 className="w-4 h-4" />
             </button>
           </div>
           <div>
