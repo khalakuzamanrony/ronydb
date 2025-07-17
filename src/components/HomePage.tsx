@@ -6,13 +6,15 @@ import CustomFieldRenderer from './CustomFieldRenderer';
 import { CVData } from '../types/cv';
 import { supabase } from '../utils/supabaseClient';
 import { downloadFile } from '../utils/cvData';
+import { fetchCVDataFromSupabase } from '../utils/cvData';
 
 interface HomePageProps {
   cvData: CVData;
+  setCvData: (data: CVData) => void;
   onNavigateToDashboard: () => void;
 }
 
-export const HomePage: React.FC<HomePageProps> = ({ cvData, onNavigateToDashboard }) => {
+export const HomePage: React.FC<HomePageProps> = ({ cvData, setCvData, onNavigateToDashboard }) => {
   const [showDownloadMenu, setShowDownloadMenu] = React.useState(false);
   const [resumeUrl, setResumeUrl] = React.useState<string | null>(null);
   const [imageUrl, setImageUrl] = React.useState<string | null>(null);
@@ -36,12 +38,10 @@ export const HomePage: React.FC<HomePageProps> = ({ cvData, onNavigateToDashboar
         'postgres_changes',
         { event: '*', schema: 'public', table: 'cv_data' },
         async (payload) => {
-          // Refetch the latest CV data when any change happens
+          console.log('Realtime event:', payload);
           const latest = await fetchCVDataFromSupabase();
           if (latest) {
-            // You may need to call a prop or set state, depending on your structure
-            // For example, if you have setCvData:
-            // setCvData(latest); // This line was removed as per the edit hint
+            setCvData(latest); // This updates the UI!
           }
         }
       )
@@ -50,7 +50,7 @@ export const HomePage: React.FC<HomePageProps> = ({ cvData, onNavigateToDashboar
     return () => {
       supabase.removeChannel(channel);
     };
-  }, []);
+  }, [setCvData]);
 
   // Expand/collapse state for sections and custom tabs
   const tabOrder = cvData.tabOrder || ['basics', 'contacts', 'work', 'education', 'skills', 'projects', 'certificates', 'languages', 'coverLetters'];

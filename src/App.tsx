@@ -140,7 +140,7 @@ function App() {
 
   return <>
     <TopProgressBar loading={loading} />
-    <HomePage cvData={cvData} onNavigateToDashboard={handleNavigateToDashboard} />
+    <HomePage cvData={cvData} setCvData={setCvData} onNavigateToDashboard={handleNavigateToDashboard} />
   </>;
 }
 
