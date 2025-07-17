@@ -22,6 +22,7 @@ export interface CVData {
     resumeFile?: File;
     summary: string;
     customFields: CustomField[];
+    googleSheetDb?: string;
   };
   contacts: {
     email: string;

@@ -167,6 +167,23 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
         onChange={(value, file) => setCvData({...cvData!, basics: {...cvData!.basics, resume: value, resumeFile: file}})}
         accept=".pdf,.doc,.docx"
       />
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">Google Sheet DB</label>
+        <input
+          type="url"
+          value={cvData.basics.googleSheetDb || ''}
+          onChange={e => {
+            const value = e.target.value;
+            // Only allow Google Sheet links
+            if (!value || value.match(/^https:\/\/(docs|drive)\.google\.com\/spreadsheets\//)) {
+              setCvData({ ...cvData!, basics: { ...cvData!.basics, googleSheetDb: value } });
+            }
+          }}
+          placeholder="Paste your Google Sheet link"
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+        />
+        <p className="text-xs text-gray-500 mt-1">Only Google Sheet links are accepted.</p>
+      </div>
       
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">Summary</label>
@@ -1380,10 +1397,10 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
         </div>
       )}
       <div className="min-h-screen bg-gray-50">
-        <div className="max-w-6xl mx-auto px-6 py-8">
+        <div className="max-w-6xl mx-auto px-2 sm:px-4 md:px-6 py-4 md:py-8">
           {/* Tab Order Card at the Top */}
           <section className="mb-8">
-            <div className="bg-white rounded-lg shadow-md px-6 py-4">
+            <div className="bg-white rounded-lg shadow-md px-2 sm:px-6 py-4">
               <h3 className="text-lg font-semibold text-gray-900 mb-2">Tab Order</h3>
               <DragDropList
                 items={cvData.tabOrder.map(id => ({ id, label: tabs.find(t => t.id === id)?.label || id }))}

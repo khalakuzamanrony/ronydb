@@ -101,10 +101,10 @@ CV - ${cvData.basics.name}
 BASIC INFORMATION
 Name: ${cvData.basics.name}
 Label: ${cvData.basics.label}
-Email: ${cvData.basics.email}
-Phone: ${cvData.basics.phone}
-Location: ${cvData.basics.location.city}, ${cvData.basics.location.country}
-Website: ${cvData.basics.url}
+Email: ${cvData.contacts.email ?? ''}
+Phone: ${cvData.contacts.phone ?? ''}
+Location: ${cvData.contacts.location?.city ?? ''}, ${cvData.contacts.location?.country ?? ''}
+Website: ${cvData.contacts.url ?? ''}
 
 SUMMARY
 ${cvData.basics.summary}
@@ -207,6 +207,48 @@ ${lang.language}: ${lang.fluency}
   // Helper to add cache-busting param to a URL
   const cacheBustedUrl = (url: string) => url ? url + (url.includes('?') ? '&' : '?') + 't=' + Date.now() : url;
 
+  // Modal state for Google Sheet DB validation
+  const [showSheetModal, setShowSheetModal] = React.useState(false);
+  const [sheetModalUrl, setSheetModalUrl] = React.useState('');
+  const [sheetUsername, setSheetUsername] = React.useState('');
+  const [sheetPassword, setSheetPassword] = React.useState('');
+  const [sheetName, setSheetName] = React.useState('');
+  const [sheetError, setSheetError] = React.useState('');
+
+  // Hardcoded credentials for Google Sheet DB access
+  const GOOGLE_SHEET_CREDENTIALS = {
+    username: 'rony@admin',
+    password: '###Rony@@@7669!!!',
+    name: 'rroinay',
+  };
+
+  const openSheetModal = (url: string) => {
+    setSheetModalUrl(url);
+    setSheetUsername('');
+    setSheetPassword('');
+    setSheetName('');
+    setSheetError('');
+    setShowSheetModal(true);
+  };
+
+  const handleSheetModalSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (sheetUsername !== GOOGLE_SHEET_CREDENTIALS.username) {
+      setSheetError('Invalid username.');
+      return;
+    }
+    if (sheetPassword !== GOOGLE_SHEET_CREDENTIALS.password) {
+      setSheetError('Invalid password.');
+      return;
+    }
+    if (sheetName !== GOOGLE_SHEET_CREDENTIALS.name) {
+      setSheetError('Invalid name.');
+      return;
+    }
+    setShowSheetModal(false);
+    window.open(sheetModalUrl, '_blank', 'noopener,noreferrer');
+  };
+
   const renderCustomTab = (tab: import('../types/cv').CustomTab) => {
     if (!tab.customFields || tab.customFields.length === 0) return null;
     const expanded = expandedSections[tab.id] ?? true;
@@ -296,77 +338,61 @@ ${lang.language}: ${lang.fluency}
                     </div>
                   </div>
 
-                  {cvData.basics.resume && (
-                    <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center">
-                          <FileText className="w-5 h-5 text-blue-600 mr-2" />
-                          <span className="font-medium text-gray-700">Resume</span>
+                  {cvData.basics.resume || cvData.basics.googleSheetDb ? (
+                    <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {/* Resume Row */}
+                      {cvData.basics.resume && (
+                        <div className="p-4 bg-gray-50 rounded-lg flex flex-col justify-center">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center">
+                              <FileText className="w-5 h-5 text-blue-600 mr-2" />
+                              <span className="font-medium text-gray-700">Resume</span>
+                            </div>
+                            <div className="flex space-x-2 items-center">
+                              <CopyButton text={cvData.basics.resume} />
+                              <a
+                                href={cacheBustedUrl(cvData.basics.resume)}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                title="Open resume"
+                              >
+                                <ExternalLink className="w-4 h-4" />
+                              </a>
+                              <button
+                                onClick={() => forceDownloadFromUrl(cacheBustedUrl(cvData.basics.resume ?? ''), getFilenameFromUrl(cvData.basics.resume ?? 'resume'))}
+                                className="p-2 text-gray-600 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                                title="Download resume"
+                              >
+                                <Download className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </div>
                         </div>
-                        <div className="flex space-x-2 items-center">
-                          <CopyButton text={cvData.basics.resume} />
-                          <a
-                            href={cacheBustedUrl(cvData.basics.resume)}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                            title="Open resume"
-                          >
-                            <ExternalLink className="w-4 h-4" />
-                          </a>
-                          <button
-                            onClick={() => forceDownloadFromUrl(cacheBustedUrl(cvData.basics.resume), getFilenameFromUrl(cvData.basics.resume))}
-                            className="p-2 text-gray-600 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
-                            title="Download resume"
-                          >
-                            <Download className="w-4 h-4" />
-                          </button>
+                      )}
+                      {/* Google Sheet DB Row */}
+                      {cvData.basics.googleSheetDb && (
+                        <div className="p-4 bg-gray-50 rounded-lg flex flex-col justify-center">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center">
+                              <FileText className="w-5 h-5 text-green-600 mr-2" />
+                              <span className="font-medium text-gray-700">Google Sheet DB</span>
+                            </div>
+                            <div className="flex space-x-2 items-center">
+                              <CopyButton text={cvData.basics.googleSheetDb} />
+                              <button
+                                onClick={() => openSheetModal(cacheBustedUrl(cvData.basics.googleSheetDb || ''))}
+                                className="p-2 text-gray-600 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                                title="Open Google Sheet"
+                              >
+                                <ExternalLink className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </div>
                         </div>
-                      </div>
+                      )}
                     </div>
-                  )}
-                  {/* New local files row */}
-                  <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {/* PDF Download */}
-                    <div className="p-4 bg-gray-50 rounded-lg flex flex-col justify-center">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center">
-                          <FileText className="w-5 h-5 text-blue-600 mr-2" />
-                          <span className="font-medium text-gray-700">Resume (PDF)</span>
-                        </div>
-                        <div className="flex space-x-2 items-center">
-                          <CopyButton text={resumeUrl || ''} />
-                          <button
-                            onClick={() => downloadFile(resumeUrl || '', getFilenameFromUrl(resumeUrl || 'resume.pdf'))}
-                            className="p-2 text-gray-600 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
-                            title="Download resume"
-                          >
-                            <Download className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                    {/* Image Download */}
-                    <div className="p-4 bg-gray-50 rounded-lg flex flex-row items-center justify-between">
-                      <div className="flex items-center">
-                        <img
-                          src={imageUrl || ''}
-                          alt="Khalekuzzaman Rony"
-                          className="w-20 h-20 object-cover rounded border mr-3"
-                        />
-                        <div className="flex space-x-2 items-center">
-                          <CopyButton text={imageUrl || ''} />
-                          <button
-                            onClick={() => downloadFile(imageUrl || '', getFilenameFromUrl(imageUrl || 'image.png'))}
-                            className="p-2 text-gray-600 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
-                            title="Download image"
-                          >
-                            <Download className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                  ) : null}
 
                   {cvData.basics.customFields && cvData.basics.customFields.length > 0 && (
                     <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -518,13 +544,18 @@ ${lang.language}: ${lang.fluency}
                         <div key={idx} className="flex items-center">
                           {item.icon}
                           {item.isLink ? (
-                            <a href={item.value} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
-                              {item.label}
-                            </a>
+                            <>
+                              <a href={item.value} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                                {item.label}
+                              </a>
+                              <CopyButton text={item.value} className="ml-1" />
+                            </>
                           ) : (
-                            <span className="text-gray-600">{item.label}</span>
+                            <>
+                              <span className="text-gray-600">{item.label}</span>
+                              <CopyButton text={item.value} className="ml-1" />
+                            </>
                           )}
-                          <CopyButton text={item.value} className="ml-1" />
                         </div>
                       ))}
                     </div>
@@ -533,13 +564,18 @@ ${lang.language}: ${lang.fluency}
                         <div key={idx} className="flex items-center">
                           {item.icon}
                           {item.isLink ? (
-                            <a href={item.value} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
-                              {item.label}
-                            </a>
+                            <>
+                              <a href={item.value} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                                {item.label}
+                              </a>
+                              <CopyButton text={item.value} className="ml-1" />
+                            </>
                           ) : (
-                            <span className="text-gray-600">{item.label}</span>
+                            <>
+                              <span className="text-gray-600">{item.label}</span>
+                              <CopyButton text={item.value} className="ml-1" />
+                            </>
                           )}
-                          <CopyButton text={item.value} className="ml-1" />
                         </div>
                       ))}
                     </div>
@@ -1072,45 +1108,88 @@ ${lang.language}: ${lang.fluency}
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-4xl mx-auto p-6">
+      <div className="max-w-4xl mx-auto px-2 sm:px-4 md:px-6 py-4 md:py-6">
         {/* Header */}
-        <header className="flex items-center justify-between mb-8">
+        <header className="flex flex-row items-center justify-between mb-8 gap-2">
           <div className="text-2xl font-bold text-gray-800">Rony.DB</div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-1 sm:gap-4">
             <button
               onClick={onNavigateToDashboard}
-              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center"
+              className="bg-blue-600 text-white p-2 sm:p-3 rounded-full hover:bg-blue-700 transition-colors flex items-center"
+              title="Dashboard"
+              aria-label="Dashboard"
             >
-              <Settings className="w-4 h-4 mr-2" />
-              Dashboard
+              <Settings className="w-4 h-4 sm:w-5 sm:h-5" />
             </button>
-            <div className="relative">
-              <button
-                onClick={() => setShowDownloadMenu(!showDownloadMenu)}
-                className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors flex items-center"
-              >
-                <Download className="w-4 h-4 mr-2" />
-                Download
-                <ChevronDown className="w-4 h-4 ml-2" />
-              </button>
-              {showDownloadMenu && (
-                <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border z-10">
-                  <button
-                    onClick={downloadAsJSON}
-                    className="w-full text-left px-4 py-2 hover:bg-gray-50 rounded-lg flex items-center"
-                  >
-                    <FileText className="w-4 h-4 mr-2" />
-                    Download as JSON
-                  </button>
-                </div>
-              )}
-            </div>
+            <button
+              onClick={downloadAsJSON}
+              className="bg-green-600 text-white p-2 sm:p-3 rounded-full hover:bg-green-700 transition-colors flex items-center"
+              title="Download as JSON"
+              aria-label="Download as JSON"
+            >
+              <Download className="w-4 h-4 sm:w-5 sm:h-5" />
+            </button>
           </div>
         </header>
 
         {/* Render all sections in tabOrder (built-in and custom) */}
         {renderAllSections()}
       </div>
+
+      {/* Google Sheet DB Modal */}
+      {showSheetModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 px-2">
+          <div className="bg-white rounded-lg shadow-lg p-4 sm:p-8 w-full max-w-sm">
+            <h2 className="text-xl font-bold mb-4 text-gray-800">Google Sheet DB Access</h2>
+            <form onSubmit={handleSheetModalSubmit} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Username</label>
+                <input
+                  type="text"
+                  value={sheetUsername}
+                  onChange={e => setSheetUsername(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                  autoFocus
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                <input
+                  type="password"
+                  value={sheetPassword}
+                  onChange={e => setSheetPassword(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                <input
+                  type="text"
+                  value={sheetName}
+                  onChange={e => setSheetName(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                />
+              </div>
+              {sheetError && <div className="text-red-600 text-sm">{sheetError}</div>}
+              <div className="flex justify-end gap-2 mt-4">
+                <button
+                  type="button"
+                  onClick={() => setShowSheetModal(false)}
+                  className="px-4 py-2 rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700"
+                >
+                  Open
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
