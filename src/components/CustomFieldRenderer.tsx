@@ -39,7 +39,7 @@ const CustomFieldRenderer: React.FC<CustomFieldRendererProps> = ({ field }) => {
             </a>
             <button
               onClick={() => window.open(field.value, '_blank', 'noopener,noreferrer')}
-              className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-gray-50 hover:bg-gray-100 text-blue-600 hover:text-blue-700 transition-colors duration-200 flex-shrink-0"
+              className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-copybg hover:bg-accent text-primary hover:text-white transition-colors duration-200 flex-shrink-0"
               title="Open link"
               type="button"
             >
@@ -48,7 +48,7 @@ const CustomFieldRenderer: React.FC<CustomFieldRendererProps> = ({ field }) => {
             {isDownloadableFile(field.value) && (
               <button
                 onClick={() => downloadFile(field.value, getFilenameFromUrl(field.value))}
-                className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-green-50 hover:bg-green-100 text-green-600 hover:text-green-700 transition-colors duration-200 flex-shrink-0"
+                className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-copybg hover:bg-accent text-primary hover:text-white transition-colors duration-200 flex-shrink-0"
                 title="Download file"
                 type="button"
               >
@@ -60,13 +60,13 @@ const CustomFieldRenderer: React.FC<CustomFieldRendererProps> = ({ field }) => {
         );
       case 'image':
         return (
-          <div className="flex flex-col items-start gap-2">
+          <div className="flex flex-row items-center gap-4">
             <img src={field.value} alt={field.label} className="w-16 h-16 object-cover rounded" />
-            <div className="flex flex-row items-center gap-2 mt-2">
-              <CopyButton text={cacheBustedUrl(field.value)} className="h-10" />
+            <div className="flex flex-row items-center gap-2 ml-auto">
+              <CopyButton text={cacheBustedUrl(field.value)} />
               <button
                 onClick={() => downloadFile(field.value, getFilenameFromUrl(field.value))}
-                className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-green-50 hover:bg-green-100 text-green-600 hover:text-green-700 transition-colors duration-200"
+                className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-copybg hover:bg-accent text-primary hover:text-white transition-colors duration-200"
                 title="Download image"
               >
                 <Download className="w-4 h-4" />
@@ -77,7 +77,7 @@ const CustomFieldRenderer: React.FC<CustomFieldRendererProps> = ({ field }) => {
       default:
         return (
           <div className="flex flex-wrap items-center gap-1 min-w-0">
-            <span className="text-gray-700 break-words whitespace-normal min-w-0 max-w-full flex-1" style={{ wordBreak: 'break-word' }}>{field.value}</span>
+            <span className="text-text break-words whitespace-normal min-w-0 max-w-full flex-1" style={{ wordBreak: 'break-word' }}>{field.value}</span>
             <CopyButton text={field.value} className="flex-shrink-0" />
           </div>
         );

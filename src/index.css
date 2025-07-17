@@ -2,6 +2,36 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --color-bg: #f9fafb;
+  --color-card: #fff;
+  --color-border: #e5e7eb;
+  --color-text: #18181b;
+  --color-primary: #18181b;
+  --color-secondary: #374151;
+  --color-accent: #6366f1;
+  --color-row: #f3f4f6;
+  --color-section-header: #f1f5f9;
+  --color-copy-bg: #e0e7ff;
+  --color-chip-bg: #e5e7eb;
+  --color-chip-text: #18181b;
+}
+
+.dark {
+  --color-bg: #18181b;
+  --color-card: #232336;
+  --color-border: #37374a;
+  --color-text: #f3f4f6;
+  --color-primary: #60a5fa;
+  --color-secondary: #a5b4fc;
+  --color-accent: #fbbf24;
+  --color-row: #232336;
+  --color-section-header: #28293d;
+  --color-copy-bg: #312e81;
+  --color-chip-bg: #334155;
+  --color-chip-text: #f3f4f6;
+}
+
 .animate-progress-bar {
   animation: progressBar 1.2s cubic-bezier(0.4,0,0.2,1) infinite;
 }
