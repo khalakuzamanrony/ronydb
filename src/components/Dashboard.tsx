@@ -7,6 +7,7 @@ import FileUpload from './FileUpload';
 import { CustomFieldEditor } from './CustomFieldEditor';
 import DragDropList from './DragDropList';
 import Select from 'react-select';
+import ThemeToggle from './ThemeToggle';
 
 interface DashboardProps {
   onLogout: () => void;
@@ -44,7 +45,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
 
   // Immediately after hooks, do the loading/null check
   if (loading || !cvData) {
-    return <div className="min-h-screen flex items-center justify-center text-xl text-gray-600">Loading...</div>;
+    return <div className="min-h-screen flex items-center justify-center text-xl text-gray-600 dark:text-gray-300 bg-gray-50 dark:bg-gray-900">Loading...</div>;
   }
 
   // Now it's safe to use cvData in variables, arrays, etc.
@@ -134,21 +135,21 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Name</label>
+          <label className="block text-sm font-medium text-text mb-2">Name</label>
           <input
             type="text"
             value={cvData.basics.name}
             onChange={(e) => setCvData({...cvData!, basics: {...cvData!.basics, name: e.target.value}})}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Label</label>
+          <label className="block text-sm font-medium text-text mb-2">Label</label>
           <input
             type="text"
             value={cvData.basics.label}
             onChange={(e) => setCvData({...cvData!, basics: {...cvData!.basics, label: e.target.value}})}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
           />
         </div>
       </div>
@@ -161,37 +162,33 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
         type="image"
       />
       
-      <FileUpload
-        label="Resume"
-        value={cvData.basics.resume || ''}
-        onChange={(value, file) => setCvData({...cvData!, basics: {...cvData!.basics, resume: value, resumeFile: file}})}
-        accept=".pdf,.doc,.docx"
-      />
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">Google Sheet DB</label>
-        <input
-          type="url"
-          value={cvData.basics.googleSheetDb || ''}
-          onChange={e => {
-            const value = e.target.value;
-            // Only allow Google Sheet links
-            if (!value || value.match(/^https:\/\/(docs|drive)\.google\.com\/spreadsheets\//)) {
-              setCvData({ ...cvData!, basics: { ...cvData!.basics, googleSheetDb: value } });
-            }
-          }}
-          placeholder="Paste your Google Sheet link"
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-        />
-        <p className="text-xs text-gray-500 mt-1">Only Google Sheet links are accepted.</p>
+      <div className="flex flex-col md:flex-row gap-4 items-end">
+        <div className="flex-1">
+          <FileUpload
+            label="Resume"
+            value={cvData.basics.resume || ''}
+            onChange={(value, file) => setCvData({...cvData!, basics: {...cvData!.basics, resume: value, resumeFile: file}})}
+            accept=".pdf,.doc,.docx"
+          />
+        </div>
+        <div className="flex-1">
+          <FileUpload
+            label="Google Sheet DB"
+            value={cvData.basics.googleSheetDb || ''}
+            onChange={(value) => setCvData({...cvData!, basics: {...cvData!.basics, googleSheetDb: value}})}
+            accept=".csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,application/vnd.google-apps.spreadsheet"
+            hideUploadButton={true}
+          />
+        </div>
       </div>
       
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">Summary</label>
+        <label className="block text-sm font-medium text-text mb-2">Summary</label>
         <textarea
           value={cvData.basics.summary}
           onChange={(e) => setCvData({...cvData!, basics: {...cvData!.basics, summary: e.target.value}})}
           rows={4}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
         />
       </div>
       
@@ -230,55 +227,55 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
       <div className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+            <label className="block text-sm font-medium text-text mb-2">Email</label>
             <input
               type="email"
               value={cvData.contacts.email}
               onChange={(e) => setCvData({...cvData!, contacts: {...cvData!.contacts, email: e.target.value}})}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Phone</label>
+            <label className="block text-sm font-medium text-text mb-2">Phone</label>
             <input
               type="text"
               value={cvData.contacts.phone}
               onChange={(e) => setCvData({...cvData!, contacts: {...cvData!.contacts, phone: e.target.value}})}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Website URL</label>
+            <label className="block text-sm font-medium text-text mb-2">Website URL</label>
             <input
               type="url"
               value={cvData.contacts.url}
               onChange={(e) => setCvData({...cvData!, contacts: {...cvData!.contacts, url: e.target.value}})}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">City</label>
+            <label className="block text-sm font-medium text-text mb-2">City</label>
             <input
               type="text"
               value={cvData.contacts.location.city}
               onChange={(e) => setCvData({...cvData!, contacts: {...cvData!.contacts, location: {...cvData!.contacts.location, city: e.target.value}}})}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Country</label>
+            <label className="block text-sm font-medium text-text mb-2">Country</label>
             <input
               type="text"
               value={cvData.contacts.location.country}
               onChange={(e) => setCvData({...cvData!, contacts: {...cvData!.contacts, location: {...cvData!.contacts.location, country: e.target.value}}})}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
             />
           </div>
         </div>
 
         <div>
           <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-semibold text-gray-900">Social Profiles</h3>
+            <h3 className="text-lg font-semibold text-text">Social Profiles</h3>
             <button
               onClick={() => {
                 const newProfile = { network: '', username: '', url: '' };
@@ -315,8 +312,39 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
                       </div>
                     )}
                     styles={{
-                      control: (base) => ({ ...base, minHeight: '38px' }),
-                      menu: (base) => ({ ...base, zIndex: 9999 }),
+                      control: (base, state) => ({
+                        ...base,
+                        minHeight: '38px',
+                        backgroundColor: 'var(--color-row)',
+                        borderColor: 'var(--color-border)',
+                        color: 'var(--color-text)',
+                        boxShadow: state.isFocused ? '0 0 0 2px var(--color-primary)' : base.boxShadow,
+                      }),
+                      input: (base) => ({
+                        ...base,
+                        color: 'var(--color-text)',
+                      }),
+                      singleValue: (base) => ({
+                        ...base,
+                        color: 'var(--color-text)',
+                      }),
+                      menu: (base) => ({
+                        ...base,
+                        zIndex: 9999,
+                        backgroundColor: 'var(--color-row)',
+                        color: 'var(--color-text)',
+                      }),
+                      option: (base, state) => ({
+                        ...base,
+                        backgroundColor: state.isSelected
+                          ? 'var(--color-primary)'
+                          : state.isFocused
+                          ? 'var(--color-section-header)'
+                          : 'var(--color-row)',
+                        color: state.isSelected
+                          ? 'var(--color-bg)'
+                          : 'var(--color-text)',
+                      }),
                     }}
                   />
                 </div>
@@ -330,7 +358,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
                       setCvData({ ...cvData!, contacts: { ...cvData!.contacts, profiles: newProfiles } });
                     }}
                     placeholder="Username"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
                   />
                 </div>
                 <div className="flex-1 min-w-0">
@@ -343,7 +371,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
                       setCvData({ ...cvData!, contacts: { ...cvData!.contacts, profiles: newProfiles } });
                     }}
                     placeholder="Profile URL"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
                   />
                 </div>
                 <button
@@ -364,7 +392,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
         {/* My Tools section in Contacts */}
         <div className="mt-8">
           <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-semibold text-gray-900">My Tools</h3>
+            <h3 className="text-lg font-semibold text-text">My Tools</h3>
             <button
               onClick={() => {
                 const newTool = { name: '', username: '', url: '', customFields: [] };
@@ -397,8 +425,39 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
                       <div className="flex items-center">{option.icon}<span className="ml-1">{option.label}</span></div>
                     )}
                     styles={{
-                      control: (base) => ({ ...base, minHeight: '38px' }),
-                      menu: (base) => ({ ...base, zIndex: 9999 }),
+                      control: (base, state) => ({
+                        ...base,
+                        minHeight: '38px',
+                        backgroundColor: 'var(--color-row)',
+                        borderColor: 'var(--color-border)',
+                        color: 'var(--color-text)',
+                        boxShadow: state.isFocused ? '0 0 0 2px var(--color-primary)' : base.boxShadow,
+                      }),
+                      input: (base) => ({
+                        ...base,
+                        color: 'var(--color-text)',
+                      }),
+                      singleValue: (base) => ({
+                        ...base,
+                        color: 'var(--color-text)',
+                      }),
+                      menu: (base) => ({
+                        ...base,
+                        zIndex: 9999,
+                        backgroundColor: 'var(--color-row)',
+                        color: 'var(--color-text)',
+                      }),
+                      option: (base, state) => ({
+                        ...base,
+                        backgroundColor: state.isSelected
+                          ? 'var(--color-primary)'
+                          : state.isFocused
+                          ? 'var(--color-section-header)'
+                          : 'var(--color-row)',
+                        color: state.isSelected
+                          ? 'var(--color-bg)'
+                          : 'var(--color-text)',
+                      }),
                     }}
                   />
                 </div>
@@ -412,7 +471,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
                       setCvData({ ...cvData!, tools: newTools });
                     }}
                     placeholder="Username"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
                   />
                 </div>
                 <div className="flex-1 min-w-0">
@@ -425,7 +484,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
                       setCvData({ ...cvData!, tools: newTools });
                     }}
                     placeholder="Tool URL"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
                   />
                 </div>
                 <button
@@ -454,7 +513,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
   const renderToolsTab = () => (
     <div className="space-y-6">
       <div className="flex justify-between items-center mb-4">
-        <h3 className="text-lg font-semibold text-gray-900">My Tools</h3>
+        <h3 className="text-lg font-semibold text-text">My Tools</h3>
         <button
           onClick={() => {
             const newTool = { name: '', username: '', url: '', customFields: [] };
@@ -487,8 +546,39 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
                   <div className="flex items-center">{option.icon}<span className="ml-1">{option.label}</span></div>
                 )}
                 styles={{
-                  control: (base) => ({ ...base, minHeight: '38px' }),
-                  menu: (base) => ({ ...base, zIndex: 9999 }),
+                  control: (base, state) => ({
+                    ...base,
+                    minHeight: '38px',
+                    backgroundColor: 'var(--color-row)',
+                    borderColor: 'var(--color-border)',
+                    color: 'var(--color-text)',
+                    boxShadow: state.isFocused ? '0 0 0 2px var(--color-primary)' : base.boxShadow,
+                  }),
+                  input: (base) => ({
+                    ...base,
+                    color: 'var(--color-text)',
+                  }),
+                  singleValue: (base) => ({
+                    ...base,
+                    color: 'var(--color-text)',
+                  }),
+                  menu: (base) => ({
+                    ...base,
+                    zIndex: 9999,
+                    backgroundColor: 'var(--color-row)',
+                    color: 'var(--color-text)',
+                  }),
+                  option: (base, state) => ({
+                    ...base,
+                    backgroundColor: state.isSelected
+                      ? 'var(--color-primary)'
+                      : state.isFocused
+                      ? 'var(--color-section-header)'
+                      : 'var(--color-row)',
+                    color: state.isSelected
+                      ? 'var(--color-bg)'
+                      : 'var(--color-text)',
+                  }),
                 }}
               />
             </div>
@@ -502,7 +592,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
                   setCvData({ ...cvData!, tools: newTools });
                 }}
                 placeholder="Username"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
               />
             </div>
             <div className="flex-1 min-w-0">
@@ -515,7 +605,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
                   setCvData({ ...cvData!, tools: newTools });
                 }}
                 placeholder="Tool URL"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
               />
             </div>
             <button
@@ -541,7 +631,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
   const renderWorkTab = () => (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h3 className="text-lg font-semibold text-gray-900">Work Experience</h3>
+        <h3 className="text-lg font-semibold text-text">Work Experience</h3>
         <button
           onClick={() => {
             const newWork = {
@@ -571,7 +661,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
         renderItem={(work, index) => (
           <div className="space-y-4">
             <div className="flex justify-between items-start">
-              <h4 className="font-medium text-gray-900">Work Experience #{index + 1}</h4>
+              <h4 className="font-medium text-text">Work Experience #{index + 1}</h4>
               <button
                 onClick={() => {
                   const newWork = cvData.work.filter((_, i) => i !== index);
@@ -585,7 +675,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Company Name</label>
+                <label className="block text-sm font-medium text-text mb-2">Company Name</label>
                 <input
                   type="text"
                   value={work.name}
@@ -594,11 +684,11 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
                     newWork[index] = {...work, name: e.target.value};
                     setCvData({...cvData!, work: newWork});
                   }}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Position</label>
+                <label className="block text-sm font-medium text-text mb-2">Position</label>
                 <input
                   type="text"
                   value={work.position}
@@ -607,11 +697,11 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
                     newWork[index] = {...work, position: e.target.value};
                     setCvData({...cvData!, work: newWork});
                   }}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Job Type</label>
+                <label className="block text-sm font-medium text-text mb-2">Job Type</label>
                 <select
                   value={work.jobType}
                   onChange={(e) => {
@@ -619,7 +709,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
                     newWork[index] = {...work, jobType: e.target.value};
                     setCvData({...cvData!, work: newWork});
                   }}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
                 >
                   <option value="">Select Job Type</option>
                   <option value="Full-time">Full-time</option>
@@ -630,7 +720,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Employee Type</label>
+                <label className="block text-sm font-medium text-text mb-2">Employee Type</label>
                 <select
                   value={work.employeeType}
                   onChange={(e) => {
@@ -638,7 +728,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
                     newWork[index] = {...work, employeeType: e.target.value};
                     setCvData({...cvData!, work: newWork});
                   }}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
                 >
                   <option value="">Select Employee Type</option>
                   <option value="On-site">On-site</option>
@@ -647,7 +737,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Location</label>
+                <label className="block text-sm font-medium text-text mb-2">Location</label>
                 <input
                   type="text"
                   value={work.location}
@@ -656,11 +746,11 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
                     newWork[index] = {...work, location: e.target.value};
                     setCvData({...cvData!, work: newWork});
                   }}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Company URL</label>
+                <label className="block text-sm font-medium text-text mb-2">Company URL</label>
                 <input
                   type="url"
                   value={work.url}
@@ -669,11 +759,11 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
                     newWork[index] = {...work, url: e.target.value};
                     setCvData({...cvData!, work: newWork});
                   }}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Start Date</label>
+                <label className="block text-sm font-medium text-text mb-2">Start Date</label>
                 <input
                   type="text"
                   value={work.startDate}
@@ -682,11 +772,11 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
                     newWork[index] = {...work, startDate: e.target.value};
                     setCvData({...cvData!, work: newWork});
                   }}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">End Date</label>
+                <label className="block text-sm font-medium text-text mb-2">End Date</label>
                 <input
                   type="text"
                   value={work.endDate || ''}
@@ -695,14 +785,14 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
                     newWork[index] = {...work, endDate: e.target.value};
                     setCvData({...cvData!, work: newWork});
                   }}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
                   placeholder="Leave empty for current position"
                 />
               </div>
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Highlights</label>
+              <label className="block text-sm font-medium text-text mb-2">Highlights</label>
               {work.highlights.map((highlight: any, highlightIndex: any) => (
                 <div key={highlightIndex} className="flex gap-2 mb-2">
                   <input
@@ -713,7 +803,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
                       newWork[index].highlights[highlightIndex] = e.target.value;
                       setCvData({...cvData!, work: newWork});
                     }}
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="flex-1 px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
                   />
                   <button
                     onClick={() => {
@@ -756,7 +846,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
   const renderEducationTab = () => (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h3 className="text-lg font-semibold text-gray-900">Education</h3>
+        <h3 className="text-lg font-semibold text-text">Education</h3>
         <button
           onClick={() => {
             const newEducation = {
@@ -785,7 +875,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
         renderItem={(edu, index) => (
           <div className="space-y-4">
             <div className="flex justify-between items-start">
-              <h4 className="font-medium text-gray-900">Education #{index + 1}</h4>
+              <h4 className="font-medium text-text">Education #{index + 1}</h4>
               <button
                 onClick={() => {
                   const newEducation = cvData.education.filter((_, i) => i !== index);
@@ -799,7 +889,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Institution</label>
+                <label className="block text-sm font-medium text-text mb-2">Institution</label>
                 <input
                   type="text"
                   value={edu.institution}
@@ -808,11 +898,11 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
                     newEducation[index] = {...edu, institution: e.target.value};
                     setCvData({...cvData!, education: newEducation});
                   }}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Study Type</label>
+                <label className="block text-sm font-medium text-text mb-2">Study Type</label>
                 <input
                   type="text"
                   value={edu.studyType}
@@ -821,11 +911,11 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
                     newEducation[index] = {...edu, studyType: e.target.value};
                     setCvData({...cvData!, education: newEducation});
                   }}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Area of Study</label>
+                <label className="block text-sm font-medium text-text mb-2">Area of Study</label>
                 <input
                   type="text"
                   value={edu.area}
@@ -834,11 +924,11 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
                     newEducation[index] = {...edu, area: e.target.value};
                     setCvData({...cvData!, education: newEducation});
                   }}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">CGPA</label>
+                <label className="block text-sm font-medium text-text mb-2">CGPA</label>
                 <input
                   type="text"
                   value={edu.cgpa}
@@ -847,11 +937,11 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
                     newEducation[index] = {...edu, cgpa: e.target.value};
                     setCvData({...cvData!, education: newEducation});
                   }}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Scale</label>
+                <label className="block text-sm font-medium text-text mb-2">Scale</label>
                 <input
                   type="text"
                   value={edu.scale}
@@ -860,11 +950,11 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
                     newEducation[index] = {...edu, scale: e.target.value};
                     setCvData({...cvData!, education: newEducation});
                   }}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Start Date</label>
+                <label className="block text-sm font-medium text-text mb-2">Start Date</label>
                 <input
                   type="text"
                   value={edu.startDate}
@@ -873,11 +963,11 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
                     newEducation[index] = {...edu, startDate: e.target.value};
                     setCvData({...cvData!, education: newEducation});
                   }}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">End Date</label>
+                <label className="block text-sm font-medium text-text mb-2">End Date</label>
                 <input
                   type="text"
                   value={edu.endDate}
@@ -886,7 +976,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
                     newEducation[index] = {...edu, endDate: e.target.value};
                     setCvData({...cvData!, education: newEducation});
                   }}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
                 />
               </div>
             </div>
@@ -909,7 +999,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
     <div className="space-y-6">
       <div>
         <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-semibold text-gray-900">Technical Skills</h3>
+          <h3 className="text-lg font-semibold text-text">Technical Skills</h3>
           <button
             onClick={() => {
               const newSkill = { name: '', keywords: [''] };
@@ -929,7 +1019,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
             <div className="space-y-4">
               <div className="flex justify-between items-start">
                 <div className="flex-1">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Skill Category</label>
+                  <label className="block text-sm font-medium text-text mb-2">Skill Category</label>
                   <input
                     type="text"
                     value={skill.name}
@@ -938,7 +1028,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
                       newSkills[index] = {...skill, name: e.target.value};
                       setCvData({...cvData!, skills: {...cvData!.skills, technical: newSkills}});
                     }}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
                   />
                 </div>
                 <button
@@ -953,7 +1043,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Keywords</label>
+                <label className="block text-sm font-medium text-text mb-2">Keywords</label>
                 {skill.keywords.map((keyword: any, keywordIndex: any) => (
                   <div key={keywordIndex} className="flex gap-2 mb-2">
                     <input
@@ -964,7 +1054,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
                         newSkills[index].keywords[keywordIndex] = e.target.value;
                         setCvData({...cvData!, skills: {...cvData!.skills, technical: newSkills}});
                       }}
-                      className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="flex-1 px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
                     />
                     <button
                       onClick={() => {
@@ -995,7 +1085,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
       </div>
 
       <div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Methodologies</h3>
+        <h3 className="text-lg font-semibold text-text mb-4">Methodologies</h3>
         <div className="space-y-2">
           {cvData.skills.methodologies.map((methodology, index) => (
             <div key={index} className="flex gap-2">
@@ -1007,7 +1097,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
                   newMethodologies[index] = e.target.value;
                   setCvData({...cvData!, skills: {...cvData!.skills, methodologies: newMethodologies}});
                 }}
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="flex-1 px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
               />
               <button
                 onClick={() => {
@@ -1041,7 +1131,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
   const renderCertificatesTab = () => (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h3 className="text-lg font-semibold text-gray-900">Certificates</h3>
+        <h3 className="text-lg font-semibold text-text">Certificates</h3>
         <button
           onClick={() => {
             const newCertificate = {
@@ -1066,7 +1156,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
         renderItem={(cert, index) => (
           <div className="space-y-4">
             <div className="flex justify-between items-start">
-              <h4 className="font-medium text-gray-900">Certificate #{index + 1}</h4>
+              <h4 className="font-medium text-text">Certificate #{index + 1}</h4>
               <button
                 onClick={() => {
                   const newCertificates = cvData.certificates.filter((_, i) => i !== index);
@@ -1080,7 +1170,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Certificate Name</label>
+                <label className="block text-sm font-medium text-text mb-2">Certificate Name</label>
                 <input
                   type="text"
                   value={cert.name}
@@ -1089,11 +1179,11 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
                     newCertificates[index] = {...cert, name: e.target.value};
                     setCvData({...cvData!, certificates: newCertificates});
                   }}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Issuer</label>
+                <label className="block text-sm font-medium text-text mb-2">Issuer</label>
                 <input
                   type="text"
                   value={cert.issuer}
@@ -1102,11 +1192,11 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
                     newCertificates[index] = {...cert, issuer: e.target.value};
                     setCvData({...cvData!, certificates: newCertificates});
                   }}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Date</label>
+                <label className="block text-sm font-medium text-text mb-2">Date</label>
                 <input
                   type="text"
                   value={cert.date}
@@ -1115,11 +1205,11 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
                     newCertificates[index] = {...cert, date: e.target.value};
                     setCvData({...cvData!, certificates: newCertificates});
                   }}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Certificate URL</label>
+                <label className="block text-sm font-medium text-text mb-2">Certificate URL</label>
                 <input
                   type="url"
                   value={cert.url}
@@ -1128,7 +1218,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
                     newCertificates[index] = {...cert, url: e.target.value};
                     setCvData({...cvData!, certificates: newCertificates});
                   }}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
                 />
               </div>
             </div>
@@ -1150,7 +1240,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
   const renderLanguagesTab = () => (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h3 className="text-lg font-semibold text-gray-900">Languages</h3>
+        <h3 className="text-lg font-semibold text-text">Languages</h3>
         <button
           onClick={() => {
             const newLanguage = {
@@ -1173,7 +1263,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
         renderItem={(lang, index) => (
           <div className="space-y-4">
             <div className="flex justify-between items-start">
-              <h4 className="font-medium text-gray-900">Language #{index + 1}</h4>
+              <h4 className="font-medium text-text">Language #{index + 1}</h4>
               <button
                 onClick={() => {
                   const newLanguages = cvData.languages.filter((_, i) => i !== index);
@@ -1187,7 +1277,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Language</label>
+                <label className="block text-sm font-medium text-text mb-2">Language</label>
                 <input
                   type="text"
                   value={lang.language}
@@ -1196,11 +1286,11 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
                     newLanguages[index] = {...lang, language: e.target.value};
                     setCvData({...cvData!, languages: newLanguages});
                   }}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Fluency</label>
+                <label className="block text-sm font-medium text-text mb-2">Fluency</label>
                 <input
                   type="text"
                   value={lang.fluency}
@@ -1209,7 +1299,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
                     newLanguages[index] = {...lang, fluency: e.target.value};
                     setCvData({...cvData!, languages: newLanguages});
                   }}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
                 />
               </div>
             </div>
@@ -1231,7 +1321,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
   const renderCoverLettersTab = () => (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h3 className="text-lg font-semibold text-gray-900">Cover Letters</h3>
+        <h3 className="text-lg font-semibold text-text">Cover Letters</h3>
         <button
           onClick={() => {
             const newCoverLetter = {
@@ -1255,7 +1345,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
           <div className="space-y-4">
             <div className="flex justify-between items-start">
               <div className="flex-1">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Title</label>
+                <label className="block text-sm font-medium text-text mb-2">Title</label>
                 <input
                   type="text"
                   value={coverLetter.title}
@@ -1264,7 +1354,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
                     newCoverLetters[index] = {...coverLetter, title: e.target.value};
                     setCvData({...cvData!, coverLetters: newCoverLetters});
                   }}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
                 />
               </div>
               <button
@@ -1278,7 +1368,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
               </button>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Content</label>
+              <label className="block text-sm font-medium text-text mb-2">Content</label>
               <textarea
                 value={coverLetter.content}
                 onChange={(e) => {
@@ -1287,7 +1377,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
                   setCvData({...cvData!, coverLetters: newCoverLetters});
                 }}
                 rows={15}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
                 placeholder="Write your cover letter here..."
               />
             </div>
@@ -1307,7 +1397,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
                 type="text"
                 value={newTabName}
                 onChange={(e) => setNewTabName(e.target.value)}
-                className="px-3 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="px-3 py-1 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
                 onKeyPress={(e) => {
                   if (e.key === 'Enter') {
                     updateCustomTab(tab.id, { name: newTabName });
@@ -1329,7 +1419,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
             </div>
           ) : (
             <>
-              <h3 className="text-lg font-semibold text-gray-900">{tab.name}</h3>
+              <h3 className="text-lg font-semibold text-text">{tab.name}</h3>
               <button
                 onClick={() => {
                   setEditingTabName(tab.id);
@@ -1396,32 +1486,40 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
           Data saved successfully!
         </div>
       )}
-      <div className="min-h-screen bg-gray-50">
+      {/* Main wrapper */}
+      <div className="min-h-screen bg-bg text-text">
+        <div className="flex justify-end p-4">
+          <ThemeToggle />
+        </div>
         <div className="max-w-6xl mx-auto px-2 sm:px-4 md:px-6 py-4 md:py-8">
           {/* Tab Order Card at the Top */}
           <section className="mb-8">
-            <div className="bg-white rounded-lg shadow-md px-2 sm:px-6 py-4">
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Tab Order</h3>
-              <DragDropList
-                items={cvData.tabOrder.map(id => ({ id, label: tabs.find(t => t.id === id)?.label || id }))}
-                onReorder={(newOrder) => reorderTabs(newOrder.map(item => item.id))}
-                renderItem={(item) => (
-                  <div className="flex items-center gap-3">
-                    <span className="font-medium">{item.label}</span>
-                  </div>
-                )}
-                className="grid grid-cols-2 md:grid-cols-4 gap-3"
-              />
+            <div className="rounded-lg overflow-hidden border border-border">
+              <div className="bg-sectionheader px-6 py-4 border-b border-border rounded-t-lg">
+                <h3 className="text-lg font-semibold text-text m-0">Tab Order</h3>
+              </div>
+              <div className="bg-card px-6 py-4 rounded-b-lg">
+                <DragDropList
+                  items={cvData.tabOrder.map(id => ({ id, label: tabs.find(t => t.id === id)?.label || id }))}
+                  onReorder={(newOrder) => reorderTabs(newOrder.map(item => item.id))}
+                  renderItem={(item) => (
+                    <div className="flex items-center gap-3">
+                      <span className="font-medium">{item.label}</span>
+                    </div>
+                  )}
+                  className="grid grid-cols-2 md:grid-cols-4 gap-3"
+                />
+              </div>
             </div>
           </section>
 
           {/* Dashboard Header and Tabs Card */}
           <section className="mb-8">
-            <div className="bg-white rounded-lg shadow-md">
+            <div className="bg-card border border-border rounded-lg shadow-md">
               {/* Header with title, view CV, save, logout */}
-              <div className="flex flex-col md:flex-row md:items-center md:justify-between bg-gray-100 px-6 py-4 rounded-t-lg border-b border-gray-200">
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between bg-sectionheader px-6 py-4 rounded-t-lg border-b border-border">
                 <div className="flex items-center gap-4 mb-4 md:mb-0">
-                  <h1 className="text-2xl font-bold text-gray-900">Rony.DB Dashboard</h1>
+                  <h1 className="text-2xl font-bold text-primary flex-1">Rony.DB Dashboard</h1>
                 </div>
                 <div className="flex items-center gap-2 ml-auto">
                   <button
@@ -1430,21 +1528,21 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
                       const navEvent = new PopStateEvent('popstate');
                       window.dispatchEvent(navEvent);
                     }}
-                    className="p-2 bg-blue-600 text-white rounded-full hover:bg-blue-700"
+                    className="px-2.5 py-1.5 bg-card text-primary border border-border rounded-full text-base hover:bg-row transition-colors"
                     title="View CV"
                   >
                     <ExternalLink className="w-5 h-5" />
                   </button>
                   <button
                     onClick={handleSave}
-                    className="p-2 bg-green-600 text-white rounded-full hover:bg-green-700"
+                    className="px-2.5 py-1.5 bg-card text-primary border border-border rounded-full text-base hover:bg-row transition-colors"
                     title="Save Changes"
                   >
                     <Save className="w-5 h-5" />
                   </button>
                   <button
                     onClick={onLogout}
-                    className="p-2 bg-red-600 text-white rounded-full hover:bg-red-700"
+                    className="px-2.5 py-1.5 bg-card text-primary border border-border rounded-full text-base hover:bg-row transition-colors"
                     title="Logout"
                   >
                     <LogOut className="w-5 h-5" />
@@ -1452,23 +1550,23 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
                 </div>
               </div>
               {/* Tabs */}
-              <div className="flex flex-wrap gap-2 px-6 py-4 bg-white rounded-b-lg">
+              <div className="flex flex-wrap gap-2 px-6 py-4 bg-card border-t border-border rounded-b-lg">
                 {tabs.map((tab) => (
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
-                    className={`px-4 py-2 rounded-lg font-medium transition-colors duration-200 ${
-                      activeTab === tab.id
-                        ? 'bg-blue-600 text-white shadow'
-                        : 'bg-gray-100 text-gray-800 hover:bg-blue-50'
-                    }`}
+                    className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors duration-200 border border-border
+                      ${activeTab === tab.id
+                        ? 'bg-primary text-white shadow'
+                        : 'bg-row text-text hover:bg-sectionheader'}
+                    `}
                   >
                     {tab.label}
                   </button>
                 ))}
                 <button
                   onClick={addCustomTab}
-                  className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 ml-2"
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium bg-card text-primary border border-border hover:bg-row ml-2"
                 >
                   <Plus className="w-4 h-4" />
                   Add Custom Tab

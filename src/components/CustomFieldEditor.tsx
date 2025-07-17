@@ -108,10 +108,10 @@ export const CustomFieldEditor: React.FC<CustomFieldEditorProps> = ({
                   value={value}
                   onChange={(e) => updateValue(e.target.value)}
                   placeholder="Paste image URL"
-                  className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full pl-10 pr-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
                 />
               </div>
-              <label className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 cursor-pointer flex items-center gap-2">
+              <label className="px-4 py-2 bg-card text-primary border border-border rounded-md hover:bg-row cursor-pointer flex items-center gap-2">
                 <Upload className="w-4 h-4" />
                 Upload
                 <input
@@ -147,7 +147,7 @@ export const CustomFieldEditor: React.FC<CustomFieldEditorProps> = ({
             type="date"
             value={value}
             onChange={(e) => updateValue(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
           />
         );
       case 'number':
@@ -156,7 +156,7 @@ export const CustomFieldEditor: React.FC<CustomFieldEditorProps> = ({
             type="number"
             value={value}
             onChange={(e) => updateValue(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
           />
         );
       default:
@@ -166,7 +166,7 @@ export const CustomFieldEditor: React.FC<CustomFieldEditorProps> = ({
             value={value}
             onChange={(e) => updateValue(e.target.value)}
             placeholder={type === 'link' ? 'https://example.com' : 'Enter value'}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
           />
         );
     }
@@ -175,7 +175,7 @@ export const CustomFieldEditor: React.FC<CustomFieldEditorProps> = ({
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
       {fields.map((field) => (
-        <div key={field.id} className="p-4 border border-gray-200 rounded-lg break-inside-avoid overflow-hidden break-words">
+        <div key={field.id} className="p-4 border border-gray-200 rounded-lg break-inside-avoid overflow-hidden break-words bg-row">
           <div className="flex justify-between items-start mb-3">
             <div className="flex-1 grid grid-cols-2 gap-4">
               <div>
@@ -186,7 +186,7 @@ export const CustomFieldEditor: React.FC<CustomFieldEditorProps> = ({
                   type="text"
                   value={field.label}
                   onChange={(e) => handleUpdateField(field.id, { label: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
                 />
               </div>
               <div>
@@ -196,7 +196,7 @@ export const CustomFieldEditor: React.FC<CustomFieldEditorProps> = ({
                 <select
                   value={field.type}
                   onChange={(e) => handleUpdateField(field.id, { type: e.target.value as CustomField['type'] })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
                 >
                   {fieldTypes.map((type) => (
                     <option key={type.value} value={type.value}>
@@ -224,7 +224,7 @@ export const CustomFieldEditor: React.FC<CustomFieldEditorProps> = ({
       ))}
 
       {showAddForm ? (
-        <div className="p-4 border border-gray-200 rounded-lg bg-gray-50">
+        <div className="p-4 border border-gray-200 rounded-lg bg-row">
           <div className="grid grid-cols-2 gap-4 mb-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -235,7 +235,7 @@ export const CustomFieldEditor: React.FC<CustomFieldEditorProps> = ({
                 value={newField.label || ''}
                 onChange={(e) => setNewField({ ...newField, label: e.target.value })}
                 placeholder="Field label"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
               />
             </div>
             <div>
@@ -245,7 +245,7 @@ export const CustomFieldEditor: React.FC<CustomFieldEditorProps> = ({
               <select
                 value={newField.type}
                 onChange={(e) => setNewField({ ...newField, type: e.target.value as CustomField['type'] })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
               >
                 {fieldTypes.map((type) => (
                   <option key={type.value} value={type.value}>

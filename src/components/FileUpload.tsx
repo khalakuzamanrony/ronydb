@@ -8,9 +8,10 @@ interface FileUploadProps {
   onChange: (value: string, file?: File) => void;
   accept?: string;
   type?: 'image' | 'file';
+  hideUploadButton?: boolean;
 }
 
-const FileUpload: React.FC<FileUploadProps> = ({ label, value, onChange, accept, type = 'file' }) => {
+const FileUpload: React.FC<FileUploadProps> = ({ label, value, onChange, accept, type = 'file', hideUploadButton = false }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -49,10 +50,10 @@ const FileUpload: React.FC<FileUploadProps> = ({ label, value, onChange, accept,
 
   return (
     <div className="space-y-3">
-      <label className="block text-sm font-medium text-gray-700">{label}</label>
+      <label className="block text-sm font-medium text-text mb-2">{label}</label>
       
       {/* URL Input */}
-      <div className="flex gap-2">
+      <div className="flex gap-2 items-end">
         <div className="flex-1 relative">
           <Link className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
           <input
@@ -60,18 +61,25 @@ const FileUpload: React.FC<FileUploadProps> = ({ label, value, onChange, accept,
             value={value}
             onChange={handleUrlChange}
             placeholder="Paste URL here"
-            className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full pl-10 pr-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
           />
         </div>
-        <button
-          type="button"
-          onClick={() => fileInputRef.current?.click()}
-          className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-60"
-          disabled={uploading}
-        >
-          <Upload className="w-4 h-4" />
-          {uploading ? 'Uploading...' : 'Upload'}
-        </button>
+        {!hideUploadButton && (
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            className="flex items-center gap-2 px-4 py-2 bg-card text-primary border border-border rounded-lg hover:bg-row transition-colors disabled:opacity-60"
+            disabled={uploading}
+          >
+            <Upload className="w-4 h-4" />
+            {uploading ? 'Uploading...' : 'Upload'}
+          </button>
+        )}
+        {value && type === 'image' && (
+          <div className="ml-2 flex-shrink-0">
+            <img src={value} alt="Preview" className="w-20 h-20 object-cover rounded border" />
+          </div>
+        )}
       </div>
 
       {/* File Input */}
@@ -87,13 +95,6 @@ const FileUpload: React.FC<FileUploadProps> = ({ label, value, onChange, accept,
       {uploading && (
         <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
           <div className="bg-blue-500 h-2 rounded-full" style={{ width: `${uploadProgress}%` }} />
-        </div>
-      )}
-
-      {/* Preview */}
-      {value && type === 'image' && (
-        <div className="mt-2">
-          <img src={value} alt="Preview" className="w-20 h-20 object-cover rounded border" />
         </div>
       )}
     </div>
