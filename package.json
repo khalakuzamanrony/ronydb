@@ -1,12 +1,18 @@
 {
-  "name": "supabase-keepalive",
-  "version": "1.0.0",
-  "main": "keepalive.js",
-  "type": "commonjs",
+  "name": "vite-react-typescript-starter",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "lint": "eslint .",
+    "preview": "vite preview"
+  },
   "dependencies": {
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
+    "@supabase/supabase-js": "^2.51.0",
+    "dotenv": "^17.2.0",
+    "js-file-download": "^0.4.12",
     "jspdf": "^3.0.1",
     "lucide-react": "^0.344.0",
     "react": "^18.3.1",
@@ -29,14 +35,5 @@
     "typescript": "^5.5.3",
     "typescript-eslint": "^8.3.0",
     "vite": "^5.4.2"
-=======
-    "node-fetch": "^2.6.7"
->>>>>>> Stashed changes
-=======
-    "node-fetch": "^2.6.7"
->>>>>>> Stashed changes
-=======
-    "node-fetch": "^2.6.7"
->>>>>>> Stashed changes
   }
 }
