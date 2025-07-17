@@ -13,6 +13,18 @@ interface HomePageProps {
 export const HomePage: React.FC<HomePageProps> = ({ cvData, onNavigateToDashboard }) => {
   const [showDownloadMenu, setShowDownloadMenu] = React.useState(false);
 
+  // Expand/collapse state for sections and custom tabs
+  const tabOrder = cvData.tabOrder || ['basics', 'contacts', 'work', 'education', 'skills', 'projects', 'certificates', 'languages', 'coverLetters'];
+  const customTabs = cvData.customTabs || [];
+  const allSectionKeys = [...tabOrder, ...customTabs.map(tab => tab.id)];
+  const [expandedSections, setExpandedSections] = React.useState<Record<string, boolean>>(
+    Object.fromEntries(allSectionKeys.map((key) => [key, true]))
+  );
+
+  const toggleSection = (key: string) => {
+    setExpandedSections((prev) => ({ ...prev, [key]: !prev[key] }));
+  };
+
   const calculateDuration = (startDate: string, endDate?: string) => {
     const start = new Date(startDate);
     const end = endDate ? new Date(endDate) : new Date();
@@ -108,168 +120,190 @@ ${lang.language}: ${lang.fluency}
     link.click();
   };
 
-  const renderCustomTab = (tab: any) => {
-    if (!tab.fields || tab.fields.length === 0) return null;
-
+  const renderCustomTab = (tab: import('../types/cv').CustomTab) => {
+    if (!tab.customFields || tab.customFields.length === 0) return null;
+    const expanded = expandedSections[tab.id] ?? true;
     return (
       <section key={tab.id} className="mb-8">
-        <h2 className="text-2xl font-bold text-gray-800 mb-4 flex items-center">
-          <FileText className="w-6 h-6 mr-2 text-blue-600" />
-          {tab.name}
-        </h2>
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {tab.fields.map((field: any) => (
-              <div key={field.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg break-inside-avoid overflow-hidden break-words">
-                <div className="flex-1">
-                  <CustomFieldRenderer field={field} />
-                </div>
-              </div>
-            ))}
+        <div className="bg-white rounded-lg shadow-md">
+          <div
+            className="flex items-center cursor-pointer select-none bg-gray-100 px-6 py-4 rounded-t-lg border-b border-gray-200"
+            onClick={() => toggleSection(tab.id)}
+          >
+            <FileText className="w-6 h-6 mr-2 text-blue-600" />
+            <h2 className="text-2xl font-bold text-gray-800 flex-1">{tab.name}</h2>
+            <span className="ml-2">
+              <ChevronDown className={`w-5 h-5 transition-transform ${expanded ? '' : 'rotate-180'}`} />
+            </span>
           </div>
+          {expanded && (
+            <div className="p-6 pt-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {tab.customFields.map((field: import('../types/cv').CustomField) => (
+                  <div key={field.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg break-inside-avoid overflow-hidden break-words">
+                    <div className="flex-1">
+                      <CustomFieldRenderer field={field} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </section>
     );
   };
 
-  const tabOrder = cvData.tabOrder || ['basics', 'contacts', 'work', 'education', 'skills', 'projects', 'certificates', 'languages', 'coverLetters'];
-  const customTabs = cvData.customTabs || [];
-
   const renderSection = (sectionName: string) => {
+    const expanded = expandedSections[sectionName] ?? true;
     switch (sectionName) {
       case 'basics':
         return (
           <section className="mb-8">
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <div className="flex flex-col md:flex-row items-start md:items-center mb-6">
-                <div className="flex-shrink-0 mb-4 md:mb-0 md:mr-6">
-                  <div className="flex flex-col items-center">
-                    <img
-                      src={cvData.basics.image}
-                      alt={cvData.basics.name}
-                      className="w-32 h-32 rounded-full object-cover border-4 border-blue-100"
-                    />
-                    <div className="flex flex-row items-center mt-3 gap-2">
-                      <CopyButton text={cvData.basics.image} className="h-10" />
-                      <button
-                        onClick={() => handleImageDownload(cvData.basics.image, 'profile-image.jpg')}
-                        className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-green-50 hover:bg-green-100 text-green-600 hover:text-green-700 transition-colors duration-200"
-                        title="Download image"
-                      >
-                        <Download className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-center mb-2">
-                    <h1 className="text-3xl font-bold text-gray-800">{cvData.basics.name}</h1>
-                    <CopyButton text={cvData.basics.name} className="ml-1" />
-                  </div>
-                  <div className="flex items-center mb-4">
-                    <p className="text-xl text-blue-600 font-medium">{cvData.basics.label}</p>
-                    <CopyButton text={cvData.basics.label} className="ml-1" />
-                  </div>
-                  <div className="flex items-center">
-                    <p className="text-gray-600">{cvData.basics.summary}</p>
-                    <CopyButton text={cvData.basics.summary} className="ml-1" />
-                  </div>
-                </div>
+            <div className="bg-white rounded-lg shadow-md">
+              <div
+                className="flex items-center cursor-pointer select-none bg-gray-100 px-6 py-4 rounded-t-lg border-b border-gray-200"
+                onClick={() => toggleSection('basics')}
+              >
+                <FileText className="w-6 h-6 mr-2 text-blue-600" />
+                <h2 className="text-2xl font-bold text-gray-800 flex-1">Basic Information</h2>
+                <span className="ml-2">
+                  <ChevronDown className={`w-5 h-5 transition-transform ${expanded ? '' : 'rotate-180'}`} />
+                </span>
               </div>
-
-              {cvData.basics.resume && (
-                <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center">
-                      <FileText className="w-5 h-5 text-blue-600 mr-2" />
-                      <span className="font-medium text-gray-700">Resume</span>
-                    </div>
-                    <div className="flex space-x-2 items-center">
-                      <CopyButton text={cvData.basics.resume} />
-                      <a
-                        href={cvData.basics.resume}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                        title="Open resume"
-                      >
-                        <ExternalLink className="w-4 h-4" />
-                      </a>
-                      <a
-                        href={cvData.basics.resume}
-                        download
-                        className="p-2 text-gray-600 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
-                        title="Download resume"
-                      >
-                        <Download className="w-4 h-4" />
-                      </a>
-                    </div>
-                  </div>
-                </div>
-              )}
-              {/* New local files row */}
-              <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Local PDF column */}
-                <div className="p-4 bg-gray-50 rounded-lg flex flex-col justify-center">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center">
-                      <FileText className="w-5 h-5 text-blue-600 mr-2" />
-                      <span className="font-medium text-gray-700">Local Resume (PDF)</span>
-                    </div>
-                    <div className="flex space-x-2 items-center">
-                      <CopyButton text={"/src/files/Khalekuzzaman_Rony-SQA.pdf"} />
-                      <a
-                        href={"/src/files/Khalekuzzaman_Rony-SQA.pdf"}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                        title="Open local resume"
-                      >
-                        <ExternalLink className="w-4 h-4" />
-                      </a>
-                      <a
-                        href={"/src/files/Khalekuzzaman_Rony-SQA.pdf"}
-                        download
-                        className="p-2 text-gray-600 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
-                        title="Download local resume"
-                      >
-                        <Download className="w-4 h-4" />
-                      </a>
-                    </div>
-                  </div>
-                </div>
-                {/* Local Image column */}
-                <div className="p-4 bg-gray-50 rounded-lg flex flex-row items-center justify-between">
-                  <div className="flex items-center">
-                    <img
-                      src={"/src/files/khalekuzzamanRony.png"}
-                      alt="Khalekuzzaman Rony"
-                      className="w-20 h-20 object-cover rounded border mr-3"
-                    />
-                    <div className="flex space-x-2 items-center">
-                      <CopyButton text={"/src/files/khalekuzzamanRony.png"} />
-                      <a
-                        href={"/src/files/khalekuzzamanRony.png"}
-                        download
-                        className="p-2 text-gray-600 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
-                        title="Download image"
-                      >
-                        <Download className="w-4 h-4" />
-                      </a>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {cvData.basics.customFields && cvData.basics.customFields.length > 0 && (
-                <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {cvData.basics.customFields.map((field) => (
-                    <div key={field.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg break-inside-avoid overflow-hidden break-words">
-                      <div className="flex-1">
-                        <CustomFieldRenderer field={field} />
+              {expanded && (
+                <div className="p-6 pt-4">
+                  <div className="flex flex-col md:flex-row items-start md:items-center mb-6">
+                    <div className="flex-shrink-0 mb-4 md:mb-0 md:mr-6">
+                      <div className="flex flex-col items-center">
+                        <img
+                          src={cvData.basics.image}
+                          alt={cvData.basics.name}
+                          className="w-32 h-32 rounded-full object-cover border-4 border-blue-100"
+                        />
+                        <div className="flex flex-row items-center mt-3 gap-2">
+                          <CopyButton text={cvData.basics.image} className="h-10" />
+                          <button
+                            onClick={() => handleImageDownload(cvData.basics.image, 'profile-image.jpg')}
+                            className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-green-50 hover:bg-green-100 text-green-600 hover:text-green-700 transition-colors duration-200"
+                            title="Download image"
+                          >
+                            <Download className="w-4 h-4" />
+                          </button>
+                        </div>
                       </div>
                     </div>
-                  ))}
+                    <div className="flex-1">
+                      <div className="flex items-center mb-2">
+                        <h1 className="text-3xl font-bold text-gray-800">{cvData.basics.name}</h1>
+                        <CopyButton text={cvData.basics.name} className="ml-1" />
+                      </div>
+                      <div className="flex items-center mb-4">
+                        <p className="text-xl text-blue-600 font-medium">{cvData.basics.label}</p>
+                        <CopyButton text={cvData.basics.label} className="ml-1" />
+                      </div>
+                      <div className="flex items-center">
+                        <p className="text-gray-600">{cvData.basics.summary}</p>
+                        <CopyButton text={cvData.basics.summary} className="ml-1" />
+                      </div>
+                    </div>
+                  </div>
+
+                  {cvData.basics.resume && (
+                    <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center">
+                          <FileText className="w-5 h-5 text-blue-600 mr-2" />
+                          <span className="font-medium text-gray-700">Resume</span>
+                        </div>
+                        <div className="flex space-x-2 items-center">
+                          <CopyButton text={cvData.basics.resume} />
+                          <a
+                            href={cvData.basics.resume}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                            title="Open resume"
+                          >
+                            <ExternalLink className="w-4 h-4" />
+                          </a>
+                          <a
+                            href={cvData.basics.resume}
+                            download
+                            className="p-2 text-gray-600 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                            title="Download resume"
+                          >
+                            <Download className="w-4 h-4" />
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  {/* New local files row */}
+                  <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Local PDF column */}
+                    <div className="p-4 bg-gray-50 rounded-lg flex flex-col justify-center">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center">
+                          <FileText className="w-5 h-5 text-blue-600 mr-2" />
+                          <span className="font-medium text-gray-700">Local Resume (PDF)</span>
+                        </div>
+                        <div className="flex space-x-2 items-center">
+                          <CopyButton text={"/src/files/Khalekuzzaman_Rony-SQA.pdf"} />
+                          <a
+                            href={"/src/files/Khalekuzzaman_Rony-SQA.pdf"}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                            title="Open local resume"
+                          >
+                            <ExternalLink className="w-4 h-4" />
+                          </a>
+                          <a
+                            href={"/src/files/Khalekuzzaman_Rony-SQA.pdf"}
+                            download
+                            className="p-2 text-gray-600 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                            title="Download local resume"
+                          >
+                            <Download className="w-4 h-4" />
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                    {/* Local Image column */}
+                    <div className="p-4 bg-gray-50 rounded-lg flex flex-row items-center justify-between">
+                      <div className="flex items-center">
+                        <img
+                          src={"/src/files/khalekuzzamanRony.png"}
+                          alt="Khalekuzzaman Rony"
+                          className="w-20 h-20 object-cover rounded border mr-3"
+                        />
+                        <div className="flex space-x-2 items-center">
+                          <CopyButton text={"/src/files/khalekuzzamanRony.png"} />
+                          <a
+                            href={"/src/files/khalekuzzamanRony.png"}
+                            download
+                            className="p-2 text-gray-600 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                            title="Download image"
+                          >
+                            <Download className="w-4 h-4" />
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {cvData.basics.customFields && cvData.basics.customFields.length > 0 && (
+                    <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {cvData.basics.customFields.map((field: import('../types/cv').CustomField) => (
+                        <div key={field.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg break-inside-avoid overflow-hidden break-words">
+                          <div className="flex-1">
+                            <CustomFieldRenderer field={field} />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -388,111 +422,121 @@ ${lang.language}: ${lang.fluency}
         const [toolCol1, toolCol2] = splitColumns(toolProfiles);
         return (
           <section className="mb-8">
-            <h2 className="text-2xl font-bold text-gray-800 mb-4 flex items-center">
-              <Mail className="w-6 h-6 mr-2 text-blue-600" />
-              Contact Information
-            </h2>
-            <div className="bg-white rounded-lg shadow-md p-6">
-              {/* Basic Contacts */}
-              <h3 className="font-semibold text-gray-800 mb-2">Basic Contacts</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                <div className="space-y-4">
-                  {basicCol1.map((item: typeof basicContacts[number], idx: number) => (
-                    <div key={idx} className="flex items-center">
-                      {item.icon}
-                      {item.isLink ? (
-                        <a href={item.value} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
-                          {item.label}
-                        </a>
-                      ) : (
-                        <span className="text-gray-600">{item.label}</span>
-                      )}
-                      <CopyButton text={item.value} className="ml-1" />
-                    </div>
-                  ))}
-                </div>
-                <div className="space-y-4">
-                  {basicCol2.map((item: typeof basicContacts[number], idx: number) => (
-                    <div key={idx} className="flex items-center">
-                      {item.icon}
-                      {item.isLink ? (
-                        <a href={item.value} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
-                          {item.label}
-                        </a>
-                      ) : (
-                        <span className="text-gray-600">{item.label}</span>
-                      )}
-                      <CopyButton text={item.value} className="ml-1" />
-                    </div>
-                  ))}
-                </div>
+            <div className="bg-white rounded-lg shadow-md">
+              <div
+                className="flex items-center cursor-pointer select-none bg-gray-100 px-6 py-4 rounded-t-lg border-b border-gray-200"
+                onClick={() => toggleSection('contacts')}
+              >
+                <Mail className="w-6 h-6 mr-2 text-blue-600" />
+                <h2 className="text-2xl font-bold text-gray-800 flex-1">Contact Information</h2>
+                <span className="ml-2">
+                  <ChevronDown className={`w-5 h-5 transition-transform ${expanded ? '' : 'rotate-180'}`} />
+                </span>
               </div>
-              {/* Social Links */}
-              <h3 className="font-semibold text-gray-800 mb-2">Social Links</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                <div className="space-y-4">
-                  {socialCol1.map((item: typeof socialProfiles[number], idx: number) => (
-                    <div key={idx} className="flex items-center">
-                      {item.icon}
-                      <span className="text-gray-600 mr-1">{item.network}:</span>
-                      <a href={item.value} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
-                        {item.username}
-                      </a>
-                      <CopyButton text={item.value} className="ml-1" />
+              {expanded && (
+                <div className="p-6 pt-4">
+                  {/* Basic Contacts */}
+                  <h3 className="font-semibold text-gray-800 mb-2">Basic Contacts</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <div className="space-y-4">
+                      {basicCol1.map((item: typeof basicContacts[number], idx: number) => (
+                        <div key={idx} className="flex items-center">
+                          {item.icon}
+                          {item.isLink ? (
+                            <a href={item.value} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                              {item.label}
+                            </a>
+                          ) : (
+                            <span className="text-gray-600">{item.label}</span>
+                          )}
+                          <CopyButton text={item.value} className="ml-1" />
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
-                <div className="space-y-4">
-                  {socialCol2.map((item: typeof socialProfiles[number], idx: number) => (
-                    <div key={idx} className="flex items-center">
-                      {item.icon}
-                      <span className="text-gray-600 mr-1">{item.network}:</span>
-                      <a href={item.value} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
-                        {item.username}
-                      </a>
-                      <CopyButton text={item.value} className="ml-1" />
+                    <div className="space-y-4">
+                      {basicCol2.map((item: typeof basicContacts[number], idx: number) => (
+                        <div key={idx} className="flex items-center">
+                          {item.icon}
+                          {item.isLink ? (
+                            <a href={item.value} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                              {item.label}
+                            </a>
+                          ) : (
+                            <span className="text-gray-600">{item.label}</span>
+                          )}
+                          <CopyButton text={item.value} className="ml-1" />
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
-              </div>
-              {/* My Tools */}
-              <h3 className="font-semibold text-gray-800 mb-2">My Tools</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-4">
-                  {toolCol1.map((item: typeof toolProfiles[number], idx: number) => (
-                    <div key={idx} className="flex items-center">
-                      {item.icon}
-                      <span className="text-gray-600 mr-1">{item.name}:</span>
-                      <a href={item.value} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
-                        {item.username}
-                      </a>
-                      <CopyButton text={item.value} className="ml-1" />
+                  </div>
+                  {/* Social Links */}
+                  <h3 className="font-semibold text-gray-800 mb-2">Social Links</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <div className="space-y-4">
+                      {socialCol1.map((item: typeof socialProfiles[number], idx: number) => (
+                        <div key={idx} className="flex items-center">
+                          {item.icon}
+                          <span className="text-gray-600 mr-1">{item.network}:</span>
+                          <a href={item.value} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                            {item.username}
+                          </a>
+                          <CopyButton text={item.value} className="ml-1" />
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
-                <div className="space-y-4">
-                  {toolCol2.map((item: typeof toolProfiles[number], idx: number) => (
-                    <div key={idx} className="flex items-center">
-                      {item.icon}
-                      <span className="text-gray-600 mr-1">{item.name}:</span>
-                      <a href={item.value} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
-                        {item.username}
-                      </a>
-                      <CopyButton text={item.value} className="ml-1" />
+                    <div className="space-y-4">
+                      {socialCol2.map((item: typeof socialProfiles[number], idx: number) => (
+                        <div key={idx} className="flex items-center">
+                          {item.icon}
+                          <span className="text-gray-600 mr-1">{item.network}:</span>
+                          <a href={item.value} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                            {item.username}
+                          </a>
+                          <CopyButton text={item.value} className="ml-1" />
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
-              </div>
-              {cvData.contacts?.customFields && cvData.contacts.customFields.length > 0 && (
-                <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  <h3 className="font-semibold text-gray-800 col-span-full">Additional Contact Info</h3>
-                  {cvData.contacts.customFields.map((field) => (
-                    <div key={field.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg break-inside-avoid overflow-hidden break-words">
-                      <div className="flex-1">
-                        <CustomFieldRenderer field={field} />
-                      </div>
+                  </div>
+                  {/* My Tools */}
+                  <h3 className="font-semibold text-gray-800 mb-2">My Tools</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-4">
+                      {toolCol1.map((item: typeof toolProfiles[number], idx: number) => (
+                        <div key={idx} className="flex items-center">
+                          {item.icon}
+                          <span className="text-gray-600 mr-1">{item.name}:</span>
+                          <a href={item.value} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                            {item.username}
+                          </a>
+                          <CopyButton text={item.value} className="ml-1" />
+                        </div>
+                      ))}
                     </div>
-                  ))}
+                    <div className="space-y-4">
+                      {toolCol2.map((item: typeof toolProfiles[number], idx: number) => (
+                        <div key={idx} className="flex items-center">
+                          {item.icon}
+                          <span className="text-gray-600 mr-1">{item.name}:</span>
+                          <a href={item.value} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                            {item.username}
+                          </a>
+                          <CopyButton text={item.value} className="ml-1" />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  {cvData.contacts?.customFields && cvData.contacts.customFields.length > 0 && (
+                    <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                      <h3 className="font-semibold text-gray-800 col-span-full">Additional Contact Info</h3>
+                      {cvData.contacts.customFields.map((field: import('../types/cv').CustomField) => (
+                        <div key={field.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg break-inside-avoid overflow-hidden break-words">
+                          <div className="flex-1">
+                            <CustomFieldRenderer field={field} />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -502,80 +546,92 @@ ${lang.language}: ${lang.fluency}
       case 'work':
         return (
           <section className="mb-8">
-            <h2 className="text-2xl font-bold text-gray-800 mb-4 flex items-center">
-              <Briefcase className="w-6 h-6 mr-2 text-blue-600" />
-              Work Experience
-            </h2>
-            <div className="space-y-6">
-              {cvData.work.map((job, index) => (
-                <div key={index} className="bg-white rounded-lg shadow-md p-6">
-                  <div className="flex justify-between items-start mb-4">
-                    <div className="flex-1">
-                      <div className="flex items-center mb-2">
-                        <h3 className="text-xl font-semibold text-gray-800">{job.position}</h3>
-                        <CopyButton text={job.position} className="ml-1" />
-                      </div>
-                      <div className="flex items-center mb-2">
-                        <p className="text-blue-600 font-medium">{job.name}</p>
-                        <CopyButton text={job.name} className="ml-1" />
-                        {job.url && (
-                          <a href={job.url} target="_blank" rel="noopener noreferrer" className="ml-2 text-blue-600 hover:text-blue-800">
-                            <ExternalLink className="w-4 h-4" />
-                          </a>
-                        )}
-                      </div>
-                      <div className="flex items-center text-gray-600 mb-2">
-                        <MapPin className="w-4 h-4 mr-1" />
-                        <span>{job.location}</span>
-                        <CopyButton text={job.location} className="ml-1" />
-                      </div>
-                      <div className="flex items-center text-gray-600 mb-2">
-                        <Calendar className="w-4 h-4 mr-1" />
-                        <span>{job.startDate} - {job.endDate || 'Present'}</span>
-                        <span className="ml-2 text-sm text-gray-500">
-                          ({calculateDuration(job.startDate, job.endDate)})
-                        </span>
-                        <CopyButton text={`${job.startDate} - ${job.endDate || 'Present'}`} className="ml-1" />
-                      </div>
-                      {job.jobType && (
-                        <div className="flex items-center text-gray-600 mb-2">
-                          <span className="font-medium">Job Type:</span>
-                          <span className="ml-2">{job.jobType}</span>
-                          <CopyButton text={job.jobType} className="ml-1" />
-                        </div>
-                      )}
-                      {job.employeeType && (
-                        <div className="flex items-center text-gray-600 mb-2">
-                          <span className="font-medium">Employee Type:</span>
-                          <span className="ml-2">{job.employeeType}</span>
-                          <CopyButton text={job.employeeType} className="ml-1" />
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                  <ul className="space-y-2">
-                    {job.highlights.map((highlight, highlightIndex) => (
-                      <li key={highlightIndex} className="flex items-start">
-                        <span className="text-blue-600 mr-2">•</span>
-                        <span className="text-gray-700 flex-1">{highlight}</span>
-                        <CopyButton text={highlight} className="ml-1" />
-                      </li>
-                    ))}
-                  </ul>
-
-                  {job.customFields && job.customFields.length > 0 && (
-                    <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {job.customFields.map((field) => (
-                        <div key={field.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg break-inside-avoid overflow-hidden break-words">
+            <div className="bg-white rounded-lg shadow-md">
+              <div
+                className="flex items-center cursor-pointer select-none bg-gray-100 px-6 py-4 rounded-t-lg border-b border-gray-200"
+                onClick={() => toggleSection('work')}
+              >
+                <Briefcase className="w-6 h-6 mr-2 text-blue-600" />
+                <h2 className="text-2xl font-bold text-gray-800 flex-1">Work Experience</h2>
+                <span className="ml-2">
+                  <ChevronDown className={`w-5 h-5 transition-transform ${expanded ? '' : 'rotate-180'}`} />
+                </span>
+              </div>
+              {expanded && (
+                <div className="p-6 pt-4">
+                  <div className="space-y-6">
+                    {cvData.work.map((job, index) => (
+                      <div key={index} className="bg-white rounded-lg shadow-md p-6">
+                        <div className="flex justify-between items-start mb-4">
                           <div className="flex-1">
-                            <CustomFieldRenderer field={field} />
+                            <div className="flex items-center mb-2">
+                              <h3 className="text-xl font-semibold text-gray-800">{job.position}</h3>
+                              <CopyButton text={job.position} className="ml-1" />
+                            </div>
+                            <div className="flex items-center mb-2">
+                              <p className="text-blue-600 font-medium">{job.name}</p>
+                              <CopyButton text={job.name} className="ml-1" />
+                              {job.url && (
+                                <a href={job.url} target="_blank" rel="noopener noreferrer" className="ml-2 text-blue-600 hover:text-blue-800">
+                                  <ExternalLink className="w-4 h-4" />
+                                </a>
+                              )}
+                            </div>
+                            <div className="flex items-center text-gray-600 mb-2">
+                              <MapPin className="w-4 h-4 mr-1" />
+                              <span>{job.location}</span>
+                              <CopyButton text={job.location} className="ml-1" />
+                            </div>
+                            <div className="flex items-center text-gray-600 mb-2">
+                              <Calendar className="w-4 h-4 mr-1" />
+                              <span>{job.startDate} - {job.endDate || 'Present'}</span>
+                              <span className="ml-2 text-sm text-gray-500">
+                                ({calculateDuration(job.startDate, job.endDate)})
+                              </span>
+                              <CopyButton text={`${job.startDate} - ${job.endDate || 'Present'}`} className="ml-1" />
+                            </div>
+                            {job.jobType && (
+                              <div className="flex items-center text-gray-600 mb-2">
+                                <span className="font-medium">Job Type:</span>
+                                <span className="ml-2">{job.jobType}</span>
+                                <CopyButton text={job.jobType} className="ml-1" />
+                              </div>
+                            )}
+                            {job.employeeType && (
+                              <div className="flex items-center text-gray-600 mb-2">
+                                <span className="font-medium">Employee Type:</span>
+                                <span className="ml-2">{job.employeeType}</span>
+                                <CopyButton text={job.employeeType} className="ml-1" />
+                              </div>
+                            )}
                           </div>
                         </div>
-                      ))}
-                    </div>
-                  )}
+                        <ul className="space-y-2">
+                          {job.highlights.map((highlight, highlightIndex) => (
+                            <li key={highlightIndex} className="flex items-start">
+                              <span className="text-blue-600 mr-2">•</span>
+                              <span className="text-gray-700 flex-1">{highlight}</span>
+                              <CopyButton text={highlight} className="ml-1" />
+                            </li>
+                          ))}
+                        </ul>
+
+                        {job.customFields && job.customFields.length > 0 && (
+                          <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {job.customFields.map((field) => (
+                              <div key={field.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg break-inside-avoid overflow-hidden break-words">
+                                <div className="flex-1">
+                                  <CustomFieldRenderer field={field} />
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              ))}
+              )}
             </div>
           </section>
         );
@@ -583,37 +639,122 @@ ${lang.language}: ${lang.fluency}
       case 'education':
         return (
           <section className="mb-8">
-            <h2 className="text-2xl font-bold text-gray-800 mb-4 flex items-center">
-              <GraduationCap className="w-6 h-6 mr-2 text-blue-600" />
-              Education
-            </h2>
-            <div className="space-y-6">
-              {cvData.education.map((edu, index) => (
-                <div key={index} className="bg-white rounded-lg shadow-md p-6">
-                  <div className="flex items-center mb-2">
-                    <h3 className="text-xl font-semibold text-gray-800">{edu.studyType} in {edu.area}</h3>
-                    <CopyButton text={`${edu.studyType} in ${edu.area}`} className="ml-1" />
-                  </div>
-                  <div className="flex items-center mb-2">
-                    <p className="text-blue-600 font-medium">{edu.institution}</p>
-                    <CopyButton text={edu.institution} className="ml-1" />
-                  </div>
-                  <div className="flex items-center text-gray-600 mb-2">
-                    <Calendar className="w-4 h-4 mr-1" />
-                    <span>{edu.startDate} - {edu.endDate}</span>
-                    <CopyButton text={`${edu.startDate} - ${edu.endDate}`} className="ml-1" />
-                  </div>
-                  {edu.score && (
-                    <div className="flex items-center text-gray-600">
-                      <span className="font-medium">Score:</span>
-                      <span className="ml-2">{edu.cgpa && edu.scale ? `CGPA: ${edu.cgpa}/${edu.scale}` : edu.score}</span>
-                      <CopyButton text={edu.cgpa && edu.scale ? `CGPA: ${edu.cgpa}/${edu.scale}` : edu.score} className="ml-1" />
-                    </div>
-                  )}
+            <div className="bg-white rounded-lg shadow-md">
+              <div
+                className="flex items-center cursor-pointer select-none bg-gray-100 px-6 py-4 rounded-t-lg border-b border-gray-200"
+                onClick={() => toggleSection('education')}
+              >
+                <GraduationCap className="w-6 h-6 mr-2 text-blue-600" />
+                <h2 className="text-2xl font-bold text-gray-800 flex-1">Education</h2>
+                <span className="ml-2">
+                  <ChevronDown className={`w-5 h-5 transition-transform ${expanded ? '' : 'rotate-180'}`} />
+                </span>
+              </div>
+              {expanded && (
+                <div className="p-6 pt-4">
+                  <div className="space-y-6">
+                    {cvData.education.map((edu, index) => (
+                      <div key={index} className="bg-white rounded-lg shadow-md p-6">
+                        <div className="flex items-center mb-2">
+                          <h3 className="text-xl font-semibold text-gray-800">{edu.studyType} in {edu.area}</h3>
+                          <CopyButton text={`${edu.studyType} in ${edu.area}`} className="ml-1" />
+                        </div>
+                        <div className="flex items-center mb-2">
+                          <p className="text-blue-600 font-medium">{edu.institution}</p>
+                          <CopyButton text={edu.institution} className="ml-1" />
+                        </div>
+                        <div className="flex items-center text-gray-600 mb-2">
+                          <Calendar className="w-4 h-4 mr-1" />
+                          <span>{edu.startDate} - {edu.endDate}</span>
+                          <CopyButton text={`${edu.startDate} - ${edu.endDate}`} className="ml-1" />
+                        </div>
+                        {edu.score && (
+                          <div className="flex items-center text-gray-600">
+                            <span className="font-medium">Score:</span>
+                            <span className="ml-2">{edu.cgpa && edu.scale ? `CGPA: ${edu.cgpa}/${edu.scale}` : edu.score}</span>
+                            <CopyButton text={edu.cgpa && edu.scale ? `CGPA: ${edu.cgpa}/${edu.scale}` : edu.score} className="ml-1" />
+                          </div>
+                        )}
 
-                  {edu.customFields && edu.customFields.length > 0 && (
-                    <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {edu.customFields.map((field) => (
+                        {edu.customFields && edu.customFields.length > 0 && (
+                          <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {edu.customFields.map((field) => (
+                              <div key={field.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg break-inside-avoid overflow-hidden break-words">
+                                <div className="flex-1">
+                                  <CustomFieldRenderer field={field} />
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </section>
+        );
+
+      case 'skills':
+        return (
+          <section className="mb-8">
+            <div className="bg-white rounded-lg shadow-md">
+              <div
+                className="flex items-center cursor-pointer select-none bg-gray-100 px-6 py-4 rounded-t-lg border-b border-gray-200"
+                onClick={() => toggleSection('skills')}
+              >
+                <Award className="w-6 h-6 mr-2 text-blue-600" />
+                <h2 className="text-2xl font-bold text-gray-800 flex-1">Skills</h2>
+                <span className="ml-2">
+                  <ChevronDown className={`w-5 h-5 transition-transform ${expanded ? '' : 'rotate-180'}`} />
+                </span>
+              </div>
+              {expanded && (
+                <div className="p-6 pt-4">
+                  <div className="space-y-6">
+                    {cvData.skills.technical.map((skillGroup, index) => (
+                      <div key={index}>
+                        <div className="flex items-center mb-3">
+                          <h3 className="text-lg font-semibold text-gray-800">{skillGroup.name}</h3>
+                          <CopyButton text={skillGroup.name} className="ml-1" />
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          {skillGroup.keywords.map((skill, skillIndex) => (
+                            <div key={skillIndex} className="flex items-center">
+                              <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
+                                {skill}
+                              </span>
+                              <CopyButton text={skill} className="ml-1" />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                    
+                    {cvData.skills.methodologies.length > 0 && (
+                      <div>
+                        <div className="flex items-center mb-3">
+                          <h3 className="text-lg font-semibold text-gray-800">Methodologies</h3>
+                          <CopyButton text="Methodologies" className="ml-1" />
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          {cvData.skills.methodologies.map((methodology, index) => (
+                            <div key={index} className="flex items-center">
+                              <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
+                                {methodology}
+                              </span>
+                              <CopyButton text={methodology} className="ml-1" />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {cvData.skills?.customFields && cvData.skills.customFields.length > 0 && (
+                    <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {cvData.skills.customFields.map((field) => (
                         <div key={field.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg break-inside-avoid overflow-hidden break-words">
                           <div className="flex-1">
                             <CustomFieldRenderer field={field} />
@@ -622,69 +763,6 @@ ${lang.language}: ${lang.fluency}
                       ))}
                     </div>
                   )}
-                </div>
-              ))}
-            </div>
-          </section>
-        );
-
-      case 'skills':
-        return (
-          <section className="mb-8">
-            <h2 className="text-2xl font-bold text-gray-800 mb-4 flex items-center">
-              <Award className="w-6 h-6 mr-2 text-blue-600" />
-              Skills
-            </h2>
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <div className="space-y-6">
-                {cvData.skills.technical.map((skillGroup, index) => (
-                  <div key={index}>
-                    <div className="flex items-center mb-3">
-                      <h3 className="text-lg font-semibold text-gray-800">{skillGroup.name}</h3>
-                      <CopyButton text={skillGroup.name} className="ml-1" />
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      {skillGroup.keywords.map((skill, skillIndex) => (
-                        <div key={skillIndex} className="flex items-center">
-                          <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
-                            {skill}
-                          </span>
-                          <CopyButton text={skill} className="ml-1" />
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-                
-                {cvData.skills.methodologies.length > 0 && (
-                  <div>
-                    <div className="flex items-center mb-3">
-                      <h3 className="text-lg font-semibold text-gray-800">Methodologies</h3>
-                      <CopyButton text="Methodologies" className="ml-1" />
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      {cvData.skills.methodologies.map((methodology, index) => (
-                        <div key={index} className="flex items-center">
-                          <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
-                            {methodology}
-                          </span>
-                          <CopyButton text={methodology} className="ml-1" />
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {cvData.skills?.customFields && cvData.skills.customFields.length > 0 && (
-                <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {cvData.skills.customFields.map((field) => (
-                    <div key={field.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg break-inside-avoid overflow-hidden break-words">
-                      <div className="flex-1">
-                        <CustomFieldRenderer field={field} />
-                      </div>
-                    </div>
-                  ))}
                 </div>
               )}
             </div>
@@ -695,45 +773,55 @@ ${lang.language}: ${lang.fluency}
         if (!cvData.projects || cvData.projects.length === 0) return null;
         return (
           <section className="mb-8">
-            <h2 className="text-2xl font-bold text-gray-800 mb-4 flex items-center">
-              <FileText className="w-6 h-6 mr-2 text-blue-600" />
-              Projects
-            </h2>
-            <div className="space-y-6">
-              {cvData.projects.map((project, index) => (
-                <div key={index} className="bg-white rounded-lg shadow-md p-6">
-                  <div className="flex items-center mb-2">
-                    <h3 className="text-xl font-semibold text-gray-800">{project.name}</h3>
-                    <CopyButton text={project.name} className="ml-1" />
-                  </div>
-                  {project.description && (
-                    <div className="flex items-center mb-2">
-                      <p className="text-gray-600">{project.description}</p>
-                      <CopyButton text={project.description} className="ml-1" />
-                    </div>
-                  )}
-                  {project.url && (
-                    <div className="flex items-center mb-2">
-                      <a href={project.url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
-                        {project.url}
-                      </a>
-                      <CopyButton text={project.url} className="ml-1" />
-                    </div>
-                  )}
-
-                  {project.customFields && project.customFields.length > 0 && (
-                    <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {project.customFields.map((field) => (
-                        <div key={field.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg break-inside-avoid overflow-hidden break-words">
-                          <div className="flex-1">
-                            <CustomFieldRenderer field={field} />
-                          </div>
+            <div className="bg-white rounded-lg shadow-md">
+              <div
+                className="flex items-center cursor-pointer select-none bg-gray-100 px-6 py-4 rounded-t-lg border-b border-gray-200"
+                onClick={() => toggleSection('projects')}
+              >
+                <FileText className="w-6 h-6 mr-2 text-blue-600" />
+                <h2 className="text-2xl font-bold text-gray-800 flex-1">Projects</h2>
+                <span className="ml-2">
+                  <ChevronDown className={`w-5 h-5 transition-transform ${expanded ? '' : 'rotate-180'}`} />
+                </span>
+              </div>
+              {expanded && (
+                <div className="p-6 pt-4">
+                  {cvData.projects.map((project, index) => (
+                    <div key={index} className="bg-white rounded-lg shadow-md p-6">
+                      <div className="flex items-center mb-2">
+                        <h3 className="text-xl font-semibold text-gray-800">{project.name}</h3>
+                        <CopyButton text={project.name} className="ml-1" />
+                      </div>
+                      {project.description && (
+                        <div className="flex items-center mb-2">
+                          <p className="text-gray-600">{project.description}</p>
+                          <CopyButton text={project.description} className="ml-1" />
                         </div>
-                      ))}
+                      )}
+                      {project.url && (
+                        <div className="flex items-center mb-2">
+                          <a href={project.url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                            {project.url}
+                          </a>
+                          <CopyButton text={project.url} className="ml-1" />
+                        </div>
+                      )}
+
+                      {project.customFields && project.customFields.length > 0 && (
+                        <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                          {project.customFields.map((field) => (
+                            <div key={field.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg break-inside-avoid overflow-hidden break-words">
+                              <div className="flex-1">
+                                <CustomFieldRenderer field={field} />
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
-                  )}
+                  ))}
                 </div>
-              ))}
+              )}
             </div>
           </section>
         );
@@ -741,38 +829,95 @@ ${lang.language}: ${lang.fluency}
       case 'certificates':
         return (
           <section className="mb-8">
-            <h2 className="text-2xl font-bold text-gray-800 mb-4 flex items-center">
-              <Award className="w-6 h-6 mr-2 text-blue-600" />
-              Certificates
-            </h2>
-            <div className="space-y-4">
-              {cvData.certificates.map((cert, index) => (
-                <div key={index} className="bg-white rounded-lg shadow-md p-6">
-                  <div className="flex items-center mb-2">
-                    <h3 className="text-lg font-semibold text-gray-800">{cert.name}</h3>
-                    <CopyButton text={cert.name} className="ml-1" />
-                  </div>
-                  <div className="flex items-center mb-2">
-                    <p className="text-blue-600 font-medium">{cert.issuer}</p>
-                    <CopyButton text={cert.issuer} className="ml-1" />
-                  </div>
-                  <div className="flex items-center mb-2">
-                    <Calendar className="w-4 h-4 mr-1 text-gray-600" />
-                    <span className="text-gray-600">{cert.date}</span>
-                    <CopyButton text={cert.date} className="ml-1" />
-                  </div>
-                  {cert.url && (
-                    <div className="flex items-center">
-                      <a href={cert.url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
-                        View Certificate
-                      </a>
-                      <CopyButton text={cert.url} className="ml-1" />
-                    </div>
-                  )}
+            <div className="bg-white rounded-lg shadow-md">
+              <div
+                className="flex items-center cursor-pointer select-none bg-gray-100 px-6 py-4 rounded-t-lg border-b border-gray-200"
+                onClick={() => toggleSection('certificates')}
+              >
+                <Award className="w-6 h-6 mr-2 text-blue-600" />
+                <h2 className="text-2xl font-bold text-gray-800 flex-1">Certificates</h2>
+                <span className="ml-2">
+                  <ChevronDown className={`w-5 h-5 transition-transform ${expanded ? '' : 'rotate-180'}`} />
+                </span>
+              </div>
+              {expanded && (
+                <div className="p-6 pt-4">
+                  <div className="space-y-6">
+                    {cvData.certificates.map((cert, index) => (
+                      <div key={index} className="bg-white rounded-lg shadow-md p-6">
+                        <div className="flex items-center mb-2">
+                          <h3 className="text-lg font-semibold text-gray-800">{cert.name}</h3>
+                          <CopyButton text={cert.name} className="ml-1" />
+                        </div>
+                        <div className="flex items-center mb-2">
+                          <p className="text-blue-600 font-medium">{cert.issuer}</p>
+                          <CopyButton text={cert.issuer} className="ml-1" />
+                        </div>
+                        <div className="flex items-center mb-2">
+                          <Calendar className="w-4 h-4 mr-1 text-gray-600" />
+                          <span className="text-gray-600">{cert.date}</span>
+                          <CopyButton text={cert.date} className="ml-1" />
+                        </div>
+                        {cert.url && (
+                          <div className="flex items-center">
+                            <a href={cert.url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                              View Certificate
+                            </a>
+                            <CopyButton text={cert.url} className="ml-1" />
+                          </div>
+                        )}
 
-                  {cert.customFields && cert.customFields.length > 0 && (
-                    <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {cert.customFields.map((field) => (
+                        {cert.customFields && cert.customFields.length > 0 && (
+                          <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {cert.customFields.map((field) => (
+                              <div key={field.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg break-inside-avoid overflow-hidden break-words">
+                                <div className="flex-1">
+                                  <CustomFieldRenderer field={field} />
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </section>
+        );
+
+      case 'languages':
+        return (
+          <section className="mb-8">
+            <div className="bg-white rounded-lg shadow-md">
+              <div
+                className="flex items-center cursor-pointer select-none bg-gray-100 px-6 py-4 rounded-t-lg border-b border-gray-200"
+                onClick={() => toggleSection('languages')}
+              >
+                <Globe className="w-6 h-6 mr-2 text-blue-600" />
+                <h2 className="text-2xl font-bold text-gray-800 flex-1">Languages</h2>
+                <span className="ml-2">
+                  <ChevronDown className={`w-5 h-5 transition-transform ${expanded ? '' : 'rotate-180'}`} />
+                </span>
+              </div>
+              {expanded && (
+                <div className="p-6 pt-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {cvData.languages.map((lang, index) => (
+                      <div key={index} className="flex items-center justify-between">
+                        <div>
+                          <span className="font-medium text-gray-800">{lang.language}</span>
+                          <span className="text-gray-600 ml-2">({lang.fluency})</span>
+                        </div>
+                        <CopyButton text={`${lang.language} - ${lang.fluency}`} />
+                      </div>
+                    ))}
+                  </div>
+
+                  {cvData.languages?.[0]?.customFields && cvData.languages[0].customFields.length > 0 && (
+                    <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {cvData.languages[0].customFields.map((field) => (
                         <div key={field.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg break-inside-avoid overflow-hidden break-words">
                           <div className="flex-1">
                             <CustomFieldRenderer field={field} />
@@ -781,41 +926,6 @@ ${lang.language}: ${lang.fluency}
                       ))}
                     </div>
                   )}
-                </div>
-              ))}
-            </div>
-          </section>
-        );
-
-      case 'languages':
-        return (
-          <section className="mb-8">
-            <h2 className="text-2xl font-bold text-gray-800 mb-4 flex items-center">
-              <Globe className="w-6 h-6 mr-2 text-blue-600" />
-              Languages
-            </h2>
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {cvData.languages.map((lang, index) => (
-                  <div key={index} className="flex items-center justify-between">
-                    <div>
-                      <span className="font-medium text-gray-800">{lang.language}</span>
-                      <span className="text-gray-600 ml-2">({lang.fluency})</span>
-                    </div>
-                    <CopyButton text={`${lang.language} - ${lang.fluency}`} />
-                  </div>
-                ))}
-              </div>
-
-              {cvData.languages?.[0]?.customFields && cvData.languages[0].customFields.length > 0 && (
-                <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {cvData.languages[0].customFields.map((field) => (
-                    <div key={field.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg break-inside-avoid overflow-hidden break-words">
-                      <div className="flex-1">
-                        <CustomFieldRenderer field={field} />
-                      </div>
-                    </div>
-                  ))}
                 </div>
               )}
             </div>
@@ -826,35 +936,46 @@ ${lang.language}: ${lang.fluency}
         if (!cvData.coverLetters || cvData.coverLetters.length === 0) return null;
         return (
           <section className="mb-8">
-            <h2 className="text-2xl font-bold text-gray-800 mb-4 flex items-center">
-              <FileText className="w-6 h-6 mr-2 text-blue-600" />
-              Cover Letters
-            </h2>
-            <div className="space-y-6">
-              {cvData.coverLetters.map((coverLetter, index) => (
-                <div key={index} className="bg-white rounded-lg shadow-md p-6">
-                  <div className="flex items-center mb-4">
-                    <h3 className="text-xl font-semibold text-gray-800">{coverLetter.title}</h3>
-                    <CopyButton text={coverLetter.title} className="ml-1" />
-                  </div>
-                  <div className="flex items-start">
-                    <p className="text-gray-700 whitespace-pre-wrap flex-1">{coverLetter.content}</p>
-                    <CopyButton text={coverLetter.content} className="ml-1" />
-                  </div>
-
-                  {coverLetter.customFields && coverLetter.customFields.length > 0 && (
-                    <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {coverLetter.customFields.map((field) => (
-                        <div key={field.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg break-inside-avoid overflow-hidden break-words">
-                          <div className="flex-1">
-                            <CustomFieldRenderer field={field} />
-                          </div>
+            <div className="bg-white rounded-lg shadow-md">
+              <div
+                className="flex items-center cursor-pointer select-none bg-gray-100 px-6 py-4 rounded-t-lg border-b border-gray-200"
+                onClick={() => toggleSection('coverLetters')}
+              >
+                <FileText className="w-6 h-6 mr-2 text-blue-600" />
+                <h2 className="text-2xl font-bold text-gray-800 flex-1">Cover Letters</h2>
+                <span className="ml-2">
+                  <ChevronDown className={`w-5 h-5 transition-transform ${expanded ? '' : 'rotate-180'}`} />
+                </span>
+              </div>
+              {expanded && (
+                <div className="p-6 pt-4">
+                  <div className="space-y-6">
+                    {cvData.coverLetters.map((coverLetter: { id: string; title: string; content: string; customFields?: import('../types/cv').CustomField[] }, index: number) => (
+                      <div key={index} className="bg-white rounded-lg shadow-md p-6">
+                        <div className="flex items-center mb-4">
+                          <h3 className="text-xl font-semibold text-gray-800">{coverLetter.title}</h3>
+                          <CopyButton text={coverLetter.title} className="ml-1" />
                         </div>
-                      ))}
-                    </div>
-                  )}
+                        <div className="flex items-start">
+                          <p className="text-gray-700 whitespace-pre-wrap flex-1">{coverLetter.content}</p>
+                          <CopyButton text={coverLetter.content} className="ml-1" />
+                        </div>
+                        {coverLetter.customFields && coverLetter.customFields.length > 0 && (
+                          <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {coverLetter.customFields.map((field: import('../types/cv').CustomField) => (
+                              <div key={field.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg break-inside-avoid overflow-hidden break-words">
+                                <div className="flex-1">
+                                  <CustomFieldRenderer field={field} />
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              ))}
+              )}
             </div>
           </section>
         );

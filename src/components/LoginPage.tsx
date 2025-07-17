@@ -14,7 +14,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
     e.preventDefault();
     
     // Fixed credentials
-    if (username === 'admin' && password === 'password123') {
+    if (username === 'ronydbv1' && password === '###Rony@@@7669!!!') {
       onLogin();
     } else {
       setError('Invalid credentials. Try: admin / password123');
