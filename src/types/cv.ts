@@ -1,6 +1,6 @@
 export interface CustomField {
   id: string;
-  type: 'text' | 'link' | 'image' | 'date' | 'number';
+  type: 'text' | 'link' | 'image' | 'date' | 'number' | 'file';
   label: string;
   value: string;
   order: number;

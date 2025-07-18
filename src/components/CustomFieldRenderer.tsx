@@ -12,9 +12,11 @@ interface CustomFieldRendererProps {
 const getFilenameFromUrl = (url: string) => {
   try {
     const u = new URL(url);
-    return u.pathname.split('/').pop() || 'file';
+    const filename = u.pathname.split('/').pop() || 'file';
+    return decodeURIComponent(filename).replace(/\s+/g, '_');
   } catch {
-    return url.split('/').pop() || 'file';
+    const filename = url.split('/').pop() || 'file';
+    return decodeURIComponent(filename).replace(/\s+/g, '_');
   }
 };
 // Helper to check if a link is a downloadable file
@@ -27,7 +29,7 @@ const CustomFieldRenderer: React.FC<CustomFieldRendererProps> = ({ field }) => {
     switch (field.type) {
       case 'link':
         return (
-          <div className="flex flex-wrap items-center gap-1 min-w-0">
+          <div className="flex flex-wrap items-center gap-1 min-w-0 text-sm">
             <a
               href={field.value}
               target="_blank"
@@ -60,7 +62,7 @@ const CustomFieldRenderer: React.FC<CustomFieldRendererProps> = ({ field }) => {
         );
       case 'image':
         return (
-          <div className="flex flex-row items-center gap-4">
+          <div className="flex flex-row items-center gap-4 text-sm">
             <img src={field.value} alt={field.label} className="w-16 h-16 object-cover rounded" />
             <div className="flex flex-row items-center gap-2 ml-auto">
               <CopyButton text={cacheBustedUrl(field.value)} />
@@ -74,9 +76,24 @@ const CustomFieldRenderer: React.FC<CustomFieldRendererProps> = ({ field }) => {
             </div>
           </div>
         );
+      case 'file':
+        return (
+          <div className="flex flex-row items-center gap-2">
+            <span className="text-text break-all font-small text-sm">{getFilenameFromUrl(field.value)}</span>
+            <button
+              onClick={() => downloadFile(field.value, getFilenameFromUrl(field.value))}
+              className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-copybg hover:bg-accent text-primary hover:text-white transition-colors duration-200"
+              title="Download file"
+              type="button"
+            >
+              <Download className="w-4 h-4" />
+            </button>
+            <CopyButton text={field.value} className="flex-shrink-0" />
+          </div>
+        );
       default:
         return (
-          <div className="flex flex-wrap items-center gap-1 min-w-0">
+          <div className="flex flex-wrap items-center gap-1 min-w-0 text-sm">
             <span className="text-text break-words whitespace-normal min-w-0 max-w-full flex-1" style={{ wordBreak: 'break-word' }}>{field.value}</span>
             <CopyButton text={field.value} className="flex-shrink-0" />
           </div>

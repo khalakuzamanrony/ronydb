@@ -27,6 +27,7 @@ export const CustomFieldEditor: React.FC<CustomFieldEditorProps> = ({
     { value: 'image', label: 'Image' },
     { value: 'date', label: 'Date' },
     { value: 'number', label: 'Number' },
+    { value: 'file', label: 'File' }, // <-- Add file type
   ];
 
   const handleAddField = () => {
@@ -138,6 +139,53 @@ export const CustomFieldEditor: React.FC<CustomFieldEditorProps> = ({
                 alt="Preview"
                 className="w-16 h-16 object-cover rounded border"
               />
+            )}
+          </div>
+        );
+      case 'file':
+        return (
+          <div className="space-y-2">
+            <div className="flex gap-2">
+              <div className="flex-1 relative">
+                <Link className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                <input
+                  type="url"
+                  value={value}
+                  onChange={(e) => updateValue(e.target.value)}
+                  placeholder="Paste file URL"
+                  className="w-full pl-10 pr-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
+                />
+              </div>
+              <label className="px-4 py-2 bg-card text-primary border border-border rounded-md hover:bg-row cursor-pointer flex items-center gap-2">
+                <Upload className="w-4 h-4" />
+                Upload
+                <input
+                  type="file"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      handleFileUpload(file, isNew ? undefined : field.id);
+                    }
+                  }}
+                  className="hidden"
+                />
+              </label>
+            </div>
+            {uploading && (
+              <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
+                <div className="bg-blue-500 h-2 rounded-full" style={{ width: `${uploadProgress}%` }} />
+              </div>
+            )}
+            {value && (
+              <a
+                href={value}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-block mt-2 text-blue-600 hover:underline break-all"
+                download
+              >
+                Download File
+              </a>
             )}
           </div>
         );

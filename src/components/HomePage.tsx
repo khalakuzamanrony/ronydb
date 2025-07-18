@@ -16,6 +16,11 @@ interface HomePageProps {
 }
 
 export const HomePage: React.FC<HomePageProps> = ({ cvData, setCvData, onNavigateToDashboard }) => {
+  // Set browser tab title
+  React.useEffect(() => {
+    document.title = 'Rony.DB';
+  }, []);
+
   const [showDownloadMenu, setShowDownloadMenu] = React.useState(false);
   const [resumeUrl, setResumeUrl] = React.useState<string | null>(null);
   const [imageUrl, setImageUrl] = React.useState<string | null>(null);
@@ -248,6 +253,22 @@ ${lang.language}: ${lang.fluency}
     }
     setShowSheetModal(false);
     window.open(sheetModalUrl, '_blank', 'noopener,noreferrer');
+  };
+
+  // Helper to force download a cover letter as txt
+  const downloadCoverLetter = (title: string, content: string) => {
+    const blob = new Blob([content], { type: 'text/plain' });
+    // Sanitize title for filename
+    const safeTitle = title.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+    const filename = `${safeTitle || 'cover_letter'}.txt`;
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
   };
 
   const renderCustomTab = (tab: import('../types/cv').CustomTab) => {
@@ -1121,7 +1142,16 @@ ${lang.language}: ${lang.fluency}
                           <div className="flex-1 min-w-0">
                             <h3 className="text-xl font-semibold text-secondary truncate">{coverLetter.title}</h3>
                           </div>
-                          <CopyButton text={coverLetter.title} className="ml-1 flex-shrink-0" />
+                          <div className="flex items-center gap-1">
+                            <CopyButton text={coverLetter.title} className="ml-1 flex-shrink-0" />
+                            <button
+                              onClick={() => downloadCoverLetter(coverLetter.title, coverLetter.content)}
+                              className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-copybg hover:bg-accent text-primary hover:text-white transition-colors duration-200"
+                              title="Download as TXT"
+                            >
+                              <Download className="w-4 h-4" />
+                            </button>
+                          </div>
                         </div>
                         <div className="flex items-start justify-between w-full overflow-hidden">
                           <p className="text-secondary whitespace-pre-wrap flex-1 min-w-0 truncate">{coverLetter.content}</p>
