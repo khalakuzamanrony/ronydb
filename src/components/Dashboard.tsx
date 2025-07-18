@@ -15,6 +15,11 @@ interface DashboardProps {
 }
 
 const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
+  // Set browser tab title
+  useEffect(() => {
+    document.title = 'Dashboard | Rony.DB';
+  }, []);
+
   // All hooks at the top
   const [cvData, setCvData] = useState<CVData | null>(null);
   const [loading, setLoading] = useState(true);

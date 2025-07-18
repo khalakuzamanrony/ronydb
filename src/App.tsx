@@ -14,6 +14,38 @@ function TopProgressBar({ loading }: { loading: boolean }) {
   ) : null;
 }
 
+// Beautiful animated loader with progress bar and theme-aware background
+function LoaderScreen() {
+  return (
+    <div className="min-h-screen w-full flex flex-col items-center justify-center bg-bg text-text transition-colors duration-500">
+      {/* Logo at the top */}
+      <div className="mb-8 text-3xl font-bold text-primary select-none tracking-wider">Rony.DB</div>
+      {/* Animated graphic */}
+      <div className="relative mb-8">
+        <svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="60" cy="60" r="50" stroke="var(--color-accent)" strokeWidth="8" opacity="0.2" />
+          <circle
+            cx="60" cy="60" r="50"
+            stroke="var(--color-accent)"
+            strokeWidth="8"
+            strokeDasharray="314"
+            strokeDashoffset="0"
+            strokeLinecap="round"
+            className="animate-spin-loader"
+          />
+          <circle cx="60" cy="60" r="30" fill="var(--color-accent)" opacity="0.08" />
+          <circle cx="60" cy="60" r="10" fill="var(--color-accent)" className="animate-pulse" />
+        </svg>
+      </div>
+      {/* Progress bar */}
+      <div className="w-64 h-3 bg-row rounded-full overflow-hidden shadow-inner">
+        <div className="h-full bg-accent animate-progress-bar-loader" style={{width: '60%'}} />
+      </div>
+      <div className="mt-6 text-lg font-medium text-secondary animate-pulse">Loading your experience...</div>
+    </div>
+  );
+}
+
 function App() {
   const lastPage = useRef<string>('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -112,12 +144,9 @@ function App() {
     window.history.pushState({}, '', '/dashboard');
   };
 
-  // Show top progress bar while loading
+  // Show loader screen while loading
   if (loading || !cvData) {
-    return <>
-      <TopProgressBar loading={true} />
-      <div className="min-h-screen flex items-center justify-center text-xl text-gray-600">Loading...</div>
-    </>;
+    return <LoaderScreen />;
   }
 
   if (currentPage === 'dashboard') {
@@ -149,3 +178,8 @@ export default App;
 // Add progress bar animation to global styles (tailwind or index.css):
 // .animate-progress-bar { animation: progressBar 1.2s cubic-bezier(0.4,0,0.2,1) infinite; }
 // @keyframes progressBar { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+// Add loader animation keyframes to global styles (index.css):
+// .animate-spin-loader { animation: spinLoader 1.2s linear infinite; transform-origin: 60px 60px; }
+// @keyframes spinLoader { 0% { stroke-dashoffset: 314; } 100% { stroke-dashoffset: 0; } }
+// .animate-progress-bar-loader { animation: progressBarLoader 1.5s cubic-bezier(0.4,0,0.2,1) infinite; }
+// @keyframes progressBarLoader { 0% { width: 0; } 50% { width: 100%; } 100% { width: 0; } }

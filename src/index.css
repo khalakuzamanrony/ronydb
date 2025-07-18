@@ -39,3 +39,21 @@
   0% { transform: translateX(-100%); }
   100% { transform: translateX(100%); }
 }
+
+.animate-spin-loader {
+  animation: spinLoader 1.2s linear infinite;
+  transform-origin: 60px 60px;
+}
+@keyframes spinLoader {
+  0% { stroke-dashoffset: 314; }
+  100% { stroke-dashoffset: 0; }
+}
+
+.animate-progress-bar-loader {
+  animation: progressBarLoader 1.5s cubic-bezier(0.4,0,0.2,1) infinite;
+}
+@keyframes progressBarLoader {
+  0% { width: 0; }
+  50% { width: 100%; }
+  100% { width: 0; }
+}
