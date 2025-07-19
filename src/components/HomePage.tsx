@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Copy, Download, ChevronDown, ExternalLink, Mail, Phone, MapPin, Calendar, GraduationCap, Briefcase, Award, Globe, FileText, Settings } from 'lucide-react';
+import { Copy, Download, ChevronDown, ExternalLink, Mail, Phone, MapPin, Calendar, GraduationCap, Briefcase, Award, Globe, FileText, Settings, Hash } from 'lucide-react';
 import { FaLinkedin, FaGithub, FaTwitter, FaFacebook, FaInstagram, FaYoutube, FaTiktok, FaWhatsapp, FaTelegram, FaReddit, FaDiscord, FaSnapchatGhost, FaPinterest, FaMedium, FaDribbble, FaBehance, FaStackOverflow, FaFacebookMessenger, FaGlobe } from 'react-icons/fa';
 import CopyButton from './CopyButton';
 import CustomFieldRenderer from './CustomFieldRenderer';
@@ -419,16 +419,101 @@ ${lang.language}: ${lang.fluency}
                           </div>
                         </div>
                       )}
+                      {/* Custom Link 1 Row */}
+                      {cvData.basics.customLink1 && (
+                        <div className="p-4 bg-sectionheader rounded-lg flex flex-col justify-center">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center">
+                              <FileText className="w-5 h-5 text-purple-600 mr-2" />
+                              <span className="font-medium text-secondary">{cvData.basics.customLink1Label || 'Custom Link 1'}</span>
+                            </div>
+                            <div className="flex space-x-2 items-center">
+                              <CopyButton text={cvData.basics.customLink1} />
+                              <a
+                                href={cvData.basics.customLink1}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-copybg hover:bg-accent text-primary hover:text-white transition-colors duration-200"
+                                title="Open Custom Link 1"
+                              >
+                                <ExternalLink className="w-4 h-4" />
+                              </a>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                      {/* Custom Link 2 Row */}
+                      {cvData.basics.customLink2 && (
+                        <div className="p-4 bg-sectionheader rounded-lg flex flex-col justify-center">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center">
+                              <FileText className="w-5 h-5 text-purple-600 mr-2" />
+                              <span className="font-medium text-secondary">{cvData.basics.customLink2Label || 'Custom Link 2'}</span>
+                            </div>
+                            <div className="flex space-x-2 items-center">
+                              <CopyButton text={cvData.basics.customLink2} />
+                              <a
+                                href={cvData.basics.customLink2}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-copybg hover:bg-accent text-primary hover:text-white transition-colors duration-200"
+                                title="Open Custom Link 2"
+                              >
+                                <ExternalLink className="w-4 h-4" />
+                              </a>
+                            </div>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   ) : null}
 
+                  {/* Custom Fields Row: show two per row, styled like Resume */}
                   {cvData.basics.customFields && cvData.basics.customFields.length > 0 && (
-                    <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {cvData.basics.customFields.map((field: CustomField) => (
-                        <div key={field.id} className="flex items-center justify-between p-3 bg-sectionheader rounded-lg break-inside-avoid overflow-hidden break-words">
-                          <div className="flex-1">
-                            <CustomFieldRenderer field={field} />
+                    <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {cvData.basics.customFields
+                        .filter(field => {
+                          const label = (field.label || '').trim().toLowerCase();
+                          return label !== 'resume_compressed (google drive)'.toLowerCase() && label !== 'resume (google drive)'.toLowerCase();
+                        })
+                        .map((field, idx) => (
+                        <div key={field.id} className="p-4 bg-sectionheader rounded-lg flex flex-col justify-center min-h-[88px]">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center">
+                              {/* Icon or preview based on type */}
+                              {field.type === 'image' ? (
+                                <img src={field.value} alt={field.label} className="w-8 h-8 rounded object-cover mr-2 border border-border" />
+                              ) : field.type === 'link' ? (
+                                <ExternalLink className="w-5 h-5 text-blue-600 mr-2" />
+                              ) : field.type === 'file' ? (
+                                <FileText className="w-5 h-5 text-purple-600 mr-2" />
+                              ) : field.type === 'date' ? (
+                                <Calendar className="w-5 h-5 text-green-600 mr-2" />
+                              ) : field.type === 'number' ? (
+                                <Hash className="w-5 h-5 text-orange-600 mr-2" />
+                              ) : (
+                                <FileText className="w-5 h-5 text-gray-600 mr-2" />
+                              )}
+                              <span className="font-medium text-secondary truncate max-w-[180px]">{field.label}</span>
+                            </div>
+                            <div className="flex space-x-2 items-center">
+                              <CopyButton text={field.value} />
+                              {field.type === 'link' ? (
+                                <a
+                                  href={field.value}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-copybg hover:bg-accent text-primary hover:text-white transition-colors duration-200"
+                                  title="Open link"
+                                >
+                                  <ExternalLink className="w-4 h-4" />
+                                </a>
+                              ) : null}
+                            </div>
                           </div>
+                          {field.type === 'image' ? null : field.type !== 'link' && (
+                            <div className="mt-2 text-sm text-primary break-words">{field.value}</div>
+                          )}
                         </div>
                       ))}
                     </div>

@@ -20,9 +20,23 @@ export interface CVData {
     imageFile?: File;
     resume?: string;
     resumeFile?: File;
+    resumeLabel?: string;
     summary: string;
     customFields: CustomField[];
     googleSheetDb?: string;
+    googleSheetDbLabel?: string;
+    customLink1?: string;
+    customLink2?: string;
+    customLink3?: string;
+    customLink4?: string;
+    customLink5?: string;
+    customLink6?: string;
+    customLink1Label?: string;
+    customLink2Label?: string;
+    customLink3Label?: string;
+    customLink4Label?: string;
+    customLink5Label?: string;
+    customLink6Label?: string;
   };
   contacts: {
     email: string;

@@ -274,26 +274,16 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
         <div className="flex-1">
           <FileUpload
             label="Resume"
-            value={cvData.basics.resume || ""}
-            onChange={(value, file) =>
-              setCvData({
-                ...cvData!,
-                basics: { ...cvData!.basics, resume: value, resumeFile: file },
-              })
-            }
+            value={cvData.basics.resume || ''}
+            onChange={(value, file) => setCvData({...cvData!, basics: {...cvData!.basics, resume: value, resumeFile: file}})}
             accept=".pdf,.doc,.docx"
           />
         </div>
         <div className="flex-1">
           <FileUpload
             label="Google Sheet DB"
-            value={cvData.basics.googleSheetDb || ""}
-            onChange={(value) =>
-              setCvData({
-                ...cvData!,
-                basics: { ...cvData!.basics, googleSheetDb: value },
-              })
-            }
+            value={cvData.basics.googleSheetDb || ''}
+            onChange={(value) => setCvData({...cvData!, basics: {...cvData!.basics, googleSheetDb: value}})}
             accept=".csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,application/vnd.google-apps.spreadsheet"
             hideUploadButton={true}
           />
@@ -1998,15 +1988,21 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
   // Download backup handler
   const handleDownloadBackup = () => {
     if (!cvData) return;
+    // Get BD time (GMT+6)
+    const now = new Date();
+    const bdTime = new Date(now.getTime() + 6 * 60 * 60 * 1000);
+    const date = bdTime.toISOString().slice(0, 10);
+    const time = bdTime.toISOString().slice(11, 19).replace(/:/g, '-');
+    const filename = `ronydb_backup_${date}_${time}_BD.json`;
     const dataStr = JSON.stringify(cvData, null, 2);
-    const dataBlob = new Blob([dataStr], { type: "application/json" });
+    const dataBlob = new Blob([dataStr], { type: 'application/json' });
     const url = URL.createObjectURL(dataBlob);
-    const link = document.createElement("a");
+    const link = document.createElement('a');
     link.href = url;
-    link.download = "ronydb-backup.json";
+    link.download = filename;
     link.click();
     URL.revokeObjectURL(url);
-    setToast({ message: "Backup downloaded!", type: "success" });
+    setToast({ message: 'Backup downloaded!', type: 'success' });
   };
 
   return (
