@@ -1,7 +1,7 @@
 import React from 'react';
 import { CustomField } from '../types/cv';
 import CopyButton from './CopyButton';
-import { Download, Link as LinkIcon } from 'lucide-react';
+import { Download, Link as LinkIcon, FileText, Image as ImageIcon, Calendar, Hash, File as FileIcon, Type as TextIcon } from 'lucide-react';
 import { downloadFile } from '../utils/cvData';
 
 interface CustomFieldRendererProps {
@@ -23,6 +23,19 @@ const getFilenameFromUrl = (url: string) => {
 const isDownloadableFile = (url: string) => /\.(pdf|docx?|xlsx?|pptx?|zip|rar|jpg|jpeg|png|gif|webp|mp3|mp4|txt)$/i.test(url);
 // Helper to add cache-busting param to a URL
 const cacheBustedUrl = (url: string) => url ? url + (url.includes('?') ? '&' : '?') + 't=' + Date.now() : url;
+
+// Icon for each type
+const getTypeIcon = (type: string) => {
+  switch (type) {
+    case 'link': return <LinkIcon className="inline w-4 h-4 mr-1 text-blue-500 align-middle" />;
+    case 'image': return <ImageIcon className="inline w-4 h-4 mr-1 text-green-500 align-middle" />;
+    case 'date': return <Calendar className="inline w-4 h-4 mr-1 text-purple-500 align-middle" />;
+    case 'number': return <Hash className="inline w-4 h-4 mr-1 text-yellow-500 align-middle" />;
+    case 'file': return <FileIcon className="inline w-4 h-4 mr-1 text-gray-500 align-middle" />;
+    case 'text':
+    default: return <TextIcon className="inline w-4 h-4 mr-1 text-gray-400 align-middle" />;
+  }
+};
 
 const CustomFieldRenderer: React.FC<CustomFieldRendererProps> = ({ field }) => {
   const renderFieldValue = () => {
@@ -64,6 +77,7 @@ const CustomFieldRenderer: React.FC<CustomFieldRendererProps> = ({ field }) => {
         return (
           <div className="flex flex-row items-center gap-4 text-sm">
             <img src={field.value} alt={field.label} className="w-16 h-16 object-cover rounded" />
+            <span className="text-text break-all font-small text-sm">{getFilenameFromUrl(field.value)}</span>
             <div className="flex flex-row items-center gap-2 ml-auto">
               <CopyButton text={cacheBustedUrl(field.value)} />
               <button
@@ -78,17 +92,19 @@ const CustomFieldRenderer: React.FC<CustomFieldRendererProps> = ({ field }) => {
         );
       case 'file':
         return (
-          <div className="flex flex-row items-center gap-2">
+          <div className="flex flex-row items-center justify-between w-full">
             <span className="text-text break-all font-small text-sm">{getFilenameFromUrl(field.value)}</span>
-            <button
-              onClick={() => downloadFile(field.value, getFilenameFromUrl(field.value))}
-              className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-copybg hover:bg-accent text-primary hover:text-white transition-colors duration-200"
-              title="Download file"
-              type="button"
-            >
-              <Download className="w-4 h-4" />
-            </button>
-            <CopyButton text={field.value} className="flex-shrink-0" />
+            <div className="flex flex-row items-center gap-2 ml-2">
+              <button
+                onClick={() => downloadFile(field.value, getFilenameFromUrl(field.value))}
+                className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-copybg hover:bg-accent text-primary hover:text-white transition-colors duration-200"
+                title="Download file"
+                type="button"
+              >
+                <Download className="w-4 h-4" />
+              </button>
+              <CopyButton text={field.value} className="flex-shrink-0" />
+            </div>
           </div>
         );
       default:
@@ -103,8 +119,10 @@ const CustomFieldRenderer: React.FC<CustomFieldRendererProps> = ({ field }) => {
 
   return (
     <div className="mb-3">
-      <div className="block text-sm font-medium text-gray-600 mb-1">
-        {field.label} <span className="text-xs text-gray-400">({field.type})</span>
+      <div className="block text-sm font-medium text-gray-600 mb-1 flex items-center gap-1">
+        {getTypeIcon(field.type)}
+        <span>{field.label}</span>
+        <span className="text-xs text-gray-400">({field.type})</span>
       </div>
       {renderFieldValue()}
     </div>

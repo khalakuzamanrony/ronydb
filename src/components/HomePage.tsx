@@ -478,42 +478,7 @@ ${lang.language}: ${lang.fluency}
                         })
                         .map((field, idx) => (
                         <div key={field.id} className="p-4 bg-sectionheader rounded-lg flex flex-col justify-center min-h-[88px]">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center">
-                              {/* Icon or preview based on type */}
-                              {field.type === 'image' ? (
-                                <img src={field.value} alt={field.label} className="w-8 h-8 rounded object-cover mr-2 border border-border" />
-                              ) : field.type === 'link' ? (
-                                <ExternalLink className="w-5 h-5 text-blue-600 mr-2" />
-                              ) : field.type === 'file' ? (
-                                <FileText className="w-5 h-5 text-purple-600 mr-2" />
-                              ) : field.type === 'date' ? (
-                                <Calendar className="w-5 h-5 text-green-600 mr-2" />
-                              ) : field.type === 'number' ? (
-                                <Hash className="w-5 h-5 text-orange-600 mr-2" />
-                              ) : (
-                                <FileText className="w-5 h-5 text-gray-600 mr-2" />
-                              )}
-                              <span className="font-medium text-secondary truncate max-w-[180px]">{field.label}</span>
-                            </div>
-                            <div className="flex space-x-2 items-center">
-                              <CopyButton text={field.value} />
-                              {field.type === 'link' ? (
-                                <a
-                                  href={field.value}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-copybg hover:bg-accent text-primary hover:text-white transition-colors duration-200"
-                                  title="Open link"
-                                >
-                                  <ExternalLink className="w-4 h-4" />
-                                </a>
-                              ) : null}
-                            </div>
-                          </div>
-                          {field.type === 'image' ? null : field.type !== 'link' && (
-                            <div className="mt-2 text-sm text-primary break-words">{field.value}</div>
-                          )}
+                          <CustomFieldRenderer field={field} />
                         </div>
                       ))}
                     </div>

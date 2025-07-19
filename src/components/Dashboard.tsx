@@ -46,7 +46,6 @@ import {
 } from "../utils/cvData";
 import { CVData, CustomTab, CustomField } from "../types/cv";
 import FileUpload from "./FileUpload";
-import { CustomFieldEditor } from "./CustomFieldEditor";
 import DragDropList from "./DragDropList";
 import Select from "react-select";
 import ThemeToggle from "./ThemeToggle";
@@ -256,7 +255,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
           />
         </div>
       </div>
-
+      
       <FileUpload
         label="Profile Image"
         value={cvData.basics.image}
@@ -269,7 +268,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
         accept="image/*"
         type="image"
       />
-
+      
       <div className="flex flex-col md:flex-row gap-4 items-end">
         <div className="flex-1">
           <FileUpload
@@ -289,7 +288,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
           />
         </div>
       </div>
-
+      
       <div>
         <label className="block text-sm font-medium text-text mb-2">
           Summary
@@ -306,16 +305,116 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
           className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
         />
       </div>
-
-      <CustomFieldEditor
-        fields={cvData.basics.customFields}
-        onFieldsChange={(fields: CustomField[]) =>
-          setCvData({
-            ...cvData!,
-            basics: { ...cvData!.basics, customFields: fields },
-          })
-        }
-      />
+      
+      <div className="mt-8">
+        <label className="block text-lg font-semibold text-text mb-4">Custom Fields</label>
+        {cvData.basics.customFields.map((field, index) => (
+          <div key={field.id} className="p-4 bg-sectionheader rounded-lg flex flex-col justify-center mb-4">
+            <div className="flex items-center gap-2 min-h-[48px]">
+              <input
+                type="text"
+                value={field.label}
+                onChange={e => {
+                  const newFields = [...cvData.basics.customFields];
+                  newFields[index] = { ...field, label: e.target.value };
+                  setCvData({ ...cvData!, basics: { ...cvData!.basics, customFields: newFields } });
+                }}
+                placeholder="Label"
+                className="w-32 px-3 py-2 border border-border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-text bg-transparent"
+              />
+              <select
+                value={field.type}
+                onChange={e => {
+                  const newFields = [...cvData.basics.customFields];
+                  newFields[index] = { ...field, type: e.target.value as any };
+                  setCvData({ ...cvData!, basics: { ...cvData!.basics, customFields: newFields } });
+                }}
+                className="w-28 px-2 py-2 border border-border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-text bg-row"
+              >
+                <option value="text">Text</option>
+                <option value="link">Link</option>
+                <option value="image">Image</option>
+                <option value="date">Date</option>
+                <option value="number">Number</option>
+                <option value="file">File</option>
+              </select>
+              {/* Value field: expand to fill remaining space for image type */}
+              <div className="flex-1 min-w-0">
+                {field.type === 'image' ? (
+                  <FileUpload
+                    label=""
+                    value={field.value}
+                    onChange={(value, file) => {
+                      const newFields = [...cvData.basics.customFields];
+                      newFields[index] = { ...field, value };
+                      setCvData({ ...cvData!, basics: { ...cvData!.basics, customFields: newFields } });
+                    }}
+                    accept="image/*"
+                    type="image"
+                    hideUploadButton={false}
+                    compact={true}
+                  />
+                ) : field.type === 'file' ? (
+                  <FileUpload
+                    label=""
+                    value={field.value}
+                    onChange={(value, file) => {
+                      const newFields = [...cvData.basics.customFields];
+                      newFields[index] = { ...field, value };
+                      setCvData({ ...cvData!, basics: { ...cvData!.basics, customFields: newFields } });
+                    }}
+                    accept="*"
+                    type="file"
+                    hideUploadButton={false}
+                    compact={true}
+                  />
+                ) : (
+                  <input
+                    type={field.type === 'number' ? 'number' : field.type === 'date' ? 'date' : 'text'}
+                    value={field.value}
+                    onChange={e => {
+                      const newFields = [...cvData.basics.customFields];
+                      newFields[index] = { ...field, value: e.target.value };
+                      setCvData({ ...cvData!, basics: { ...cvData!.basics, customFields: newFields } });
+                    }}
+                    placeholder={
+                      field.type === 'text' ? 'Enter text' :
+                      field.type === 'link' ? 'Paste link (https://...)' :
+                      field.type === 'date' ? 'Select date' :
+                      field.type === 'number' ? 'Enter number' :
+                      field.type === 'file' ? 'Upload file' :
+                      'Value'
+                    }
+                    className="w-full px-3 py-2 border border-border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-text min-w-0 bg-transparent"
+                  />
+                )}
+              </div>
+              <button
+                onClick={() => {
+                  const newFields = cvData.basics.customFields.filter((_, i) => i !== index);
+                  setCvData({ ...cvData!, basics: { ...cvData!.basics, customFields: newFields } });
+                }}
+                className="ml-2 text-red-600 hover:text-red-800"
+                title="Delete field"
+              >
+                <Trash2 className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+        ))}
+        <button
+          onClick={() => {
+            const newFields = [
+              ...cvData.basics.customFields,
+              { id: Date.now().toString(), type: 'text', label: '', value: '', order: cvData.basics.customFields.length }
+            ];
+            setCvData({ ...cvData!, basics: { ...cvData!.basics, customFields: newFields } });
+          }}
+          className="w-full mt-2 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+        >
+          + Add Custom Field
+        </button>
+      </div>
     </div>
   );
 
@@ -542,7 +641,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
               Add Profile
             </button>
           </div>
-
+          
           <DragDropList
             items={cvData.contacts.profiles}
             onReorder={(newOrder) =>
@@ -814,754 +913,142 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
           />
         </div>
 
-        <CustomFieldEditor
-          fields={cvData.contacts.customFields}
-          onFieldsChange={(fields: CustomField[]) =>
-            setCvData({
-              ...cvData!,
-              contacts: { ...cvData!.contacts, customFields: fields },
-            })
-          }
-        />
-      </div>
-    );
-  };
-
-  const renderToolsTab = () => (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center mb-4">
-        <h3 className="text-lg font-semibold text-text">My Tools</h3>
-        <button
-          onClick={() => {
-            const newTool = {
-              name: "",
-              username: "",
-              url: "",
-              customFields: [],
-            };
-            setCvData({
-              ...cvData!,
-              tools: [...(cvData!.tools || []), newTool],
-            });
-          }}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-        >
-          <Plus className="w-4 h-4" />
-          Add Tool
-        </button>
-      </div>
-      <DragDropList
-        items={cvData.tools || []}
-        onReorder={(newOrder) => setCvData({ ...cvData!, tools: newOrder })}
-        renderItem={(tool, index) => (
-          <div className="flex items-center gap-2 w-full">
-            <div className="flex-1 min-w-0">
-              <Select
-                classNamePrefix="react-select"
-                value={toolOptions.find((n) => n.value === tool.name) || null}
-                onChange={(selected) => {
-                  const newTools = [...cvData.tools];
-                  newTools[index] = {
-                    ...tool,
-                    name: selected ? selected.value : "",
-                  };
-                  setCvData({ ...cvData!, tools: newTools });
-                }}
-                options={toolOptions}
-                isClearable
-                placeholder="Tool Name"
-                formatOptionLabel={(option) => (
-                  <div className="flex items-center">
-                    {option.icon}
-                    <span className="ml-1">{option.label}</span>
-                  </div>
-                )}
-                styles={{
-                  control: (base, state) => ({
-                    ...base,
-                    minHeight: "38px",
-                    backgroundColor: "var(--color-row)",
-                    borderColor: "var(--color-border)",
-                    color: "var(--color-text)",
-                    boxShadow: state.isFocused
-                      ? "0 0 0 2px var(--color-primary)"
-                      : base.boxShadow,
-                  }),
-                  input: (base) => ({
-                    ...base,
-                    color: "var(--color-text)",
-                  }),
-                  singleValue: (base) => ({
-                    ...base,
-                    color: "var(--color-text)",
-                  }),
-                  menu: (base) => ({
-                    ...base,
-                    zIndex: 9999,
-                    backgroundColor: "var(--color-row)",
-                    color: "var(--color-text)",
-                  }),
-                  option: (base, state) => ({
-                    ...base,
-                    backgroundColor: state.isSelected
-                      ? "var(--color-primary)"
-                      : state.isFocused
-                      ? "var(--color-section-header)"
-                      : "var(--color-row)",
-                    color: state.isSelected
-                      ? "var(--color-bg)"
-                      : "var(--color-text)",
-                  }),
-                }}
-              />
-            </div>
-            <div className="flex-1 min-w-0">
-              <input
-                type="text"
-                value={tool.username}
-                onChange={(e) => {
-                  const newTools = [...cvData.tools];
-                  newTools[index] = { ...tool, username: e.target.value };
-                  setCvData({ ...cvData!, tools: newTools });
-                }}
-                placeholder="Username"
-                className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
-              />
-            </div>
-            <div className="flex-1 min-w-0">
-              <input
-                type="url"
-                value={tool.url}
-                onChange={(e) => {
-                  const newTools = [...cvData.tools];
-                  newTools[index] = { ...tool, url: e.target.value };
-                  setCvData({ ...cvData!, tools: newTools });
-                }}
-                placeholder="Tool URL"
-                className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
-              />
-            </div>
-            <button
-              onClick={() => {
-                const newTools = cvData.tools.filter((_, i) => i !== index);
-                setCvData({ ...cvData!, tools: newTools });
-              }}
-              className="ml-2 text-red-600 hover:text-red-800"
-              title="Delete tool"
-            >
-              <Trash2 className="w-5 h-5" />
-            </button>
-          </div>
-        )}
-      />
-      <CustomFieldEditor fields={[]} onFieldsChange={() => {}} />
-    </div>
-  );
-
-  const renderWorkTab = () => (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h3 className="text-lg font-semibold text-text">Work Experience</h3>
-        <button
-          onClick={() => {
-            const newWork = {
-              name: "",
-              location: "",
-              url: "",
-              position: "",
-              jobType: "",
-              employeeType: "",
-              startDate: "",
-              endDate: "",
-              highlights: [""],
-              customFields: [],
-            };
-            setCvData({ ...cvData!, work: [...cvData!.work, newWork] });
-          }}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-        >
-          <Plus className="w-4 h-4" />
-          Add Work
-        </button>
-      </div>
-
-      <DragDropList
-        items={cvData.work}
-        onReorder={(newOrder) => setCvData({ ...cvData!, work: newOrder })}
-        renderItem={(work, index) => (
-          <div className="space-y-4">
-            <div className="flex justify-between items-start">
-              <h4 className="font-medium text-text">
-                Work Experience #{index + 1}
-              </h4>
-              <button
-                onClick={() => {
-                  const newWork = cvData.work.filter((_, i) => i !== index);
-                  setCvData({ ...cvData!, work: newWork });
-                }}
-                className="text-red-600 hover:text-red-800"
-              >
-                <Trash2 className="w-4 h-4" />
-              </button>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-text mb-2">
-                  Company Name
-                </label>
+        <div className="mt-8">
+          <h3 className="text-lg font-semibold text-text mb-4">Methodologies</h3>
+          <div className="space-y-2">
+            {cvData.skills.methodologies.map((methodology, index) => (
+              <div key={index} className="flex gap-2">
                 <input
                   type="text"
-                  value={work.name}
+                  value={methodology}
                   onChange={(e) => {
-                    const newWork = [...cvData.work];
-                    newWork[index] = { ...work, name: e.target.value };
-                    setCvData({ ...cvData!, work: newWork });
+                    const newMethodologies = [...cvData.skills.methodologies];
+                    newMethodologies[index] = e.target.value;
+                    setCvData({
+                      ...cvData!,
+                      skills: {
+                        ...cvData!.skills,
+                        methodologies: newMethodologies,
+                      },
+                    });
                   }}
-                  className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
+                  className="flex-1 px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
                 />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-text mb-2">
-                  Position
-                </label>
-                <input
-                  type="text"
-                  value={work.position}
-                  onChange={(e) => {
-                    const newWork = [...cvData.work];
-                    newWork[index] = { ...work, position: e.target.value };
-                    setCvData({ ...cvData!, work: newWork });
-                  }}
-                  className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-text mb-2">
-                  Job Type
-                </label>
-                <select
-                  value={work.jobType}
-                  onChange={(e) => {
-                    const newWork = [...cvData.work];
-                    newWork[index] = { ...work, jobType: e.target.value };
-                    setCvData({ ...cvData!, work: newWork });
-                  }}
-                  className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
-                >
-                  <option value="">Select Job Type</option>
-                  <option value="Full-time">Full-time</option>
-                  <option value="Part-time">Part-time</option>
-                  <option value="Contract">Contract</option>
-                  <option value="Freelance">Freelance</option>
-                  <option value="Internship">Internship</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-text mb-2">
-                  Employee Type
-                </label>
-                <select
-                  value={work.employeeType}
-                  onChange={(e) => {
-                    const newWork = [...cvData.work];
-                    newWork[index] = { ...work, employeeType: e.target.value };
-                    setCvData({ ...cvData!, work: newWork });
-                  }}
-                  className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
-                >
-                  <option value="">Select Employee Type</option>
-                  <option value="On-site">On-site</option>
-                  <option value="Remote">Remote</option>
-                  <option value="Hybrid">Hybrid</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-text mb-2">
-                  Location
-                </label>
-                <input
-                  type="text"
-                  value={work.location}
-                  onChange={(e) => {
-                    const newWork = [...cvData.work];
-                    newWork[index] = { ...work, location: e.target.value };
-                    setCvData({ ...cvData!, work: newWork });
-                  }}
-                  className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-text mb-2">
-                  Company URL
-                </label>
-                <input
-                  type="url"
-                  value={work.url}
-                  onChange={(e) => {
-                    const newWork = [...cvData.work];
-                    newWork[index] = { ...work, url: e.target.value };
-                    setCvData({ ...cvData!, work: newWork });
-                  }}
-                  className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-text mb-2">
-                  Start Date
-                </label>
-                <input
-                  type="text"
-                  value={work.startDate}
-                  onChange={(e) => {
-                    const newWork = [...cvData.work];
-                    newWork[index] = { ...work, startDate: e.target.value };
-                    setCvData({ ...cvData!, work: newWork });
-                  }}
-                  className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-text mb-2">
-                  End Date
-                </label>
-                <input
-                  type="text"
-                  value={work.endDate || ""}
-                  onChange={(e) => {
-                    const newWork = [...cvData.work];
-                    newWork[index] = { ...work, endDate: e.target.value };
-                    setCvData({ ...cvData!, work: newWork });
-                  }}
-                  className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
-                  placeholder="Leave empty for current position"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-text mb-2">
-                Highlights
-              </label>
-              {work.highlights.map((highlight: any, highlightIndex: any) => (
-                <div key={highlightIndex} className="flex gap-2 mb-2">
-                  <input
-                    type="text"
-                    value={highlight}
-                    onChange={(e) => {
-                      const newWork = [...cvData.work];
-                      newWork[index].highlights[highlightIndex] =
-                        e.target.value;
-                      setCvData({ ...cvData!, work: newWork });
-                    }}
-                    className="flex-1 px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
-                  />
-                  <button
-                    onClick={() => {
-                      const newWork = [...cvData.work];
-                      newWork[index].highlights = newWork[
-                        index
-                      ].highlights.filter((_, i) => i !== highlightIndex);
-                      setCvData({ ...cvData!, work: newWork });
-                    }}
-                    className="text-red-600 hover:text-red-800"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
-              ))}
-              <button
-                onClick={() => {
-                  const newWork = [...cvData.work];
-                  newWork[index].highlights.push("");
-                  setCvData({ ...cvData!, work: newWork });
-                }}
-                className="text-blue-600 hover:text-blue-800 text-sm"
-              >
-                + Add Highlight
-              </button>
-            </div>
-
-            <CustomFieldEditor
-              fields={work.customFields}
-              onFieldsChange={(fields: CustomField[]) => {
-                const newWork = [...cvData.work];
-                newWork[index] = { ...work, customFields: fields };
-                setCvData({ ...cvData!, work: newWork });
-              }}
-            />
-          </div>
-        )}
-      />
-    </div>
-  );
-
-  const renderEducationTab = () => (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h3 className="text-lg font-semibold text-text">Education</h3>
-        <button
-          onClick={() => {
-            const newEducation = {
-              institution: "",
-              area: "",
-              studyType: "",
-              startDate: "",
-              endDate: "",
-              score: "",
-              cgpa: "",
-              scale: "",
-              customFields: [],
-            };
-            setCvData({
-              ...cvData!,
-              education: [...cvData!.education, newEducation],
-            });
-          }}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-        >
-          <Plus className="w-4 h-4" />
-          Add Education
-        </button>
-      </div>
-
-      <DragDropList
-        items={cvData.education}
-        onReorder={(newOrder) => setCvData({ ...cvData!, education: newOrder })}
-        renderItem={(edu, index) => (
-          <div className="space-y-4">
-            <div className="flex justify-between items-start">
-              <h4 className="font-medium text-text">Education #{index + 1}</h4>
-              <button
-                onClick={() => {
-                  const newEducation = cvData.education.filter(
-                    (_, i) => i !== index
-                  );
-                  setCvData({ ...cvData!, education: newEducation });
-                }}
-                className="text-red-600 hover:text-red-800"
-              >
-                <Trash2 className="w-4 h-4" />
-              </button>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-text mb-2">
-                  Institution
-                </label>
-                <input
-                  type="text"
-                  value={edu.institution}
-                  onChange={(e) => {
-                    const newEducation = [...cvData.education];
-                    newEducation[index] = {
-                      ...edu,
-                      institution: e.target.value,
-                    };
-                    setCvData({ ...cvData!, education: newEducation });
-                  }}
-                  className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-text mb-2">
-                  Study Type
-                </label>
-                <input
-                  type="text"
-                  value={edu.studyType}
-                  onChange={(e) => {
-                    const newEducation = [...cvData.education];
-                    newEducation[index] = { ...edu, studyType: e.target.value };
-                    setCvData({ ...cvData!, education: newEducation });
-                  }}
-                  className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-text mb-2">
-                  Area of Study
-                </label>
-                <input
-                  type="text"
-                  value={edu.area}
-                  onChange={(e) => {
-                    const newEducation = [...cvData.education];
-                    newEducation[index] = { ...edu, area: e.target.value };
-                    setCvData({ ...cvData!, education: newEducation });
-                  }}
-                  className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-text mb-2">
-                  CGPA
-                </label>
-                <input
-                  type="text"
-                  value={edu.cgpa}
-                  onChange={(e) => {
-                    const newEducation = [...cvData.education];
-                    newEducation[index] = { ...edu, cgpa: e.target.value };
-                    setCvData({ ...cvData!, education: newEducation });
-                  }}
-                  className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-text mb-2">
-                  Scale
-                </label>
-                <input
-                  type="text"
-                  value={edu.scale}
-                  onChange={(e) => {
-                    const newEducation = [...cvData.education];
-                    newEducation[index] = { ...edu, scale: e.target.value };
-                    setCvData({ ...cvData!, education: newEducation });
-                  }}
-                  className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-text mb-2">
-                  Start Date
-                </label>
-                <input
-                  type="text"
-                  value={edu.startDate}
-                  onChange={(e) => {
-                    const newEducation = [...cvData.education];
-                    newEducation[index] = { ...edu, startDate: e.target.value };
-                    setCvData({ ...cvData!, education: newEducation });
-                  }}
-                  className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-text mb-2">
-                  End Date
-                </label>
-                <input
-                  type="text"
-                  value={edu.endDate}
-                  onChange={(e) => {
-                    const newEducation = [...cvData.education];
-                    newEducation[index] = { ...edu, endDate: e.target.value };
-                    setCvData({ ...cvData!, education: newEducation });
-                  }}
-                  className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
-                />
-              </div>
-            </div>
-
-            <CustomFieldEditor
-              fields={edu.customFields}
-              onFieldsChange={(fields: CustomField[]) => {
-                const newEducation = [...cvData.education];
-                newEducation[index] = { ...edu, customFields: fields };
-                setCvData({ ...cvData!, education: newEducation });
-              }}
-            />
-          </div>
-        )}
-      />
-    </div>
-  );
-
-  const renderSkillsTab = () => (
-    <div className="space-y-6">
-      <div>
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-semibold text-text">Technical Skills</h3>
-          <button
-            onClick={() => {
-              const newSkill = { name: "", keywords: [""] };
-              setCvData({
-                ...cvData!,
-                skills: {
-                  ...cvData!.skills,
-                  technical: [...cvData!.skills.technical, newSkill],
-                },
-              });
-            }}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-          >
-            <Plus className="w-4 h-4" />
-            Add Skill Category
-          </button>
-        </div>
-
-        <DragDropList
-          items={cvData.skills.technical}
-          onReorder={(newOrder) =>
-            setCvData({
-              ...cvData!,
-              skills: { ...cvData!.skills, technical: newOrder },
-            })
-          }
-          renderItem={(skill, index) => (
-            <div className="space-y-4">
-              <div className="flex justify-between items-start">
-                <div className="flex-1">
-                  <label className="block text-sm font-medium text-text mb-2">
-                    Skill Category
-                  </label>
-                  <input
-                    type="text"
-                    value={skill.name}
-                    onChange={(e) => {
-                      const newSkills = [...cvData.skills.technical];
-                      newSkills[index] = { ...skill, name: e.target.value };
-                      setCvData({
-                        ...cvData!,
-                        skills: { ...cvData!.skills, technical: newSkills },
-                      });
-                    }}
-                    className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
-                  />
-                </div>
                 <button
                   onClick={() => {
-                    const newSkills = cvData.skills.technical.filter(
+                    const newMethodologies = cvData.skills.methodologies.filter(
                       (_, i) => i !== index
                     );
                     setCvData({
                       ...cvData!,
-                      skills: { ...cvData!.skills, technical: newSkills },
+                      skills: {
+                        ...cvData!.skills,
+                        methodologies: newMethodologies,
+                      },
                     });
                   }}
-                  className="ml-4 text-red-600 hover:text-red-800"
+                  className="text-red-600 hover:text-red-800"
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>
               </div>
-
-              <div>
-                <label className="block text-sm font-medium text-text mb-2">
-                  Keywords
-                </label>
-                {skill.keywords.map((keyword: any, keywordIndex: any) => (
-                  <div key={keywordIndex} className="flex gap-2 mb-2">
-                    <input
-                      type="text"
-                      value={keyword}
-                      onChange={(e) => {
-                        const newSkills = [...cvData.skills.technical];
-                        newSkills[index].keywords[keywordIndex] =
-                          e.target.value;
-                        setCvData({
-                          ...cvData!,
-                          skills: { ...cvData!.skills, technical: newSkills },
-                        });
-                      }}
-                      className="flex-1 px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
-                    />
-                    <button
-                      onClick={() => {
-                        const newSkills = [...cvData.skills.technical];
-                        newSkills[index].keywords = newSkills[
-                          index
-                        ].keywords.filter((_, i) => i !== keywordIndex);
-                        setCvData({
-                          ...cvData!,
-                          skills: { ...cvData!.skills, technical: newSkills },
-                        });
-                      }}
-                      className="text-red-600 hover:text-red-800"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                ))}
-                <button
-                  onClick={() => {
-                    const newSkills = [...cvData.skills.technical];
-                    newSkills[index].keywords.push("");
-                    setCvData({
-                      ...cvData!,
-                      skills: { ...cvData!.skills, technical: newSkills },
-                    });
-                  }}
-                  className="text-blue-600 hover:text-blue-800 text-sm"
-                >
-                  + Add Keyword
-                </button>
-              </div>
-            </div>
-          )}
-        />
-      </div>
-
-      <div>
-        <h3 className="text-lg font-semibold text-text mb-4">Methodologies</h3>
-        <div className="space-y-2">
-          {cvData.skills.methodologies.map((methodology, index) => (
-            <div key={index} className="flex gap-2">
-              <input
-                type="text"
-                value={methodology}
-                onChange={(e) => {
-                  const newMethodologies = [...cvData.skills.methodologies];
-                  newMethodologies[index] = e.target.value;
-                  setCvData({
-                    ...cvData!,
-                    skills: {
-                      ...cvData!.skills,
-                      methodologies: newMethodologies,
-                    },
-                  });
-                }}
-                className="flex-1 px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
-              />
-              <button
-                onClick={() => {
-                  const newMethodologies = cvData.skills.methodologies.filter(
-                    (_, i) => i !== index
-                  );
-                  setCvData({
-                    ...cvData!,
-                    skills: {
-                      ...cvData!.skills,
-                      methodologies: newMethodologies,
-                    },
-                  });
-                }}
-                className="text-red-600 hover:text-red-800"
-              >
-                <Trash2 className="w-4 h-4" />
-              </button>
-            </div>
-          ))}
-          <button
-            onClick={() => {
+            ))}
+            <button
+              onClick={() => {
+                setCvData({
+                  ...cvData!,
+                  skills: {
+                    ...cvData!.skills,
+                    methodologies: [...cvData!.skills.methodologies, ""],
+                  },
+                });
+              }}
+              className="text-blue-600 hover:text-blue-800 text-sm"
+            >
+              + Add Methodology
+            </button>
+          </div>
+        </div>
+        
+        <div className="mt-8">
+          <h3 className="text-lg font-semibold text-text mb-4">Custom Fields</h3>
+          <DragDropList
+            items={cvData.skills.customFields}
+            onReorder={(newOrder) =>
               setCvData({
                 ...cvData!,
-                skills: {
-                  ...cvData!.skills,
-                  methodologies: [...cvData!.skills.methodologies, ""],
-                },
-              });
+                skills: { ...cvData!.skills, customFields: newOrder },
+              })
+            }
+            renderItem={(field, index) => (
+              <div className="flex items-center gap-2 mb-3 bg-row rounded-lg p-3">
+                <input
+                  type="text"
+                  value={field.label}
+                  onChange={e => {
+                    const newFields = [...cvData.skills.customFields];
+                    newFields[index] = { ...field, label: e.target.value };
+                    setCvData({ ...cvData!, skills: { ...cvData!.skills, customFields: newFields } });
+                  }}
+                  placeholder="Label"
+                  className="w-32 px-3 py-2 border border-border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 bg-bg text-text"
+                />
+                <select
+                  value={field.type}
+                  onChange={e => {
+                    const newFields = [...cvData.skills.customFields];
+                    newFields[index] = { ...field, type: e.target.value as any };
+                    setCvData({ ...cvData!, skills: { ...cvData!.skills, customFields: newFields } });
+                  }}
+                  className="w-28 px-2 py-2 border border-border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 bg-bg text-text"
+                >
+                  <option value="text">Text</option>
+                  <option value="link">Link</option>
+                  <option value="image">Image</option>
+                  <option value="date">Date</option>
+                  <option value="number">Number</option>
+                  <option value="file">File</option>
+                </select>
+                <input
+                  type={field.type === 'number' ? 'number' : field.type === 'date' ? 'date' : 'text'}
+                  value={field.value}
+                  onChange={e => {
+                    const newFields = [...cvData.skills.customFields];
+                    newFields[index] = { ...field, value: e.target.value };
+                    setCvData({ ...cvData!, skills: { ...cvData!.skills, customFields: newFields } });
+                  }}
+                  placeholder="Value"
+                  className="flex-1 px-3 py-2 border border-border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 bg-bg text-text"
+                />
+                <button
+                  onClick={() => {
+                    const newFields = cvData.skills.customFields.filter((_, i) => i !== index);
+                    setCvData({ ...cvData!, skills: { ...cvData!.skills, customFields: newFields } });
+                  }}
+                  className="ml-2 text-red-600 hover:text-red-800"
+                  title="Delete field"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+          />
+          <button
+            onClick={() => {
+              const newFields = [
+                ...cvData.skills.customFields,
+                { id: Date.now().toString(), type: 'text', label: '', value: '', order: cvData.skills.customFields.length }
+              ];
+              setCvData({ ...cvData!, skills: { ...cvData!.skills, customFields: newFields } });
             }}
-            className="text-blue-600 hover:text-blue-800 text-sm"
+            className="w-full mt-2 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors"
           >
-            + Add Methodology
+            + Add Custom Field
           </button>
         </div>
       </div>
-
-      <CustomFieldEditor
-        fields={cvData.skills.customFields}
-        onFieldsChange={(fields: CustomField[]) =>
-          setCvData({
-            ...cvData!,
-            skills: { ...cvData!.skills, customFields: fields },
-          })
-        }
-      />
-    </div>
-  );
+    );
+  };
 
   const renderCertificatesTab = () => (
     <div className="space-y-6">
@@ -1677,15 +1164,82 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
                 />
               </div>
             </div>
-
-            <CustomFieldEditor
-              fields={cert.customFields}
-              onFieldsChange={(fields: CustomField[]) => {
-                const newCertificates = [...cvData.certificates];
-                newCertificates[index] = { ...cert, customFields: fields };
-                setCvData({ ...cvData!, certificates: newCertificates });
-              }}
-            />
+            
+            <div className="mt-8">
+              <h3 className="text-lg font-semibold text-text mb-4">Custom Fields</h3>
+              <DragDropList
+                items={cert.customFields}
+                onReorder={(newOrder) => {
+                  const newCertificates = [...cvData.certificates];
+                  newCertificates[index] = { ...cert, customFields: newOrder };
+                  setCvData({ ...cvData!, certificates: newCertificates });
+                }}
+                renderItem={(field, index) => (
+                  <div className="flex items-center gap-2 mb-3 bg-row rounded-lg p-3">
+                    <input
+                      type="text"
+                      value={field.label}
+                      onChange={e => {
+                        const newFields = [...cert.customFields];
+                        newFields[index] = { ...field, label: e.target.value };
+                        setCvData({ ...cvData!, certificates: { ...cvData!.certificates, customFields: newFields } });
+                      }}
+                      placeholder="Label"
+                      className="w-32 px-3 py-2 border border-border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 bg-bg text-text"
+                    />
+                    <select
+                      value={field.type}
+                      onChange={e => {
+                        const newFields = [...cert.customFields];
+                        newFields[index] = { ...field, type: e.target.value as any };
+                        setCvData({ ...cvData!, certificates: { ...cvData!.certificates, customFields: newFields } });
+                      }}
+                      className="w-28 px-2 py-2 border border-border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 bg-bg text-text"
+                    >
+                      <option value="text">Text</option>
+                      <option value="link">Link</option>
+                      <option value="image">Image</option>
+                      <option value="date">Date</option>
+                      <option value="number">Number</option>
+                      <option value="file">File</option>
+                    </select>
+                    <input
+                      type={field.type === 'number' ? 'number' : field.type === 'date' ? 'date' : 'text'}
+                      value={field.value}
+                      onChange={e => {
+                        const newFields = [...cert.customFields];
+                        newFields[index] = { ...field, value: e.target.value };
+                        setCvData({ ...cvData!, certificates: { ...cvData!.certificates, customFields: newFields } });
+                      }}
+                      placeholder="Value"
+                      className="flex-1 px-3 py-2 border border-border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 bg-bg text-text"
+                    />
+                    <button
+                      onClick={() => {
+                        const newFields = cert.customFields.filter((_, i) => i !== index);
+                        setCvData({ ...cvData!, certificates: { ...cvData!.certificates, customFields: newFields } });
+                      }}
+                      className="ml-2 text-red-600 hover:text-red-800"
+                      title="Delete field"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                )}
+              />
+              <button
+                onClick={() => {
+                  const newFields = [
+                    ...cert.customFields,
+                    { id: Date.now().toString(), type: 'text', label: '', value: '', order: cert.customFields.length }
+                  ];
+                  setCvData({ ...cvData!, certificates: { ...cvData!.certificates, customFields: newFields } });
+                }}
+                className="w-full mt-2 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+              >
+                + Add Custom Field
+              </button>
+            </div>
           </div>
         )}
       />
@@ -1767,15 +1321,82 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
                 />
               </div>
             </div>
-
-            <CustomFieldEditor
-              fields={lang.customFields}
-              onFieldsChange={(fields: CustomField[]) => {
-                const newLanguages = [...cvData.languages];
-                newLanguages[index] = { ...lang, customFields: fields };
-                setCvData({ ...cvData!, languages: newLanguages });
-              }}
-            />
+            
+            <div className="mt-8">
+              <h3 className="text-lg font-semibold text-text mb-4">Custom Fields</h3>
+              <DragDropList
+                items={lang.customFields}
+                onReorder={(newOrder) => {
+                  const newLanguages = [...cvData.languages];
+                  newLanguages[index] = { ...lang, customFields: newOrder };
+                  setCvData({ ...cvData!, languages: newLanguages });
+                }}
+                renderItem={(field, index) => (
+                  <div className="flex items-center gap-2 mb-3 bg-row rounded-lg p-3">
+                    <input
+                      type="text"
+                      value={field.label}
+                      onChange={e => {
+                        const newFields = [...lang.customFields];
+                        newFields[index] = { ...field, label: e.target.value };
+                        setCvData({ ...cvData!, languages: { ...cvData!.languages, customFields: newFields } });
+                      }}
+                      placeholder="Label"
+                      className="w-32 px-3 py-2 border border-border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 bg-bg text-text"
+                    />
+                    <select
+                      value={field.type}
+                      onChange={e => {
+                        const newFields = [...lang.customFields];
+                        newFields[index] = { ...field, type: e.target.value as any };
+                        setCvData({ ...cvData!, languages: { ...cvData!.languages, customFields: newFields } });
+                      }}
+                      className="w-28 px-2 py-2 border border-border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 bg-bg text-text"
+                    >
+                      <option value="text">Text</option>
+                      <option value="link">Link</option>
+                      <option value="image">Image</option>
+                      <option value="date">Date</option>
+                      <option value="number">Number</option>
+                      <option value="file">File</option>
+                    </select>
+                    <input
+                      type={field.type === 'number' ? 'number' : field.type === 'date' ? 'date' : 'text'}
+                      value={field.value}
+                      onChange={e => {
+                        const newFields = [...lang.customFields];
+                        newFields[index] = { ...field, value: e.target.value };
+                        setCvData({ ...cvData!, languages: { ...cvData!.languages, customFields: newFields } });
+                      }}
+                      placeholder="Value"
+                      className="flex-1 px-3 py-2 border border-border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 bg-bg text-text"
+                    />
+                    <button
+                      onClick={() => {
+                        const newFields = lang.customFields.filter((_, i) => i !== index);
+                        setCvData({ ...cvData!, languages: { ...cvData!.languages, customFields: newFields } });
+                      }}
+                      className="ml-2 text-red-600 hover:text-red-800"
+                      title="Delete field"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                )}
+              />
+              <button
+                onClick={() => {
+                  const newFields = [
+                    ...lang.customFields,
+                    { id: Date.now().toString(), type: 'text', label: '', value: '', order: lang.customFields.length }
+                  ];
+                  setCvData({ ...cvData!, languages: { ...cvData!.languages, customFields: newFields } });
+                }}
+                className="w-full mt-2 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+              >
+                + Add Custom Field
+              </button>
+            </div>
           </div>
         )}
       />
@@ -1922,12 +1543,83 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
           )}
         </div>
       </div>
-      <CustomFieldEditor
-        fields={tab.customFields}
-        onFieldsChange={(fields: CustomField[]) =>
-          updateCustomTab(tab.id, { customFields: fields })
+      <DragDropList
+        items={tab.customFields}
+        onReorder={(newOrder) =>
+          updateCustomTab(tab.id, { customFields: newOrder })
         }
+        renderItem={(field, index) => (
+          <div className="flex items-center gap-2 mb-3 bg-row rounded-lg p-3">
+            <input
+              type="text"
+              value={field.label}
+              onChange={e => {
+                const newFields = [...tab.customFields];
+                newFields[index] = { ...field, label: e.target.value };
+                updateCustomTab(tab.id, { customFields: newFields });
+              }}
+              placeholder="Label"
+              className="w-32 px-3 py-2 border border-border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 bg-bg text-text"
+            />
+            <select
+              value={field.type}
+              onChange={e => {
+                const newFields = [...tab.customFields];
+                newFields[index] = { ...field, type: e.target.value as any };
+                updateCustomTab(tab.id, { customFields: newFields });
+              }}
+              className="w-28 px-2 py-2 border border-border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 bg-bg text-text"
+            >
+              <option value="text">Text</option>
+              <option value="link">Link</option>
+              <option value="image">Image</option>
+              <option value="date">Date</option>
+              <option value="number">Number</option>
+              <option value="file">File</option>
+            </select>
+            <input
+              type={field.type === 'number' ? 'number' : field.type === 'date' ? 'date' : field.type === 'file' ? 'file' : 'text'}
+              value={field.value}
+              onChange={e => {
+                const newFields = [...tab.customFields];
+                newFields[index] = { ...field, value: e.target.value };
+                updateCustomTab(tab.id, { customFields: newFields });
+              }}
+              placeholder={
+                field.type === 'text' ? 'Enter text' :
+                field.type === 'link' ? 'Paste link (https://...)' :
+                field.type === 'date' ? 'Select date' :
+                field.type === 'number' ? 'Enter number' :
+                field.type === 'file' ? 'Upload file' :
+                'Value'
+              }
+              className="flex-1 px-3 py-2 border border-border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 bg-bg text-text"
+            />
+            <button
+              onClick={() => {
+                const newFields = tab.customFields.filter((_, i) => i !== index);
+                updateCustomTab(tab.id, { customFields: newFields });
+              }}
+              className="ml-2 text-red-600 hover:text-red-800"
+              title="Delete field"
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
+          </div>
+        )}
       />
+      <button
+        onClick={() => {
+          const newFields = [
+            ...tab.customFields,
+            { id: Date.now().toString(), type: 'text', label: '', value: '', order: tab.customFields.length }
+          ];
+          updateCustomTab(tab.id, { customFields: newFields });
+        }}
+        className="w-full mt-2 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+      >
+        + Add Custom Field
+      </button>
     </div>
   );
 
@@ -2126,8 +1818,8 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
                       style={{ display: "none" }}
                       onChange={handleFileChange}
                     />
-                  </div>
                 </div>
+              </div>
               </div>
 
               {/* Tabs */}

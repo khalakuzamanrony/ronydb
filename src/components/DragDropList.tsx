@@ -43,11 +43,11 @@ const DragDropList: React.FC<DragDropListProps> = ({ items, onReorder, renderIte
           onDragStart={(e) => handleDragStart(e, index)}
           onDragOver={handleDragOver}
           onDrop={(e) => handleDrop(e, index)}
-          className={`flex items-start gap-2 p-3 border rounded-lg mb-3 cursor-move ${
+          className={`flex items-center gap-2 p-3 border rounded-lg mb-3 cursor-move ${
             draggedIndex === index ? 'opacity-50' : ''
           }`}
         >
-          <GripVertical className="w-5 h-5 text-gray-400 mt-1 flex-shrink-0" />
+          <GripVertical className="w-5 h-5 text-gray-400 flex-shrink-0" />
           <div className="flex-1">
             {renderItem(item, index)}
           </div>

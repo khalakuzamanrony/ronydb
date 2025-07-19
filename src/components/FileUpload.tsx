@@ -9,9 +9,10 @@ interface FileUploadProps {
   accept?: string;
   type?: 'image' | 'file';
   hideUploadButton?: boolean;
+  compact?: boolean;
 }
 
-const FileUpload: React.FC<FileUploadProps> = ({ label, value, onChange, accept, type = 'file', hideUploadButton = false }) => {
+const FileUpload: React.FC<FileUploadProps> = ({ label, value, onChange, accept, type = 'file', hideUploadButton = false, compact = false }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -49,11 +50,10 @@ const FileUpload: React.FC<FileUploadProps> = ({ label, value, onChange, accept,
   };
 
   return (
-    <div className="space-y-3">
-      <label className="block text-sm font-medium text-text mb-2">{label}</label>
-      
+    <div className={compact ? "space-y-0" : "space-y-3"}>
+      {label && <label className="block text-sm font-medium text-text mb-2">{label}</label>}
       {/* URL Input */}
-      <div className="flex gap-2 items-end">
+      <div className={compact ? "flex gap-2 items-center min-h-[40px]" : "flex gap-2 items-end"}>
         <div className="flex-1 relative">
           <Link className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
           <input
@@ -61,14 +61,14 @@ const FileUpload: React.FC<FileUploadProps> = ({ label, value, onChange, accept,
             value={value}
             onChange={handleUrlChange}
             placeholder="Paste URL here"
-            className="w-full pl-10 pr-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
+            className={compact ? "w-full pl-10 pr-3 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text h-10" : "w-full pl-10 pr-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"}
           />
         </div>
         {!hideUploadButton && (
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            className="flex items-center gap-2 px-4 py-2 bg-card text-primary border border-border rounded-lg hover:bg-row transition-colors disabled:opacity-60"
+            className={compact ? "flex items-center gap-2 px-4 bg-card text-primary border border-border rounded-lg hover:bg-row transition-colors disabled:opacity-60 h-10" : "flex items-center gap-2 px-4 py-2 bg-card text-primary border border-border rounded-lg hover:bg-row transition-colors disabled:opacity-60"}
             disabled={uploading}
           >
             <Upload className="w-4 h-4" />
@@ -81,7 +81,6 @@ const FileUpload: React.FC<FileUploadProps> = ({ label, value, onChange, accept,
           </div>
         )}
       </div>
-
       {/* File Input */}
       <input
         ref={fileInputRef}
@@ -90,7 +89,6 @@ const FileUpload: React.FC<FileUploadProps> = ({ label, value, onChange, accept,
         onChange={handleFileChange}
         className="hidden"
       />
-
       {/* Upload Progress */}
       {uploading && (
         <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
