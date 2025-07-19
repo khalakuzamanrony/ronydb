@@ -1,7 +1,5 @@
 # ronydb
 
-<<<<<<< Updated upstream
-=======
 ronydb is a full-stack web application designed to manage, display, and interact with personal or professional data, such as CVs, files, and custom fields. The project leverages a modern React frontend, Node.js backend, and integrates with Supabase for storage and authentication.
 
 ## Features
@@ -106,25 +104,3 @@ This project is licensed under the MIT License. See [LICENSE](LICENSE) for detai
 - [Vite](https://vitejs.dev/)
 - [Tailwind CSS](https://tailwindcss.com/)
 
-
-## Playwright End-to-End Tests
-
-To run Playwright tests:
-
-1. Install dependencies (if not already):
-   ```sh
-   npm install
-   ```
-2. Run the Playwright test suite:
-   ```sh
-   npx playwright test
-   ```
-
-To view the test report after running tests:
-```sh
-npx playwright show-report
-```
-
-All tests are located in the `e2e/` directory.
-
->>>>>>> Stashed changes
