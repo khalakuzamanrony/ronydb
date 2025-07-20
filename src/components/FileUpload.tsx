@@ -54,30 +54,31 @@ const FileUpload: React.FC<FileUploadProps> = ({ label, value, onChange, accept,
       {label && <label className="block text-sm font-medium text-text mb-2">{label}</label>}
       {/* URL Input */}
       <div className={compact ? "flex gap-2 items-center min-h-[40px]" : "flex gap-2 items-end"}>
-        <div className="flex-1 relative">
+        <div className="flex-1 relative w-full">
           <Link className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
           <input
             type="url"
             value={value}
             onChange={handleUrlChange}
             placeholder="Paste URL here"
-            className={compact ? "w-full pl-10 pr-3 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text h-10" : "w-full pl-10 pr-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"}
+            className={compact ? "w-full pl-10 pr-3 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text h-10 text-sm" : "w-full pl-10 pr-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text text-sm"}
           />
         </div>
         {!hideUploadButton && (
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            className={compact ? "flex items-center gap-2 px-4 bg-card text-primary border border-border rounded-lg hover:bg-row transition-colors disabled:opacity-60 h-10" : "flex items-center gap-2 px-4 py-2 bg-card text-primary border border-border rounded-lg hover:bg-row transition-colors disabled:opacity-60"}
+            className={compact ? "flex items-center gap-1 md:gap-2 px-2 md:px-4 bg-card text-primary border border-border rounded-lg hover:bg-row transition-colors disabled:opacity-60 h-10 text-xs md:text-sm" : "flex items-center gap-1 md:gap-2 px-3 md:px-4 py-2 bg-card text-primary border border-border rounded-lg hover:bg-row transition-colors disabled:opacity-60 text-sm"}
             disabled={uploading}
           >
-            <Upload className="w-4 h-4" />
-            {uploading ? 'Uploading...' : 'Upload'}
+            <Upload className="w-3 h-3 md:w-4 md:h-4" />
+            <span className="hidden sm:inline">{uploading ? 'Uploading...' : 'Upload'}</span>
+            <span className="sm:hidden">{uploading ? '...' : 'Up'}</span>
           </button>
         )}
         {value && type === 'image' && (
           <div className="ml-2 flex-shrink-0">
-            <img src={value} alt="Preview" className="w-20 h-20 object-cover rounded border" />
+            <img src={value} alt="Preview" className="w-16 h-16 md:w-20 md:h-20 object-cover rounded border" />
           </div>
         )}
       </div>
