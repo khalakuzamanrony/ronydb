@@ -1,4 +1,4 @@
-name: Supabase DB Backup Cron
+name: Daily Cron Scheduler
 
 on:
   schedule:
@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  backup:
+  daily-cron:
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -28,13 +28,13 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Run backup and keepalive tasks
+      - name: Run daily cron tasks
         run: node cron-scheduler.js
 
       - name: Log completion
         run: |
-          echo "Backup and keepalive tasks completed at $(date)"
-          echo "Tasks performed:"
+          echo "Daily cron tasks completed at $(date)"
+          echo "Tasks included:"
           echo "- Keepalive update"
           echo "- CV data backup"
-          echo "- Old backup cleanup (keeps latest 2)" 
+          echo "- Old backup cleanup" 

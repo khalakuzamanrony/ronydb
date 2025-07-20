@@ -2,26 +2,39 @@ name: Keepalive Cron Job
 
 on:
   schedule:
-    - cron: '0 6 * * *' # Every day at 06:00 UTC (12:00 PM GMT+6)
+    # Every day at 6:00 AM UTC (12:00 PM BST/GMT+6)
+    - cron: '0 6 * * *'
   workflow_dispatch:
 
 jobs:
   keepalive:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: keepalive
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: 20
 
       - name: Install dependencies
-        run: npm install --prefix keepalive
+        run: npm install
 
-      - name: Run keepalive script
-        env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-        run: node keepalive/keepalive.js 
+      - name: Run keepalive and backup tasks
+        run: node cron-scheduler.js
+
+      - name: Log completion
+        run: |
+          echo "Keepalive and backup tasks completed at $(date)"
+          echo "Tasks performed:"
+          echo "- Keepalive update"
+          echo "- CV data backup"
+          echo "- Old backup cleanup" 
