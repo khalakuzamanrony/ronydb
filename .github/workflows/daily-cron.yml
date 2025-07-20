@@ -1,4 +1,6 @@
-name: Daily Cron Scheduler
+# MAIN WORKFLOW - Use this one for daily cron tasks
+# This workflow runs both keepalive and backup tasks together
+name: Daily Cron Scheduler (MAIN)
 
 on:
   schedule:
@@ -28,7 +30,7 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Run daily cron tasks
+      - name: Run daily cron tasks (keepalive + backup)
         run: node cron-scheduler.js
 
       - name: Log completion
