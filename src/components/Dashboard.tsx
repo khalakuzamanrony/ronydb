@@ -220,7 +220,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
   };
 
   const renderBasicsTab = () => (
-    <div className="space-y-6">
+    <div className="space-y-4 md:space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-medium text-text mb-2">
@@ -269,24 +269,20 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
         type="image"
       />
       
-      <div className="flex flex-col md:flex-row gap-4 items-end">
-        <div className="flex-1">
-          <FileUpload
-            label="Resume"
-            value={cvData.basics.resume || ''}
-            onChange={(value, file) => setCvData({...cvData!, basics: {...cvData!.basics, resume: value, resumeFile: file}})}
-            accept=".pdf,.doc,.docx"
-          />
-        </div>
-        <div className="flex-1">
-          <FileUpload
-            label="Google Sheet DB"
-            value={cvData.basics.googleSheetDb || ''}
-            onChange={(value) => setCvData({...cvData!, basics: {...cvData!.basics, googleSheetDb: value}})}
-            accept=".csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,application/vnd.google-apps.spreadsheet"
-            hideUploadButton={true}
-          />
-        </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <FileUpload
+          label="Resume"
+          value={cvData.basics.resume || ''}
+          onChange={(value, file) => setCvData({...cvData!, basics: {...cvData!.basics, resume: value, resumeFile: file}})}
+          accept=".pdf,.doc,.docx"
+        />
+        <FileUpload
+          label="Google Sheet DB"
+          value={cvData.basics.googleSheetDb || ''}
+          onChange={(value) => setCvData({...cvData!, basics: {...cvData!.basics, googleSheetDb: value}})}
+          accept=".csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,application/vnd.google-apps.spreadsheet"
+          hideUploadButton={true}
+        />
       </div>
       
       <div>
@@ -306,40 +302,54 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
         />
       </div>
       
-      <div className="mt-8">
+      <div className="mt-6 md:mt-8">
         <label className="block text-lg font-semibold text-text mb-4">Custom Fields</label>
         {cvData.basics.customFields.map((field, index) => (
-          <div key={field.id} className="p-4 bg-sectionheader rounded-lg flex flex-col justify-center mb-4">
-            <div className="flex items-center gap-2 min-h-[48px]">
-              <input
-                type="text"
-                value={field.label}
-                onChange={e => {
-                  const newFields = [...cvData.basics.customFields];
-                  newFields[index] = { ...field, label: e.target.value };
-                  setCvData({ ...cvData!, basics: { ...cvData!.basics, customFields: newFields } });
-                }}
-                placeholder="Label"
-                className="w-32 px-3 py-2 border border-border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-text bg-transparent"
-              />
-              <select
-                value={field.type}
-                onChange={e => {
-                  const newFields = [...cvData.basics.customFields];
-                  newFields[index] = { ...field, type: e.target.value as any };
-                  setCvData({ ...cvData!, basics: { ...cvData!.basics, customFields: newFields } });
-                }}
-                className="w-28 px-2 py-2 border border-border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-text bg-row"
-              >
-                <option value="text">Text</option>
-                <option value="link">Link</option>
-                <option value="image">Image</option>
-                <option value="date">Date</option>
-                <option value="number">Number</option>
-                <option value="file">File</option>
-              </select>
+          <div key={field.id} className="p-3 md:p-4 bg-sectionheader rounded-lg flex flex-col justify-center mb-4 relative">
+            {/* Delete button - positioned at top right */}
+            <button
+              onClick={() => {
+                const newFields = cvData.basics.customFields.filter((_, i) => i !== index);
+                setCvData({ ...cvData!, basics: { ...cvData!.basics, customFields: newFields } });
+              }}
+              className="absolute top-2 right-2 text-red-600 hover:text-red-800 p-1 z-10"
+              title="Delete field"
+            >
+              <Trash2 className="w-4 h-4 md:w-5 md:h-5" />
+            </button>
+            
+            <div className="flex flex-col md:flex-row items-start md:items-center gap-2 min-h-[48px]">
+              <div className="flex items-center gap-2 w-full md:w-auto">
+                <input
+                  type="text"
+                  value={field.label}
+                  onChange={e => {
+                    const newFields = [...cvData.basics.customFields];
+                    newFields[index] = { ...field, label: e.target.value };
+                    setCvData({ ...cvData!, basics: { ...cvData!.basics, customFields: newFields } });
+                  }}
+                  placeholder="Label"
+                  className="w-24 md:w-32 px-2 md:px-3 py-2 border border-border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-text bg-transparent text-sm"
+                />
+                <select
+                  value={field.type}
+                  onChange={e => {
+                    const newFields = [...cvData.basics.customFields];
+                    newFields[index] = { ...field, type: e.target.value as any };
+                    setCvData({ ...cvData!, basics: { ...cvData!.basics, customFields: newFields } });
+                  }}
+                  className="w-20 md:w-28 px-2 py-2 border border-border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-text bg-row text-sm"
+                >
+                  <option value="text">Text</option>
+                  <option value="link">Link</option>
+                  <option value="image">Image</option>
+                  <option value="date">Date</option>
+                  <option value="number">Number</option>
+                  <option value="file">File</option>
+                </select>
+              </div>
               {/* Value field: expand to fill remaining space for image type */}
-              <div className="flex-1 min-w-0">
+              <div className="flex-1 min-w-0 w-full md:w-auto">
                 {field.type === 'image' ? (
                   <FileUpload
                     label=""
@@ -385,20 +395,10 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
                       field.type === 'file' ? 'Upload file' :
                       'Value'
                     }
-                    className="w-full px-3 py-2 border border-border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-text min-w-0 bg-transparent"
+                    className="w-full px-3 py-2 border border-border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-text min-w-0 bg-transparent text-sm"
                   />
                 )}
               </div>
-              <button
-                onClick={() => {
-                  const newFields = cvData.basics.customFields.filter((_, i) => i !== index);
-                  setCvData({ ...cvData!, basics: { ...cvData!.basics, customFields: newFields } });
-                }}
-                className="ml-2 text-red-600 hover:text-red-800"
-                title="Delete field"
-              >
-                <Trash2 className="w-5 h-5" />
-              </button>
             </div>
           </div>
         ))}
@@ -406,11 +406,11 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
           onClick={() => {
             const newFields = [
               ...cvData.basics.customFields,
-              { id: Date.now().toString(), type: 'text', label: '', value: '', order: cvData.basics.customFields.length }
+              { id: Date.now().toString(), type: 'text' as const, label: '', value: '', order: cvData.basics.customFields.length }
             ];
             setCvData({ ...cvData!, basics: { ...cvData!.basics, customFields: newFields } });
           }}
-          className="w-full mt-2 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+          className="w-full mt-2 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors text-sm md:text-base"
         >
           + Add Custom Field
         </button>
@@ -1711,25 +1711,25 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
       )}
       {/* Main wrapper */}
       <div className="min-h-screen bg-bg text-text">
-        <div className="flex justify-end p-4">
+        <div className="flex justify-end p-2 md:p-4">
           <ThemeToggle />
         </div>
-        <div className="max-w-6xl mx-auto px-2 sm:px-4 md:px-6 py-4 md:py-8">
+        <div className="max-w-6xl mx-auto px-2 sm:px-4 md:px-6 py-2 md:py-4 lg:py-8">
           {/* Header with Rony.DB and backup/restore button group */}
-          <div className="flex items-center justify-between px-6 py-4 border-b border-border bg-bg">
-            <div className="text-2xl font-bold text-primary select-none tracking-wider">
+          <div className="flex items-center justify-between px-4 md:px-6 py-3 md:py-4 border-b border-border bg-bg">
+            <div className="text-xl md:text-2xl font-bold text-primary select-none tracking-wider">
               Rony.DB
             </div>
           </div>
           {/* Tab Order Card at the Top */}
-          <section className="mb-8">
+          <section className="mb-4 md:mb-8">
             <div className="rounded-lg overflow-hidden border border-border">
-              <div className="bg-sectionheader px-6 py-4 border-b border-border rounded-t-lg">
-                <h3 className="text-lg font-semibold text-text m-0">
+              <div className="bg-sectionheader px-4 md:px-6 py-3 md:py-4 border-b border-border rounded-t-lg">
+                <h3 className="text-base md:text-lg font-semibold text-text m-0">
                   Tab Order
                 </h3>
               </div>
-              <div className="bg-card px-6 py-4 rounded-b-lg">
+              <div className="bg-card px-4 md:px-6 py-3 md:py-4 rounded-b-lg">
                 <DragDropList
                   items={cvData.tabOrder.map((id) => ({
                     id,
@@ -1740,10 +1740,10 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
                   }
                   renderItem={(item) => (
                     <div className="flex items-center gap-3">
-                      <span className="font-medium">{item.label}</span>
+                      <span className="font-medium text-sm md:text-base">{item.label}</span>
                     </div>
                   )}
-                  className="grid grid-cols-2 md:grid-cols-4 gap-3"
+                  className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2 md:gap-3"
                 />
               </div>
             </div>
@@ -1753,63 +1753,88 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
           <section className="mb-8">
             <div className="bg-card border border-border rounded-lg shadow-md">
               {/* Header with title, view CV, save, logout */}
-              <div className="flex flex-col md:flex-row md:items-center md:justify-between bg-sectionheader px-6 py-4 rounded-t-lg border-b border-border">
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between bg-sectionheader px-4 md:px-6 py-4 rounded-t-lg border-b border-border">
                 <div className="flex items-center gap-4 mb-4 md:mb-0">
-                  <h1 className="text-2xl font-bold text-primary flex-1">
+                  <h1 className="text-xl md:text-2xl font-bold text-primary flex-1">
                     Rony.DB Dashboard
                   </h1>
                 </div>
-                <div className="flex items-center gap-2 ml-auto">
-                  <button
-                    onClick={() => {
-                      window.history.pushState({}, "", "/");
-                      const navEvent = new PopStateEvent("popstate");
-                      window.dispatchEvent(navEvent);
-                    }}
-                    className="px-2.5 py-1.5 bg-card text-primary border border-border rounded-full text-base hover:bg-row transition-colors"
-                    title="View CV"
-                  >
-                    <ExternalLink className="w-5 h-5" />
-                  </button>
-                  <button
-                    onClick={handleSave}
-                    className="px-2.5 py-1.5 bg-card text-primary border border-border rounded-full text-base hover:bg-row transition-colors"
-                    title="Save Changes"
-                  >
-                    <Save className="w-5 h-5" />
-                  </button>
-                  <button
-                    onClick={handleRestoreClick}
-                    className="px-2.5 py-1.5 bg-card text-primary border border-border rounded-full text-base hover:bg-row transition-colors"
-                    title="Restore Backup"
-                  >
-                    <GripVertical className="w-5 h-5" />
-                  </button>
-                  <button
-                    onClick={onLogout}
-                    className="px-2.5 py-1.5 bg-card text-primary border border-border rounded-full text-base hover:bg-row transition-colors"
-                    title="Logout"
-                  >
-                    <LogOut className="w-5 h-5" />
-                  </button>
+                <div className="flex items-center gap-1 md:gap-2 ml-auto">
+                  {/* Mobile: Icon-only buttons */}
+                  <div className="flex md:hidden gap-1">
+                    <button
+                      onClick={() => {
+                        window.history.pushState({}, "", "/");
+                        const navEvent = new PopStateEvent("popstate");
+                        window.dispatchEvent(navEvent);
+                      }}
+                      className="p-2 bg-card text-primary border border-border rounded-md hover:bg-row transition-colors"
+                      title="View CV"
+                    >
+                      <ExternalLink className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={handleSave}
+                      className="p-2 bg-card text-primary border border-border rounded-md hover:bg-row transition-colors"
+                      title="Save Changes"
+                    >
+                      <Save className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={onLogout}
+                      className="p-2 bg-card text-primary border border-border rounded-md hover:bg-row transition-colors"
+                      title="Logout"
+                    >
+                      <LogOut className="w-4 h-4" />
+                    </button>
+                  </div>
 
-                  {/* Backup/Restore Button Group */}
-                  <div className="flex gap-1 bg-card rounded-lg shadow px-2 py-1 border border-border">
+                  {/* Desktop: Full buttons */}
+                  <div className="hidden md:flex items-center gap-2">
+                    <button
+                      onClick={() => {
+                        window.history.pushState({}, "", "/");
+                        const navEvent = new PopStateEvent("popstate");
+                        window.dispatchEvent(navEvent);
+                      }}
+                      className="px-2.5 py-1.5 bg-card text-primary border border-border rounded-full text-base hover:bg-row transition-colors"
+                      title="View CV"
+                    >
+                      <ExternalLink className="w-5 h-5" />
+                    </button>
+                    <button
+                      onClick={handleSave}
+                      className="px-2.5 py-1.5 bg-card text-primary border border-border rounded-full text-base hover:bg-row transition-colors"
+                      title="Save Changes"
+                    >
+                      <Save className="w-5 h-5" />
+                    </button>
+                    <button
+                      onClick={onLogout}
+                      className="px-2.5 py-1.5 bg-card text-primary border border-border rounded-full text-base hover:bg-row transition-colors"
+                      title="Logout"
+                    >
+                      <LogOut className="w-5 h-5" />
+                    </button>
+                  </div>
+
+                  {/* Backup/Restore Button Group - Mobile Optimized */}
+                  <div className="flex gap-1 bg-card rounded-lg shadow px-1 md:px-2 py-1 border border-border">
                     <button
                       onClick={handleDownloadBackup}
-                      className="inline-flex items-center justify-center w-9 h-9 rounded-md hover:bg-accent/10 text-primary hover:text-blue-600 transition-colors"
+                      className="inline-flex items-center justify-center w-8 h-8 md:w-9 md:h-9 rounded-md hover:bg-accent/10 text-primary hover:text-blue-600 transition-colors"
                       title="Download Backup"
                       type="button"
                     >
-                      <Download className="w-5 h-5" />
+                      <Download className="w-4 h-4 md:w-5 md:h-5" />
                     </button>
                     <button
                       onClick={handleRestoreClick}
-                      className="inline-flex items-center justify-center w-9 h-9 rounded-md hover:bg-accent/10 text-primary hover:text-green-600 transition-colors"
+                      className="inline-flex items-center justify-center w-8 h-8 md:w-9 md:h-9 rounded-md hover:bg-accent/10 text-primary hover:text-green-600 transition-colors"
                       title="Restore Backup"
                       type="button"
                     >
-                      <Upload className="w-5 h-5" />
+                      <Upload className="w-4 h-4 md:w-5 md:h-5" />
                     </button>
                     <input
                       type="file"
@@ -1818,17 +1843,17 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
                       style={{ display: "none" }}
                       onChange={handleFileChange}
                     />
+                  </div>
                 </div>
               </div>
-              </div>
 
-              {/* Tabs */}
-              <div className="flex flex-wrap gap-2 px-6 py-4 bg-card border-t border-border rounded-b-lg">
+              {/* Tabs - Mobile Responsive */}
+              <div className="flex flex-wrap gap-1 md:gap-2 px-4 md:px-6 py-3 md:py-4 bg-card border-t border-border rounded-b-lg">
                 {tabs.map((tab) => (
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
-                    className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors duration-200 border border-border
+                    className={`px-2 md:px-3 py-1 md:py-1.5 rounded-md text-xs md:text-sm font-medium transition-colors duration-200 border border-border
                       ${
                         activeTab === tab.id
                           ? "bg-primary text-white shadow"
@@ -1841,14 +1866,15 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
                 ))}
                 <button
                   onClick={addCustomTab}
-                  className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium bg-card text-primary border border-border hover:bg-row ml-2"
+                  className="flex items-center gap-1 md:gap-2 px-2 md:px-3 py-1 md:py-1.5 rounded-md text-xs md:text-sm font-medium bg-card text-primary border border-border hover:bg-row ml-1 md:ml-2"
                 >
-                  <Plus className="w-4 h-4" />
-                  Add Custom Tab
+                  <Plus className="w-3 h-3 md:w-4 md:h-4" />
+                  <span className="hidden sm:inline">Add Custom Tab</span>
+                  <span className="sm:hidden">Add</span>
                 </button>
               </div>
               {/* Tab Content */}
-              <div className="p-6">{renderTabContent()}</div>
+              <div className="p-4 md:p-6">{renderTabContent()}</div>
             </div>
           </section>
         </div>
