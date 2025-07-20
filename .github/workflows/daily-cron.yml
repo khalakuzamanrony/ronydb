@@ -30,8 +30,8 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Run daily cron tasks (keepalive + backup)
-        run: node cron-scheduler.js
+      - name: Run backup task once
+        run: node run-once.js
 
       - name: Log completion
         run: |
