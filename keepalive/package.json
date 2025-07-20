@@ -3,8 +3,15 @@
   "version": "1.0.0",
   "main": "keepalive.js",
   "type": "commonjs",
+  "scripts": {
+    "start": "node start-cron.js",
+    "cron": "node cron-scheduler.js",
+    "keepalive": "node keepalive.js",
+    "backup": "node backup-cron.js"
+  },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.7",
-    "dotenv": "^17.2.0"
+    "dotenv": "^17.2.0",
+    "node-cron": "^3.0.3"
   }
 }
