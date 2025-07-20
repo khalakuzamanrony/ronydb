@@ -17,8 +17,7 @@ The cron job runs **daily at 12:00 PM BST** (6:00 AM UTC).
 
 - `cron-scheduler.js` - Main cron scheduler that runs both keepalive and backup tasks
 - `start-cron.js` - Startup script with better logging and error handling
-- `keepalive.js` - Standalone keepalive updater
-- `backup-cron.js` - Standalone backup and cleanup script
+- `package.json` - Dependencies and npm scripts
 
 ## Usage
 
@@ -32,17 +31,13 @@ npm start
 node start-cron.js
 ```
 
-### Run Individual Tasks
+### Run Cron Scheduler Directly
 
 ```bash
-# Run keepalive update only
-npm run keepalive
-
-# Run backup and cleanup only
-npm run backup
-
 # Run cron scheduler directly
 npm run cron
+# or
+node cron-scheduler.js
 ```
 
 ### Environment Variables
@@ -68,6 +63,7 @@ For production, you can use:
 - **Docker**: Create a container with the cron scheduler
 - **Systemd**: Create a systemd service
 - **Cloud Platforms**: Use their cron job services (Vercel Cron, AWS EventBridge, etc.)
+- **GitHub Actions**: Use the `daily-cron.yml` workflow
 
 ## Logs
 
@@ -91,4 +87,8 @@ The scheduler includes:
 - Graceful shutdown on SIGINT/SIGTERM
 - Uncaught exception handling
 - Unhandled promise rejection handling
-- Individual task error handling that doesn't stop the scheduler 
+- Individual task error handling that doesn't stop the scheduler
+
+## GitHub Actions Integration
+
+This scheduler is designed to work with the GitHub Actions workflow in `.github/workflows/daily-cron.yml` which runs daily at 12:00 PM BST. 

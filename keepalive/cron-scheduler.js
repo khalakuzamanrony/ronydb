@@ -48,44 +48,72 @@ async function backupAndPrune() {
       return;
     }
 
-    // 2. Insert backup into backup-restore table with BD time string
+    // 2. Get current backups to determine new backup number
+    const { data: currentBackups, error: fetchBackupsError } = await supabase
+      .from('backup-restore')
+      .select('id,backup_number,created_at')
+      .order('backup_number', { ascending: true });
+
+    if (fetchBackupsError) {
+      console.error('Failed to fetch current backups:', fetchBackupsError.message);
+      return;
+    }
+
+    // 3. Calculate new backup number (0 for latest)
+    const newBackupNumber = 0;
+    
+    // 4. Shift existing backup numbers (increment all by 1)
+    if (currentBackups && currentBackups.length > 0) {
+      const updatePromises = currentBackups.map(backup => 
+        supabase
+          .from('backup-restore')
+          .update({ backup_number: backup.backup_number + 1 })
+          .eq('id', backup.id)
+      );
+      
+      await Promise.all(updatePromises);
+      console.log('Shifted existing backup numbers');
+    }
+
+    // 5. Insert new backup with number 0 (latest)
     const createdAt = getBDTimeString();
     const { error: insertError } = await supabase
       .from('backup-restore')
-      .insert([{ data: cvData, created_at: createdAt }]);
+      .insert([{ 
+        data: cvData, 
+        created_at: createdAt,
+        backup_number: newBackupNumber
+      }]);
 
     if (insertError) {
       console.error('Failed to insert backup:', insertError.message);
       return;
     } else {
-      console.log('Backup created:', createdAt);
+      console.log('Backup created:', createdAt, '(backup_number: 0)');
     }
 
-    // 3. Delete backups except the latest 2 (by id desc)
-    const { data: backups, error: fetchBackupsError } = await supabase
+    // 6. Delete backups with backup_number >= 3 (keep only 0, 1, 2)
+    const { error: deleteError } = await supabase
       .from('backup-restore')
-      .select('id,created_at')
-      .order('id', { ascending: false });
+      .delete()
+      .gte('backup_number', 3);
 
-    if (fetchBackupsError) {
-      console.error('Failed to fetch backups:', fetchBackupsError.message);
-      return;
-    }
-
-    if (backups && backups.length > 2) {
-      const idsToDelete = backups.slice(2).map(b => b.id);
-      const { error: deleteError } = await supabase
-        .from('backup-restore')
-        .delete()
-        .in('id', idsToDelete);
-      if (deleteError) {
-        console.error('Failed to delete old backups:', deleteError.message);
-      } else {
-        console.log('Old backups deleted:', idsToDelete);
-      }
+    if (deleteError) {
+      console.error('Failed to delete old backups:', deleteError.message);
     } else {
-      console.log('No old backups to delete.');
+      // Get final state to show what was kept
+      const { data: finalBackups, error: finalError } = await supabase
+        .from('backup-restore')
+        .select('id,backup_number,created_at')
+        .order('backup_number', { ascending: true });
+
+      if (!finalError && finalBackups) {
+        console.log('Kept backups:', finalBackups.map(b => 
+          `#${b.backup_number} (${b.created_at})`
+        ));
+      }
     }
+
   } catch (error) {
     console.error('Error in backupAndPrune:', error.message);
   }

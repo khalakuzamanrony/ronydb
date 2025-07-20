@@ -2,35 +2,45 @@
 
 This directory contains GitHub Actions workflows for running the daily cron tasks.
 
-## Workflows
+## 🎯 RECOMMENDED WORKFLOW
 
-### 1. `daily-cron.yml` (Recommended)
+### `daily-cron.yml` (USE THIS ONE)
 - **Schedule**: Daily at 6:00 AM UTC (12:00 PM BST/GMT+6)
-- **Purpose**: Main daily cron job that runs both keepalive and backup tasks
+- **Purpose**: **MAIN workflow** that runs both keepalive and backup tasks together
 - **Manual Trigger**: Available via `workflow_dispatch`
+- **Status**: ✅ **ACTIVE - Use this workflow**
 
-### 2. `backup-cron.yml`
-- **Schedule**: Daily at 6:00 AM UTC (12:00 PM BST/GMT+6)
-- **Purpose**: Legacy backup workflow, now uses the unified cron scheduler
-- **Manual Trigger**: Available via `workflow_dispatch`
+## 🧪 TESTING WORKFLOW
 
-### 3. `keepalive-cron.yml`
-- **Schedule**: Daily at 6:00 AM UTC (12:00 PM BST/GMT+6)
-- **Purpose**: Legacy keepalive workflow, now uses the unified cron scheduler
-- **Manual Trigger**: Available via `workflow_dispatch`
-
-### 4. `test-cron.yml`
+### `test-cron.yml`
 - **Schedule**: Manual only
 - **Purpose**: Test workflow for manually running cron tasks
 - **Manual Trigger**: Available via `workflow_dispatch` with task selection
+- **Status**: ✅ **ACTIVE - Use for testing**
+
+## ❌ DEPRECATED WORKFLOWS (DON'T USE)
+
+### `backup-cron.yml` and `keepalive-cron.yml`
+- **Status**: ❌ **DEPRECATED - These are redundant**
+- **Reason**: We now have a unified scheduler that handles both tasks together
+- **Action**: These can be deleted or disabled
+
+## Why Only One Main Workflow?
+
+Since we created a unified `cron-scheduler.js` that handles both keepalive and backup tasks together, there's no need for separate workflows. The unified approach is:
+
+1. **Simpler**: One workflow instead of multiple
+2. **More reliable**: Both tasks run together or not at all
+3. **Easier to maintain**: Single source of truth
+4. **Better logging**: Combined logs for both tasks
 
 ## Schedule Details
 
-All scheduled workflows run at **6:00 AM UTC**, which corresponds to **12:00 PM BST** (Bangladesh Standard Time, GMT+6).
+The main workflow runs at **6:00 AM UTC**, which corresponds to **12:00 PM BST** (Bangladesh Standard Time, GMT+6).
 
 ## Tasks Performed
 
-Each workflow runs the following tasks:
+The main workflow runs these tasks together:
 1. **Keepalive Update**: Updates the keepalive table to maintain database activity
 2. **CV Data Backup**: Creates a backup of all CV data in the backup-restore table
 3. **Cleanup**: Removes old backups, keeping only the latest 2
@@ -64,9 +74,8 @@ Check the Actions tab in your GitHub repository to:
 - Manually trigger workflows for testing
 - Track execution history
 
-## Recommendations
+## Summary
 
-1. **Use `daily-cron.yml`** as your primary workflow
-2. **Keep the legacy workflows** for backward compatibility
-3. **Use `test-cron.yml`** for manual testing and debugging
-4. **Monitor the Actions tab** regularly to ensure tasks are running successfully 
+**Use `daily-cron.yml` for your main daily tasks.**
+**Use `test-cron.yml` for manual testing.**
+**Ignore the other workflows - they're redundant.** 

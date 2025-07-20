@@ -1,13 +1,11 @@
 {
   "name": "keepalive",
   "version": "1.0.0",
-  "main": "keepalive.js",
+  "main": "cron-scheduler.js",
   "type": "commonjs",
   "scripts": {
     "start": "node start-cron.js",
-    "cron": "node cron-scheduler.js",
-    "keepalive": "node keepalive.js",
-    "backup": "node backup-cron.js"
+    "cron": "node cron-scheduler.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.7",

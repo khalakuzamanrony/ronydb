@@ -10,8 +10,6 @@ on:
         type: choice
         options:
           - all
-          - keepalive
-          - backup
 
 jobs:
   test-cron:
@@ -37,20 +35,8 @@ jobs:
 
       - name: Run test task
         run: |
-          case "${{ github.event.inputs.task }}" in
-            "all")
-              echo "Running all tasks (keepalive + backup)..."
-              node cron-scheduler.js
-              ;;
-            "keepalive")
-              echo "Running keepalive only..."
-              node keepalive.js
-              ;;
-            "backup")
-              echo "Running backup only..."
-              node backup-cron.js
-              ;;
-          esac
+          echo "Running unified cron scheduler (keepalive + backup)..."
+          node cron-scheduler.js
 
       - name: Log completion
         run: |
