@@ -74,6 +74,7 @@ export interface CVData {
     score: string;
     cgpa: string;
     scale: string;
+    url?: string;
     customFields: CustomField[];
   }[];
   skills: {
@@ -101,6 +102,24 @@ export interface CVData {
     id: string;
     title: string;
     content: string;
+  }[];
+  passwordBank?: {
+    id: string;
+    vendorName: string;
+    vendorUrl: string;
+    credentials: {
+      id: string;
+      username: string;
+      email: string;
+      password: string;
+      recoveryPhone: string;
+      recoveryEmail: string;
+      date: string;
+      twoFactorAuth: 'Yes' | 'No';
+      twoFactorAuthPhone?: string;
+      twoFactorAuthCodes?: string;
+      additionalData: string;
+    }[];
   }[];
   tabOrder: string[];
   assets: {

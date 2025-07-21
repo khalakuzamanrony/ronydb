@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.51.0",
+    "crypto-js": "^4.2.0",
     "dotenv": "^17.2.0",
     "js-file-download": "^0.4.12",
     "jspdf": "^3.0.1",

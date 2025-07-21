@@ -619,7 +619,7 @@ ${lang.language}: ${lang.fluency}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                     <div className="space-y-4 md:pr-4 md:border-r md:border-border">
                       {basicCol1.map((item: typeof basicContacts[number], idx: number) => (
-                        <div key={idx} className="flex items-center w-full justify-between">
+                        <div key={idx} className="flex items-center w-full justify-between bg-sectionheader p-3 rounded-lg">
                           <div className="flex items-center flex-grow min-w-0">
                             {item.icon}
                             {item.isLink ? (
@@ -636,7 +636,7 @@ ${lang.language}: ${lang.fluency}
                     </div>
                     <div className="space-y-4">
                       {basicCol2.map((item: typeof basicContacts[number], idx: number) => (
-                        <div key={idx} className="flex items-center w-full justify-between">
+                        <div key={idx} className="flex items-center w-full justify-between bg-sectionheader p-3 rounded-lg">
                           <div className="flex items-center flex-grow min-w-0">
                             {item.icon}
                             {item.isLink ? (
@@ -657,7 +657,7 @@ ${lang.language}: ${lang.fluency}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                     <div className="space-y-4 md:pr-4 md:border-r md:border-border">
                       {socialCol1.map((item: typeof socialProfiles[number], idx: number) => (
-                        <div key={idx} className="flex items-center w-full justify-between">
+                        <div key={idx} className="flex items-center w-full justify-between bg-sectionheader p-3 rounded-lg">
                           <div className="flex items-center flex-grow min-w-0">
                             {item.icon}
                             <span className="text-secondary mr-1">{item.network}:</span>
@@ -671,7 +671,7 @@ ${lang.language}: ${lang.fluency}
                     </div>
                     <div className="space-y-4">
                       {socialCol2.map((item: typeof socialProfiles[number], idx: number) => (
-                        <div key={idx} className="flex items-center w-full justify-between">
+                        <div key={idx} className="flex items-center w-full justify-between bg-sectionheader p-3 rounded-lg">
                           <div className="flex items-center flex-grow min-w-0">
                             {item.icon}
                             <span className="text-secondary mr-1">{item.network}:</span>
@@ -689,7 +689,7 @@ ${lang.language}: ${lang.fluency}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-4 md:pr-4 md:border-r md:border-border">
                       {toolCol1.map((item: typeof toolProfiles[number], idx: number) => (
-                        <div key={idx} className="flex items-center w-full justify-between">
+                        <div key={idx} className="flex items-center w-full justify-between bg-sectionheader p-3 rounded-lg">
                           <div className="flex items-center flex-grow min-w-0">
                             {item.icon}
                             <span className="text-secondary mr-1">{item.name}:</span>
@@ -703,7 +703,7 @@ ${lang.language}: ${lang.fluency}
                     </div>
                     <div className="space-y-4">
                       {toolCol2.map((item: typeof toolProfiles[number], idx: number) => (
-                        <div key={idx} className="flex items-center w-full justify-between">
+                        <div key={idx} className="flex items-center w-full justify-between bg-sectionheader p-3 rounded-lg">
                           <div className="flex items-center flex-grow min-w-0">
                             {item.icon}
                             <span className="text-secondary mr-1">{item.name}:</span>
@@ -867,8 +867,13 @@ ${lang.language}: ${lang.fluency}
                           <CopyButton text={`${edu.studyType} in ${edu.area}`} className="ml-1 flex-shrink-0" />
                         </div>
                         <div className="flex items-center justify-between mb-2 w-full overflow-hidden">
-                          <div className="flex-1 min-w-0">
+                          <div className="flex items-center flex-1 min-w-0">
                             <p className="text-blue-600 font-medium truncate">{edu.institution}</p>
+                            {edu.url && (
+                              <a href={edu.url} target="_blank" rel="noopener noreferrer" className="ml-2 text-blue-600 hover:text-blue-800">
+                                <ExternalLink className="w-4 h-4" />
+                              </a>
+                            )}
                           </div>
                           <CopyButton text={edu.institution} className="ml-1 flex-shrink-0" />
                         </div>
@@ -925,55 +930,79 @@ ${lang.language}: ${lang.fluency}
               </div>
               {expanded && (
                 <div className="p-6 pt-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-6">
+                      <div className="bg-sectionheader p-6 rounded-lg">
+                        <h3 className="text-xl font-semibold text-primary mb-4">Technical Skills</h3>
                   <div className="space-y-6">
                     {cvData.skills.technical.map((skillGroup, index) => (
-                      <div key={index}>
-                        <div className="flex items-center justify-between mb-3 w-full overflow-hidden">
-                          <div className="flex-1 min-w-0">
-                            <h3 className="text-lg font-semibold text-secondary truncate">{skillGroup.name}</h3>
+                            <div key={index} className="space-y-3">
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                  <Hash className="w-5 h-5 text-blue-600" />
+                                  <h4 className="text-lg font-medium text-secondary">{skillGroup.name}</h4>
                           </div>
-                          <CopyButton text={skillGroup.name} className="ml-1 flex-shrink-0" />
+                                <CopyButton text={skillGroup.name} className="flex-shrink-0" />
                         </div>
+                              <div className="bg-card p-4 rounded-lg border border-border">
                         <div className="flex flex-wrap gap-2">
                           {skillGroup.keywords.map((skill, skillIndex) => (
-                            <div key={skillIndex} className="flex flex-row items-center bg-chipbg text-chiptext px-3 py-1 rounded-full text-sm font-medium gap-1">
+                                    <div key={skillIndex} 
+                                      className="group relative flex items-center px-3 py-1.5 bg-bg hover:bg-primary hover:text-white transition-colors duration-200 rounded-lg text-sm font-medium border border-border">
                               <span className="truncate">{skill}</span>
-                              <CopyButton text={skill} className="flex-shrink-0" />
+                                      <div className="absolute right-0 top-0 bottom-0 flex items-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                                        <CopyButton text={skill} className="ml-2" />
+                                      </div>
                             </div>
                           ))}
+                                </div>
                         </div>
                       </div>
                     ))}
-                    
-                    {cvData.skills.methodologies.length > 0 && (
-                      <div>
-                        <div className="flex items-center mb-3 overflow-hidden">
-                          <h3 className="text-lg font-semibold text-secondary truncate">Methodologies</h3>
-                          <CopyButton text="Methodologies" className="ml-1" />
                         </div>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-6">
+                    {cvData.skills.methodologies.length > 0 && (
+                        <div className="bg-sectionheader p-6 rounded-lg">
+                          <div className="flex items-center gap-2 mb-4">
+                            <Award className="w-6 h-6 text-blue-600" />
+                            <h3 className="text-xl font-semibold text-primary">Methodologies</h3>
+                        </div>
+                          <div className="bg-card p-4 rounded-lg border border-border">
                         <div className="flex flex-wrap gap-2">
                           {cvData.skills.methodologies.map((methodology, index) => (
-                            <div key={index} className="flex flex-row items-center bg-chipbg text-chiptext px-3 py-1 rounded-full text-sm font-medium gap-1">
+                                <div key={index} 
+                                  className="group relative flex items-center px-3 py-1.5 bg-bg hover:bg-primary hover:text-white transition-colors duration-200 rounded-lg text-sm font-medium border border-border">
                               <span className="truncate">{methodology}</span>
-                              <CopyButton text={methodology} className="flex-shrink-0" />
+                                  <div className="absolute right-0 top-0 bottom-0 flex items-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                                    <CopyButton text={methodology} className="ml-2" />
+                                  </div>
                             </div>
                           ))}
                         </div>
                       </div>
-                    )}
                   </div>
+                      )}
 
                   {cvData.skills?.customFields && cvData.skills.customFields.length > 0 && (
-                    <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {cvData.skills.customFields.map((field: CustomField) => (
-                        <div key={field.id} className="flex items-center justify-between p-3 bg-row rounded-lg break-inside-avoid overflow-hidden break-words">
-                          <div className="flex-1">
-                            <CustomFieldRenderer field={field} />
+                        <div className="bg-sectionheader p-6 rounded-lg">
+                          <div className="flex items-center gap-2 mb-4">
+                            <FileText className="w-6 h-6 text-blue-600" />
+                            <h3 className="text-xl font-semibold text-primary">Additional Skills</h3>
                           </div>
+                          <div className="space-y-3">
+                      {cvData.skills.customFields.map((field: CustomField) => (
+                              <div key={field.id} className="bg-card p-4 rounded-lg border border-border">
+                            <CustomFieldRenderer field={field} />
                         </div>
                       ))}
+                          </div>
                     </div>
                   )}
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
@@ -1001,30 +1030,37 @@ ${lang.language}: ${lang.fluency}
                     {cvData.projects.map((project, index) => (
                       <div key={index} className="bg-card border border-border rounded-lg shadow-md p-6">
                         <div className="flex items-center justify-between mb-2 w-full overflow-hidden">
-                          <div className="flex-1 min-w-0">
+                          <div className="flex-1 min-w-0 flex items-center">
                             <h3 className="text-xl font-semibold text-secondary truncate">{project.name}</h3>
+                            {project.url && (
+                              <a href={project.url} target="_blank" rel="noopener noreferrer" className="ml-2 text-blue-600 hover:text-blue-800">
+                                <ExternalLink className="w-4 h-4" />
+                              </a>
+                            )}
                           </div>
                           <CopyButton text={project.name} className="ml-1 flex-shrink-0" />
                         </div>
                         {project.description && (
-                          <div className="flex items-center justify-between mb-2 w-full overflow-hidden">
+                          <div className="flex items-center justify-between mb-2 w-full">
                             <div className="flex-1 min-w-0">
-                              <p className="text-secondary truncate">{project.description}</p>
+                              <p className="text-secondary whitespace-pre-wrap">{project.description}</p>
                             </div>
                             <CopyButton text={project.description} className="ml-1 flex-shrink-0" />
                           </div>
                         )}
-                        {project.url && (
-                          <div className="flex items-center justify-between mb-2 w-full overflow-hidden">
-                            <div className="flex-1 min-w-0">
-                              <a href={project.url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline truncate">
-                                {project.url}
-                              </a>
+                        {project.contributions && project.contributions.length > 0 && (
+                          <ul className="space-y-2 mt-2">
+                            {project.contributions.map((contribution: string, cIndex: number) => (
+                              <li key={cIndex} className="flex items-start w-full justify-between">
+                                <div className="flex items-start flex-1 min-w-0">
+                                  <span className="text-blue-600 mr-2">•</span>
+                                  <span className="text-secondary flex-1 min-w-0">{contribution}</span>
                             </div>
-                            <CopyButton text={project.url} className="ml-1 flex-shrink-0" />
-                          </div>
+                                <CopyButton text={contribution} className="ml-1 flex-shrink-0" />
+                              </li>
+                            ))}
+                          </ul>
                         )}
-
                         {project.customFields && project.customFields.length > 0 && (
                           <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                             {project.customFields.map((field: CustomField) => (
@@ -1141,7 +1177,7 @@ ${lang.language}: ${lang.fluency}
                 <div className="p-6 pt-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {cvData.languages.map((lang, index) => (
-                      <div key={index} className="flex items-center justify-between w-full overflow-hidden">
+                      <div key={index} className="bg-sectionheader flex items-center justify-between w-full overflow-hidden p-3 rounded-lg">
                         <div className="flex-1 min-w-0">
                           <span className="font-medium text-secondary truncate">{lang.language}</span>
                           <span className="text-secondary ml-2 truncate">({lang.fluency})</span>
