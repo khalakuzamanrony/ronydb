@@ -289,9 +289,9 @@ ${lang.language}: ${lang.fluency}
           </div>
           {expanded && (
             <div className="p-6 pt-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 gap-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 gap-y-4">
                 {tab.customFields.map((field: CustomField) => (
-                  <div key={field.id} className="flex items-center justify-between p-3 bg-row rounded-lg break-inside-avoid overflow-hidden break-words">
+                  <div key={field.id} className="bg-sectionheader flex items-center justify-between p-3 bg-row rounded-lg break-inside-avoid overflow-hidden break-words">
                     <div className="flex-1">
                       <CustomFieldRenderer field={field} />
                     </div>
