@@ -12,6 +12,28 @@ export interface CustomTab {
   customFields: CustomField[];
 }
 
+export interface PasswordVendorSubCard {
+  email: string;
+  username: string;
+  password: string;
+  recoveryPhone: string;
+  recoveryEmail: string;
+  modificationDate: string;
+  twoFactorEnabled: boolean;
+  twoFactorPhone: string;
+  twoFactorEmail: string;
+  twoFactorDetails: string;
+  additionalData: string;
+  isExpanded?: boolean;
+}
+
+export interface PasswordVendor {
+  name: string;
+  url: string;
+  accounts: PasswordVendorSubCard[];
+  isExpanded?: boolean;
+}
+
 export interface CVData {
   basics: {
     name: string;
@@ -114,4 +136,5 @@ export interface CVData {
     url: string;
     customFields: CustomField[];
   }[];
+  passwordBank: PasswordVendor[];
 }
