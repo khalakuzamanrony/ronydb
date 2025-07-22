@@ -636,7 +636,7 @@ ${lang.language}: ${lang.fluency}
         const [toolCol1, toolCol2] = splitColumns(toolProfiles);
         return (
           <section className="mb-8">
-            <div className="bg-card border border-border rounded-lg shadow-md">
+            <div className="bg-card border border-border rounded-lg shadow-md ">
               <div
                 className="flex items-center cursor-pointer select-none bg-sectionheader px-6 py-4 rounded-t-lg border-b border-border"
                 onClick={() => toggleSection('contacts')}
@@ -652,10 +652,10 @@ ${lang.language}: ${lang.fluency}
                   {/* Basic Contacts */}
                   <h3 className="font-semibold text-secondary mb-2">Basic Contacts</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                    <div className="space-y-4 md:pr-4 md:border-r md:border-border">
+                    <div className="space-y-4 md:pr-4 md:border-r md:border-border ">
                       {basicCol1.map((item: typeof basicContacts[number], idx: number) => (
-                        <div key={idx} className="flex items-center w-full justify-between">
-                          <div className="flex items-center flex-grow min-w-0">
+                        <div key={idx} className="flex items-center w-full justify-between p-4 bg-sectionheader rounded-lg">
+                          <div className="flex items-center flex-grow min-w-0 ">
                             {item.icon}
                             {item.isLink ? (
                               <a href={item.value} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline truncate">
@@ -671,7 +671,7 @@ ${lang.language}: ${lang.fluency}
                     </div>
                     <div className="space-y-4">
                       {basicCol2.map((item: typeof basicContacts[number], idx: number) => (
-                        <div key={idx} className="flex items-center w-full justify-between">
+                        <div key={idx} className="flex items-center w-full justify-between p-4 bg-sectionheader rounded-lg">
                           <div className="flex items-center flex-grow min-w-0">
                             {item.icon}
                             {item.isLink ? (
@@ -692,7 +692,7 @@ ${lang.language}: ${lang.fluency}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                     <div className="space-y-4 md:pr-4 md:border-r md:border-border">
                       {socialCol1.map((item: typeof socialProfiles[number], idx: number) => (
-                        <div key={idx} className="flex items-center w-full justify-between">
+                        <div key={idx} className="flex items-center w-full justify-between p-4 bg-sectionheader rounded-lg">
                           <div className="flex items-center flex-grow min-w-0">
                             {item.icon}
                             <span className="text-secondary mr-1">{item.network}:</span>
@@ -706,7 +706,7 @@ ${lang.language}: ${lang.fluency}
                     </div>
                     <div className="space-y-4">
                       {socialCol2.map((item: typeof socialProfiles[number], idx: number) => (
-                        <div key={idx} className="flex items-center w-full justify-between">
+                        <div key={idx} className="flex items-center w-full justify-between p-4 bg-sectionheader rounded-lg">
                           <div className="flex items-center flex-grow min-w-0">
                             {item.icon}
                             <span className="text-secondary mr-1">{item.network}:</span>
@@ -724,7 +724,7 @@ ${lang.language}: ${lang.fluency}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-4 md:pr-4 md:border-r md:border-border">
                       {toolCol1.map((item: typeof toolProfiles[number], idx: number) => (
-                        <div key={idx} className="flex items-center w-full justify-between">
+                        <div key={idx} className="flex items-center w-full justify-between p-4 bg-sectionheader rounded-lg">
                           <div className="flex items-center flex-grow min-w-0">
                             {item.icon}
                             <span className="text-secondary mr-1">{item.name}:</span>
@@ -738,7 +738,7 @@ ${lang.language}: ${lang.fluency}
                     </div>
                     <div className="space-y-4">
                       {toolCol2.map((item: typeof toolProfiles[number], idx: number) => (
-                        <div key={idx} className="flex items-center w-full justify-between">
+                        <div key={idx} className="flex items-center w-full justify-between p-4 bg-sectionheader rounded-lg">
                           <div className="flex items-center flex-grow min-w-0">
                             {item.icon}
                             <span className="text-secondary mr-1">{item.name}:</span>
@@ -1176,7 +1176,7 @@ ${lang.language}: ${lang.fluency}
                 <div className="p-6 pt-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {cvData.languages.map((lang, index) => (
-                      <div key={index} className="flex items-center justify-between w-full overflow-hidden">
+                      <div key={index} className="flex items-center justify-between w-full overflow-hidden p-4 bg-sectionheader rounded-lg">
                         <div className="flex-1 min-w-0">
                           <span className="font-medium text-secondary truncate">{lang.language}</span>
                           <span className="text-secondary ml-2 truncate">({lang.fluency})</span>

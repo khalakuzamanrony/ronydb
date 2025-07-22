@@ -18,6 +18,9 @@ import {
   ExternalLink,
   Download,
   Upload,
+  Copy,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import {
   FaLinkedin,
@@ -75,11 +78,27 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
   const [restoreStatus, setRestoreStatus] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
+  const [passwordVisibility, setPasswordVisibility] = useState<{[key: string]: boolean}>({});
+
+  // Function to toggle password visibility
+  const togglePasswordVisibility = (vendorIndex: number, accountIndex: number) => {
+    const key = `${vendorIndex}-${accountIndex}`;
+    setPasswordVisibility(prev => ({
+      ...prev,
+      [key]: !prev[key]
+    }));
+  };
+
+  // Function to copy text to clipboard
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    setToast({ message: "Copied to clipboard!", type: "success" });
+  };
 
   useEffect(() => {
     (async () => {
       const supabaseData = await fetchCVDataFromSupabase();
-      // One-time fix: ensure 'projects' and 'backup-restore' are in tabOrder for this session only
+      // One-time fix: ensure 'projects', 'passwordBank', and 'backup-restore' are in tabOrder for this session only
       if (supabaseData && Array.isArray(supabaseData.tabOrder)) {
         const updatedTabOrder = [...supabaseData.tabOrder];
         let needsUpdate = false;
@@ -89,8 +108,19 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
           needsUpdate = true;
         }
         
+        if (!updatedTabOrder.includes('passwordBank')) {
+          updatedTabOrder.push('passwordBank');
+          needsUpdate = true;
+        }
+        
         if (!updatedTabOrder.includes('backup-restore')) {
           updatedTabOrder.push('backup-restore');
+          needsUpdate = true;
+        }
+        
+        // Initialize passwordBank if it doesn't exist
+        if (!supabaseData.passwordBank) {
+          supabaseData.passwordBank = [];
           needsUpdate = true;
         }
         
@@ -221,6 +251,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
     { id: "languages", label: "Languages" },
     { id: "coverLetters", label: "Cover Letters" },
     { id: "projects", label: "Projects" },
+    { id: "passwordBank", label: "Password Bank" },
     { id: "backup-restore", label: "Backup-Restore" },
   ];
   const customTabsMap = Object.fromEntries(
@@ -1353,6 +1384,38 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
                       </button>
                     </div>
                   ))}
+                  
+                  <button
+                    onClick={() => {
+                      const newPasswordBank = [...cvData.passwordBank];
+                      const newAccount = {
+                        email: "",
+                        username: "",
+                        password: "",
+                        recoveryPhone: "",
+                        recoveryEmail: "",
+                        modificationDate: new Date().toISOString().split('T')[0],
+                        twoFactorEnabled: false,
+                        twoFactorPhone: "",
+                        twoFactorEmail: "",
+                        twoFactorDetails: "",
+                        additionalData: "",
+                        isExpanded: true
+                      };
+                      newPasswordBank[vendorIndex] = {
+                        ...vendor,
+                        accounts: [...(vendor.accounts || []), newAccount]
+                      };
+                      setCvData({
+                        ...cvData,
+                        passwordBank: newPasswordBank
+                      });
+                    }}
+                    className="w-full mt-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Add New Account
+                  </button>
                 </div>
               </div>
             </div>
@@ -1961,6 +2024,8 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
         return renderCoverLettersTab();
       case "projects":
         return renderProjectsTab();
+      case "passwordBank":
+        return renderPasswordBankTab();
       case "backup-restore":
         return renderBackupRestoreTab();
       default:
@@ -1995,6 +2060,579 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
     } catch (err) {
       setToast({ message: "Failed to restore backup.", type: "error" });
     }
+  };
+
+  // State for password visibility - moved outside the render function to follow React Hooks rules
+  const renderPasswordBankTab = () => {
+    // Initialize passwordBank if it doesn't exist
+    if (!cvData.passwordBank) {
+      setCvData({
+        ...cvData,
+        passwordBank: []
+      });
+    }
+
+    // Function to toggle vendor card expansion
+    const toggleVendorExpansion = (index: number) => {
+      const newPasswordBank = [...cvData.passwordBank];
+      newPasswordBank[index] = {
+        ...newPasswordBank[index],
+        isExpanded: !newPasswordBank[index].isExpanded
+      };
+      setCvData({
+        ...cvData,
+        passwordBank: newPasswordBank
+      });
+    };
+
+    // Function to toggle sub-card expansion
+    const toggleSubCardExpansion = (vendorIndex: number, subCardIndex: number) => {
+      const newPasswordBank = [...cvData.passwordBank];
+      const vendor = newPasswordBank[vendorIndex];
+      const accounts = [...vendor.accounts];
+      accounts[subCardIndex] = {
+        ...accounts[subCardIndex],
+        isExpanded: !accounts[subCardIndex].isExpanded
+      };
+      newPasswordBank[vendorIndex] = {
+        ...vendor,
+        accounts: accounts
+      };
+      setCvData({
+        ...cvData,
+        passwordBank: newPasswordBank
+      });
+    };
+
+    return (
+      <div className="space-y-6">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-semibold text-text">Password Bank</h3>
+          <button
+            onClick={() => {
+              const newVendor = {
+                name: "",
+                url: "",
+                accounts: [],
+                isExpanded: true
+              };
+              setCvData({
+                ...cvData,
+                passwordBank: [...(cvData.passwordBank || []), newVendor]
+              });
+            }}
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          >
+            + Add Vendor
+          </button>
+        </div>
+
+        <DragDropList
+          items={(cvData.passwordBank || []).map((vendor, index) => ({
+            id: index.toString(),
+            data: vendor
+          }))}
+          onReorder={(newOrder) => {
+            const reorderedVendors = newOrder.map(item => item.data);
+            setCvData({
+              ...cvData,
+              passwordBank: reorderedVendors
+            });
+          }}
+          renderItem={(item, index) => {
+            const vendor = item.data;
+            const vendorIndex = parseInt(item.id);
+            return (
+          <div key={vendorIndex} className="bg-sectionheader rounded-lg overflow-hidden mb-4">
+            {/* Vendor Card Header */}
+            <div 
+              className="flex justify-between items-center p-4 cursor-pointer hover:bg-opacity-80"
+              onClick={() => toggleVendorExpansion(vendorIndex)}
+            >
+              <div className="flex-1">
+                <h4 className="font-medium text-text">
+                  {vendor.name || "New Vendor"} {vendor.url && `(${vendor.url})`}
+                </h4>
+              </div>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  const newPasswordBank = cvData.passwordBank.filter((_, i) => i !== vendorIndex);
+                  setCvData({
+                    ...cvData,
+                    passwordBank: newPasswordBank
+                  });
+                }}
+                className="text-red-600 hover:text-red-800 ml-2"
+                title="Delete Vendor"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Vendor Card Content */}
+            {vendor.isExpanded && (
+              <div className="p-4 border-t border-border">
+                {/* Vendor Details Section */}
+                <div className="flex flex-col md:flex-row gap-4 mb-4">
+                  <div className="flex-1">
+                    <label className="block text-sm font-medium text-text mb-1">Vendor Name</label>
+                    <input
+                      type="text"
+                      value={vendor.name}
+                      onChange={(e) => {
+                        const newPasswordBank = [...cvData.passwordBank];
+                        newPasswordBank[vendorIndex] = {
+                          ...vendor,
+                          name: e.target.value
+                        };
+                        setCvData({
+                          ...cvData,
+                          passwordBank: newPasswordBank
+                        });
+                      }}
+                      className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <label className="block text-sm font-medium text-text mb-1">Vendor URL</label>
+                    <input
+                      type="url"
+                      value={vendor.url}
+                      onChange={(e) => {
+                        const newPasswordBank = [...cvData.passwordBank];
+                        newPasswordBank[vendorIndex] = {
+                          ...vendor,
+                          url: e.target.value
+                        };
+                        setCvData({
+                          ...cvData,
+                          passwordBank: newPasswordBank
+                        });
+                      }}
+                      className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
+                    />
+                  </div>
+                </div>
+
+                {/* Sub-cards Section */}
+                <div className="mt-4">
+                  <div className="flex justify-between items-center mb-2">
+                    <h5 className="text-md font-semibold text-text">Accounts</h5>
+                  </div>
+
+                  {/* Sub-cards List */}
+                  {(vendor.accounts || []).map((account, accountIndex) => (
+                    <div key={accountIndex} className="bg-row rounded-lg overflow-hidden mb-3">
+                      {/* Sub-card Header */}
+                      <div 
+                        className="flex justify-between items-center p-3 cursor-pointer hover:bg-opacity-80 bg-opacity-50 bg-gray-200 dark:bg-gray-700"
+                        onClick={() => toggleSubCardExpansion(vendorIndex, accountIndex)}
+                      >
+                        <div className="flex-1">
+                          <h6 className="font-medium text-text">
+                            {account.email || account.username || "New Account"}
+                          </h6>
+                        </div>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            const newPasswordBank = [...cvData.passwordBank];
+                            const newAccounts = vendor.accounts.filter((_, i) => i !== accountIndex);
+                            newPasswordBank[vendorIndex] = {
+                              ...vendor,
+                              accounts: newAccounts
+                            };
+                            setCvData({
+                              ...cvData,
+                              passwordBank: newPasswordBank
+                            });
+                          }}
+                          className="text-red-600 hover:text-red-800 ml-2"
+                          title="Delete Account"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+
+                      {/* Sub-card Content */}
+                      {account.isExpanded && (
+                        <div className="p-3">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <div>
+                              <label className="block text-sm font-medium text-text mb-1">Email</label>
+                              <div className="relative">
+                                <input
+                                  type="email"
+                                  value={account.email}
+                                  onChange={(e) => {
+                                    const newPasswordBank = [...cvData.passwordBank];
+                                    const newAccounts = [...vendor.accounts];
+                                    newAccounts[accountIndex] = {
+                                      ...account,
+                                      email: e.target.value
+                                    };
+                                    newPasswordBank[vendorIndex] = {
+                                      ...vendor,
+                                      accounts: newAccounts
+                                    };
+                                    setCvData({
+                                      ...cvData,
+                                      passwordBank: newPasswordBank
+                                    });
+                                  }}
+                                  className="w-full px-3 py-2 pr-10 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
+                                />
+                                {account.email && (
+                                  <button
+                                    type="button"
+                                    onClick={() => copyToClipboard(account.email)}
+                                    className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-blue-500"
+                                    title="Copy to clipboard"
+                                  >
+                                    <Copy className="w-4 h-4" />
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-text mb-1">Username</label>
+                              <div className="relative">
+                                <input
+                                  type="text"
+                                  value={account.username}
+                                  onChange={(e) => {
+                                    const newPasswordBank = [...cvData.passwordBank];
+                                    const newAccounts = [...vendor.accounts];
+                                    newAccounts[accountIndex] = {
+                                      ...account,
+                                      username: e.target.value
+                                    };
+                                    newPasswordBank[vendorIndex] = {
+                                      ...vendor,
+                                      accounts: newAccounts
+                                    };
+                                    setCvData({
+                                      ...cvData,
+                                      passwordBank: newPasswordBank
+                                    });
+                                  }}
+                                  className="w-full px-3 py-2 pr-10 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
+                                />
+                                {account.username && (
+                                  <button
+                                    type="button"
+                                    onClick={() => copyToClipboard(account.username)}
+                                    className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-blue-500"
+                                    title="Copy to clipboard"
+                                  >
+                                    <Copy className="w-4 h-4" />
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-text mb-1">Password</label>
+                              <div className="relative">
+                                <input
+                                  type={passwordVisibility[`${vendorIndex}-${accountIndex}`] ? "text" : "password"}
+                                  value={account.password}
+                                  onChange={(e) => {
+                                    const newPasswordBank = [...cvData.passwordBank];
+                                    const newAccounts = [...vendor.accounts];
+                                    newAccounts[accountIndex] = {
+                                      ...account,
+                                      password: e.target.value
+                                    };
+                                    newPasswordBank[vendorIndex] = {
+                                      ...vendor,
+                                      accounts: newAccounts
+                                    };
+                                    setCvData({
+                                      ...cvData,
+                                      passwordBank: newPasswordBank
+                                    });
+                                  }}
+                                  className="w-full px-3 py-2 pr-20 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
+                                />
+                                <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex">
+                                  {account.password && (
+                                    <button
+                                      type="button"
+                                      onClick={() => copyToClipboard(account.password)}
+                                      className="text-gray-500 hover:text-blue-500 mr-2"
+                                      title="Copy to clipboard"
+                                    >
+                                      <Copy className="w-4 h-4" />
+                                    </button>
+                                  )}
+                                  <button
+                                    type="button"
+                                    onClick={() => togglePasswordVisibility(vendorIndex, accountIndex)}
+                                    className="text-gray-500 hover:text-blue-500"
+                                    title={passwordVisibility[`${vendorIndex}-${accountIndex}`] ? "Hide password" : "Show password"}
+                                  >
+                                    {passwordVisibility[`${vendorIndex}-${accountIndex}`] ? (
+                                      <EyeOff className="w-4 h-4" />
+                                    ) : (
+                                      <Eye className="w-4 h-4" />
+                                    )}
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-text mb-1">Recovery Phone</label>
+                              <input
+                                type="tel"
+                                value={account.recoveryPhone}
+                                onChange={(e) => {
+                                  const newPasswordBank = [...cvData.passwordBank];
+                                  const newAccounts = [...vendor.accounts];
+                                  newAccounts[accountIndex] = {
+                                    ...account,
+                                    recoveryPhone: e.target.value
+                                  };
+                                  newPasswordBank[vendorIndex] = {
+                                    ...vendor,
+                                    accounts: newAccounts
+                                  };
+                                  setCvData({
+                                    ...cvData,
+                                    passwordBank: newPasswordBank
+                                  });
+                                }}
+                                className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-text mb-1">Recovery Email</label>
+                              <input
+                                type="email"
+                                value={account.recoveryEmail}
+                                onChange={(e) => {
+                                  const newPasswordBank = [...cvData.passwordBank];
+                                  const newAccounts = [...vendor.accounts];
+                                  newAccounts[accountIndex] = {
+                                    ...account,
+                                    recoveryEmail: e.target.value
+                                  };
+                                  newPasswordBank[vendorIndex] = {
+                                    ...vendor,
+                                    accounts: newAccounts
+                                  };
+                                  setCvData({
+                                    ...cvData,
+                                    passwordBank: newPasswordBank
+                                  });
+                                }}
+                                className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-text mb-1">Modification Date</label>
+                              <input
+                                type="date"
+                                value={account.modificationDate}
+                                onChange={(e) => {
+                                  const newPasswordBank = [...cvData.passwordBank];
+                                  const newAccounts = [...vendor.accounts];
+                                  newAccounts[accountIndex] = {
+                                    ...account,
+                                    modificationDate: e.target.value
+                                  };
+                                  newPasswordBank[vendorIndex] = {
+                                    ...vendor,
+                                    accounts: newAccounts
+                                  };
+                                  setCvData({
+                                    ...cvData,
+                                    passwordBank: newPasswordBank
+                                  });
+                                }}
+                                className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-text mb-1">2FA</label>
+                              <select
+                                value={account.twoFactorEnabled ? "Yes" : "No"}
+                                onChange={(e) => {
+                                  const newPasswordBank = [...cvData.passwordBank];
+                                  const newAccounts = [...vendor.accounts];
+                                  newAccounts[accountIndex] = {
+                                    ...account,
+                                    twoFactorEnabled: e.target.value === "Yes"
+                                  };
+                                  newPasswordBank[vendorIndex] = {
+                                    ...vendor,
+                                    accounts: newAccounts
+                                  };
+                                  setCvData({
+                                    ...cvData,
+                                    passwordBank: newPasswordBank
+                                  });
+                                }}
+                                className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
+                              >
+                                <option value="No">No</option>
+                                <option value="Yes">Yes</option>
+                              </select>
+                            </div>
+                          </div>
+
+                          {/* 2FA Additional Fields */}
+                          {account.twoFactorEnabled && (
+                            <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
+                              <div>
+                                <label className="block text-sm font-medium text-text mb-1">2FA Phone</label>
+                                <input
+                                  type="tel"
+                                  value={account.twoFactorPhone}
+                                  onChange={(e) => {
+                                    const newPasswordBank = [...cvData.passwordBank];
+                                    const newAccounts = [...vendor.accounts];
+                                    newAccounts[accountIndex] = {
+                                      ...account,
+                                      twoFactorPhone: e.target.value
+                                    };
+                                    newPasswordBank[vendorIndex] = {
+                                      ...vendor,
+                                      accounts: newAccounts
+                                    };
+                                    setCvData({
+                                      ...cvData,
+                                      passwordBank: newPasswordBank
+                                    });
+                                  }}
+                                  className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-sm font-medium text-text mb-1">2FA Email</label>
+                                <input
+                                  type="email"
+                                  value={account.twoFactorEmail}
+                                  onChange={(e) => {
+                                    const newPasswordBank = [...cvData.passwordBank];
+                                    const newAccounts = [...vendor.accounts];
+                                    newAccounts[accountIndex] = {
+                                      ...account,
+                                      twoFactorEmail: e.target.value
+                                    };
+                                    newPasswordBank[vendorIndex] = {
+                                      ...vendor,
+                                      accounts: newAccounts
+                                    };
+                                    setCvData({
+                                      ...cvData,
+                                      passwordBank: newPasswordBank
+                                    });
+                                  }}
+                                  className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
+                                />
+                              </div>
+                              <div className="md:col-span-2">
+                                <label className="block text-sm font-medium text-text mb-1">More 2FA Details</label>
+                                <textarea
+                                  value={account.twoFactorDetails}
+                                  onChange={(e) => {
+                                    const newPasswordBank = [...cvData.passwordBank];
+                                    const newAccounts = [...vendor.accounts];
+                                    newAccounts[accountIndex] = {
+                                      ...account,
+                                      twoFactorDetails: e.target.value
+                                    };
+                                    newPasswordBank[vendorIndex] = {
+                                      ...vendor,
+                                      accounts: newAccounts
+                                    };
+                                    setCvData({
+                                      ...cvData,
+                                      passwordBank: newPasswordBank
+                                    });
+                                  }}
+                                  rows={3}
+                                  className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
+                                />
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Additional Data */}
+                          <div className="mt-3">
+                            <label className="block text-sm font-medium text-text mb-1">Additional Data / Log</label>
+                            <textarea
+                              value={account.additionalData}
+                              onChange={(e) => {
+                                const newPasswordBank = [...cvData.passwordBank];
+                                const newAccounts = [...vendor.accounts];
+                                newAccounts[accountIndex] = {
+                                  ...account,
+                                  additionalData: e.target.value
+                                };
+                                newPasswordBank[vendorIndex] = {
+                                  ...vendor,
+                                  accounts: newAccounts
+                                };
+                                setCvData({
+                                  ...cvData,
+                                  passwordBank: newPasswordBank
+                                });
+                              }}
+                              rows={4}
+                              className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+                
+                {/* Add New Account Button at bottom of vendor card */}
+                {vendor.isExpanded && (
+                  <div className="p-4 border-t border-border">
+                    <button
+                      onClick={() => {
+                        const newPasswordBank = [...cvData.passwordBank];
+                        const newAccount = {
+                          email: "",
+                          username: "",
+                          password: "",
+                          recoveryPhone: "",
+                          recoveryEmail: "",
+                          modificationDate: new Date().toISOString().split('T')[0],
+                          twoFactorEnabled: false,
+                          twoFactorPhone: "",
+                          twoFactorEmail: "",
+                          twoFactorDetails: "",
+                          additionalData: "",
+                          isExpanded: true
+                        };
+                        newPasswordBank[vendorIndex] = {
+                          ...vendor,
+                          accounts: [...(vendor.accounts || []), newAccount]
+                        };
+                        setCvData({
+                          ...cvData,
+                          passwordBank: newPasswordBank
+                        });
+                      }}
+                      className="w-full flex justify-center items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                    >
+                      + Add New Account
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+            );
+          }}
+        />
+      </div>
+    );
   };
 
   // Download backup handler
