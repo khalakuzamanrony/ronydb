@@ -41,5 +41,14 @@
 - **Unified scheduler** - Both tasks run together
 - **Easy testing** - Manual triggers available
 - **Clean structure** - No redundant files
+- **Secure backups** - Data is encrypted before storage
 
-**Use `daily-cron.yml` for your daily tasks!** 🎉 
+## Required Secrets:
+
+Make sure these secrets are set in your GitHub repository:
+
+1. `SUPABASE_URL` - Your Supabase instance URL
+2. `SUPABASE_SERVICE_ROLE_KEY` - Your Supabase service role key
+3. `VITE_ENCRYPTION_KEY` - The encryption key for securing backup data
+
+**Use `daily-cron.yml` for your daily tasks!** 🎉

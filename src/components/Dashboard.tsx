@@ -342,7 +342,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
               field={field}
               onChange={updates => {
                 const newFields = [...cvData.basics.customFields];
-                newFields[index] = { ...field, ...updates };
+                newFields[index] = { ...field, ...updates } as CustomField;
                 setCvData({ ...cvData!, basics: { ...cvData!.basics, customFields: newFields } });
               }}
               onDelete={() => {
@@ -1799,7 +1799,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
             field={field}
             onChange={updates => {
               const newFields = [...tab.customFields];
-              newFields[index] = { ...field, ...updates };
+              newFields[index] = { ...field, ...updates } as CustomField;
               updateCustomTab(tab.id, { customFields: newFields });
             }}
             onDelete={() => {

@@ -65,6 +65,14 @@ export const HomePage: React.FC<HomePageProps> = ({ cvData, setCvData, onNavigat
   const [expandedSections, setExpandedSections] = React.useState<Record<string, boolean>>(
     Object.fromEntries(allSectionKeys.map((key) => [key, true]))
   );
+  
+  // State for cover letter form fields
+  const [coverLetterFields, setCoverLetterFields] = React.useState({
+    companyName: '',
+    position: '',
+    hrName: '',
+    currentCompany: ''
+  });
 
   const toggleSection = (key: string) => {
     setExpandedSections((prev) => ({ ...prev, [key]: !prev[key] }));
@@ -257,7 +265,10 @@ ${lang.language}: ${lang.fluency}
 
   // Helper to force download a cover letter as txt
   const downloadCoverLetter = (title: string, content: string) => {
-    const blob = new Blob([content], { type: 'text/plain' });
+    // Apply any active replacements from the form fields
+    const modifiedContent = applyReplacements(content);
+    
+    const blob = new Blob([modifiedContent], { type: 'text/plain' });
     // Sanitize title for filename
     const safeTitle = title.replace(/[^a-z0-9]/gi, '_').toLowerCase();
     const filename = `${safeTitle || 'cover_letter'}.txt`;
@@ -269,6 +280,30 @@ ${lang.language}: ${lang.fluency}
     a.click();
     a.remove();
     URL.revokeObjectURL(url);
+  };
+  
+  // Function to apply replacements to cover letter content
+  const applyReplacements = (content: string) => {
+    let modifiedContent = content;
+    
+    // Replace placeholders with values from state
+    const replacements = [
+      { placeholder: '$company_name', value: coverLetterFields.companyName },
+      { placeholder: '$position', value: coverLetterFields.position },
+      { placeholder: '$hr_name', value: coverLetterFields.hrName },
+      { placeholder: '$current_company', value: coverLetterFields.currentCompany }
+    ];
+    
+    replacements.forEach(({ placeholder, value }) => {
+      if (value.trim()) {
+        // Replace all occurrences of the placeholder with the value
+        // Escape special characters in the placeholder for regex
+        const escapedPlaceholder = placeholder.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        modifiedContent = modifiedContent.replace(new RegExp(escapedPlaceholder, 'g'), value.trim());
+      }
+    });
+    
+    return modifiedContent;
   };
 
   const renderCustomTab = (tab: import('../types/cv').CustomTab) => {
@@ -1221,6 +1256,102 @@ ${lang.language}: ${lang.fluency}
               </div>
               {expanded && (
                 <div className="p-6 pt-4">
+                  {/* Global Cover Letter Customization Fields */}
+                  <div className="mb-6 bg-card border border-border rounded-lg shadow-md p-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <h4 className="text-lg font-medium text-secondary">Customize All Cover Letters</h4>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => {
+                            // Reset all fields
+                            setCoverLetterFields({
+                              companyName: '',
+                              position: '',
+                              hrName: '',
+                              currentCompany: ''
+                            });
+                          }}
+                          className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-copybg hover:bg-accent text-primary hover:text-white transition-colors duration-200"
+                          title="Reset Fields"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                            <path d="M3 3v5h5"/>
+                          </svg>
+                        </button>
+                        <button
+                          onClick={() => {
+                            // Force a re-render to apply replacements
+                            setCoverLetterFields({...coverLetterFields});
+                          }}
+                          className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-copybg hover:bg-accent text-primary hover:text-white transition-colors duration-200"
+                          title="Apply Changes"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="20 6 9 17 4 12"/>
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <label className="block text-sm font-medium text-secondary">Company Name</label>
+                        <input 
+                          type="text" 
+                          placeholder="Enter company name" 
+                          className="w-full px-3 py-2 border border-border rounded-lg bg-bg text-primary focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          data-replace="$company_name"
+                          value={coverLetterFields.companyName}
+                          onChange={(e) => {
+                            setCoverLetterFields(prev => ({ ...prev, companyName: e.target.value }));
+                          }}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="block text-sm font-medium text-secondary">Position</label>
+                        <input 
+                          type="text" 
+                          placeholder="Enter position" 
+                          className="w-full px-3 py-2 border border-border rounded-lg bg-bg text-primary focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          data-replace="$position"
+                          value={coverLetterFields.position}
+                          onChange={(e) => {
+                            setCoverLetterFields(prev => ({ ...prev, position: e.target.value }));
+                          }}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="block text-sm font-medium text-secondary">HR Name</label>
+                        <input 
+                          type="text" 
+                          placeholder="Enter HR name" 
+                          className="w-full px-3 py-2 border border-border rounded-lg bg-bg text-primary focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          data-replace="$hr_name"
+                          value={coverLetterFields.hrName}
+                          onChange={(e) => {
+                            setCoverLetterFields(prev => ({ ...prev, hrName: e.target.value }));
+                          }}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="block text-sm font-medium text-secondary">Current Company</label>
+                        <select 
+                          className="w-full px-3 py-2 border border-border rounded-lg bg-bg text-primary focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          data-replace="$current_company"
+                          value={coverLetterFields.currentCompany}
+                          onChange={(e) => {
+                            setCoverLetterFields(prev => ({ ...prev, currentCompany: e.target.value }));
+                          }}
+                        >
+                          <option value="">Select current company</option>
+                          {cvData.work.map((job, idx) => (
+                            <option key={idx} value={job.name}>{job.name}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                  
                   <div className="space-y-4">
                     {cvData.coverLetters.map((coverLetter: { id: string; title: string; content: string; customFields?: import('../types/cv').CustomField[] }, index: number) => (
                       <div key={index} className="bg-card border border-border rounded-lg shadow-md p-6">
@@ -1239,9 +1370,16 @@ ${lang.language}: ${lang.fluency}
                             </button>
                           </div>
                         </div>
+                        
                         <div className="flex items-start justify-between w-full overflow-hidden">
-                          <p className="text-secondary whitespace-pre-wrap flex-1 min-w-0 truncate">{coverLetter.content}</p>
-                          <CopyButton text={coverLetter.content} className="ml-1 flex-shrink-0" />
+                          <p className="text-secondary whitespace-pre-wrap flex-1 min-w-0 truncate">
+                            {/* Display a preview with replacements applied */}
+                            {applyReplacements(coverLetter.content)}
+                          </p>
+                          <CopyButton 
+                            text={applyReplacements(coverLetter.content)} 
+                            className="ml-1 flex-shrink-0" 
+                          />
                         </div>
                         {coverLetter.customFields && coverLetter.customFields.length > 0 && (
                           <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">

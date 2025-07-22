@@ -14,6 +14,16 @@ ronydb is a full-stack web application for managing, displaying, and interacting
 - **Real-time Updates:** Changes sync live via Supabase
 - **Download & Export:** Download your data as JSON or PDF
 - **Copy-to-Clipboard:** One-click copy for any field or value
+- **Data Encryption:** Sensitive data is encrypted before storage and decrypted for display
+
+## Data Encryption
+
+The application implements AES encryption for sensitive data stored in Supabase:
+
+- **Encryption Process:** Data is encrypted using AES (Advanced Encryption Standard) before being saved to Supabase
+- **Environment Variables:** Encryption key is stored in `.env` file as `VITE_ENCRYPTION_KEY`
+- **Automatic Handling:** Encryption/decryption happens automatically when saving/retrieving data
+- **Migration Tool:** Run `npm run migrate-encryption` to encrypt existing unencrypted data
 
 ## Project Structure
 
@@ -25,9 +35,13 @@ ronydb/
 │   ├── files/              # Static files (images, PDFs)
 │   ├── types/              # TypeScript type definitions
 │   ├── utils/              # Utility functions (Supabase, data helpers)
+│   │   ├── encryption.ts   # Encryption/decryption utilities
+│   │   └── migrateToEncryption.ts # Migration utility for encrypting existing data
 │   └── App.tsx             # Main React app entry
 ├── e2e/                    # End-to-end Playwright tests
 ├── public/                 # Static public assets
+├── scripts/                # Utility scripts
+│   └── runMigration.ts     # Script to run data encryption migration
 ├── package.json            # Project metadata and scripts
 ├── tailwind.config.js      # Tailwind CSS configuration
 ├── vite.config.ts          # Vite build configuration
