@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import BackupRestore from "./BackupRestore";
 import {
   LogOut,
   Save,
@@ -78,9 +79,26 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
   useEffect(() => {
     (async () => {
       const supabaseData = await fetchCVDataFromSupabase();
-      // One-time fix: ensure 'projects' is in tabOrder for this session only
-      if (supabaseData && Array.isArray(supabaseData.tabOrder) && !supabaseData.tabOrder.includes('projects')) {
-        setCvData({ ...supabaseData, tabOrder: [...supabaseData.tabOrder, 'projects'] });
+      // One-time fix: ensure 'projects' and 'backup-restore' are in tabOrder for this session only
+      if (supabaseData && Array.isArray(supabaseData.tabOrder)) {
+        const updatedTabOrder = [...supabaseData.tabOrder];
+        let needsUpdate = false;
+        
+        if (!updatedTabOrder.includes('projects')) {
+          updatedTabOrder.push('projects');
+          needsUpdate = true;
+        }
+        
+        if (!updatedTabOrder.includes('backup-restore')) {
+          updatedTabOrder.push('backup-restore');
+          needsUpdate = true;
+        }
+        
+        if (needsUpdate) {
+          setCvData({ ...supabaseData, tabOrder: updatedTabOrder });
+        } else {
+          setCvData(supabaseData);
+        }
       } else {
         setCvData(supabaseData);
       }
@@ -203,6 +221,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
     { id: "languages", label: "Languages" },
     { id: "coverLetters", label: "Cover Letters" },
     { id: "projects", label: "Projects" },
+    { id: "backup-restore", label: "Backup-Restore" },
   ];
   const customTabsMap = Object.fromEntries(
     cvData.customTabs.map((tab) => [tab.id, tab])
@@ -564,7 +583,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
                   ...cvData!,
                   contacts: {
                     ...cvData!.contacts,
-                    profiles: [...cvData!.contacts.profiles, newProfile],
+                    profiles: [newProfile, ...cvData!.contacts.profiles],
                   },
                 });
               }}
@@ -729,7 +748,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
                 };
                 setCvData({
                   ...cvData!,
-                  tools: [...(cvData!.tools || []), newTool],
+                  tools: [newTool, ...(cvData!.tools || [])],
                 });
               }}
               className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
@@ -873,7 +892,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
             };
             setCvData({
               ...cvData!,
-              work: [...cvData!.work, newJob],
+              work: [newJob, ...cvData!.work],
             });
           }}
           className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
@@ -1006,7 +1025,21 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
               </div>
             </div>
             <div className="mt-4">
-              <h3 className="text-md font-semibold text-text mb-2">Highlights</h3>
+              <div className="flex justify-between items-center mb-2">
+                <h3 className="text-md font-semibold text-text">Highlights</h3>
+                <button
+                  onClick={() => {
+                    const newJobs = [...cvData.work];
+                    const newHighlights = [...job.highlights, ""];
+                    newJobs[index] = { ...job, highlights: newHighlights };
+                    setCvData({ ...cvData!, work: newJobs });
+                  }}
+                  className="flex items-center gap-1 px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-xs"
+                >
+                  <Plus className="w-3 h-3" />
+                  Add Highlights
+                </button>
+              </div>
               <DragDropList
                 items={job.highlights}
                 onReorder={newOrder => {
@@ -1071,7 +1104,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
             };
             setCvData({
               ...cvData!,
-              education: [...cvData!.education, newEdu],
+              education: [newEdu, ...cvData!.education],
             });
           }}
           className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
@@ -1106,6 +1139,19 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
                   onChange={e => {
                     const newEdu = [...cvData.education];
                     newEdu[index] = { ...edu, institution: e.target.value };
+                    setCvData({ ...cvData!, education: newEdu });
+                  }}
+                  className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-text mb-2">Institution URL</label>
+                <input
+                  type="text"
+                  value={edu.institutionUrl || ""}
+                  onChange={e => {
+                    const newEdu = [...cvData.education];
+                    newEdu[index] = { ...edu, institutionUrl: e.target.value };
                     setCvData({ ...cvData!, education: newEdu });
                   }}
                   className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
@@ -1214,7 +1260,25 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
   const renderSkillsTab = () => (
     <div className="space-y-6">
       <div className="mt-8">
-        <h3 className="text-lg font-semibold text-text mb-4">Technical Skills</h3>
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-semibold text-text">Technical Skills</h3>
+          <button
+            onClick={() => {
+              const newSkill = { name: "", keywords: [] };
+              setCvData({
+                ...cvData!,
+                skills: { 
+                  ...cvData!.skills, 
+                  technical: [newSkill, ...cvData!.skills.technical] 
+                },
+              });
+            }}
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          >
+            <Plus className="w-4 h-4" />
+            Add Skill
+          </button>
+        </div>
         <DragDropList
           items={cvData.skills.technical}
           onReorder={newOrder => setCvData({ ...cvData!, skills: { ...cvData.skills, technical: newOrder } })}
@@ -1243,43 +1307,77 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
                   <Trash2 className="w-4 h-4" />
                 </button>
               </div>
-              <div className="flex flex-wrap gap-2">
-                {skill.keywords.map((keyword: string, kIndex: number) => (
-                  <div key={kIndex} className="flex items-center gap-1 mb-1">
-                    <input
-                      type="text"
-                      value={keyword}
-                      onChange={e => {
-                        const newSkills = [...cvData.skills.technical];
-                        const newKeywords = [...skill.keywords];
-                        newKeywords[kIndex] = e.target.value;
-                        newSkills[index] = { ...skill, keywords: newKeywords };
-                        setCvData({ ...cvData!, skills: { ...cvData.skills, technical: newSkills } });
-                      }}
-                      placeholder="Keyword"
-                      className="flex-1 px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
-                    />
-                    <button
-                      onClick={() => {
-                        const newSkills = [...cvData.skills.technical];
-                        const newKeywords = skill.keywords.filter((_: any, i: number) => i !== kIndex);
-                        newSkills[index] = { ...skill, keywords: newKeywords };
-                        setCvData({ ...cvData!, skills: { ...cvData.skills, technical: newSkills } });
-                      }}
-                      className="text-red-600 hover:text-red-800"
-                      title="Delete Keyword"
-                    >
-                      <Trash2 className="w-3 h-3" />
-                    </button>
-                  </div>
-                ))}
+              <div className="mt-2">
+                <div className="flex justify-between items-center mb-2">
+                  <h4 className="text-sm font-medium text-text">Keywords</h4>
+                  <button
+                    onClick={() => {
+                      const newSkills = [...cvData.skills.technical];
+                      const newKeywords = [...skill.keywords, ""];
+                      newSkills[index] = { ...skill, keywords: newKeywords };
+                      setCvData({ ...cvData!, skills: { ...cvData.skills, technical: newSkills } });
+                    }}
+                    className="flex items-center gap-1 px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-xs"
+                  >
+                    <Plus className="w-3 h-3" />
+                    Add Skill Keyword
+                  </button>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {skill.keywords.map((keyword: string, kIndex: number) => (
+                    <div key={kIndex} className="flex items-center gap-1 mb-1">
+                      <input
+                        type="text"
+                        value={keyword}
+                        onChange={e => {
+                          const newSkills = [...cvData.skills.technical];
+                          const newKeywords = [...skill.keywords];
+                          newKeywords[kIndex] = e.target.value;
+                          newSkills[index] = { ...skill, keywords: newKeywords };
+                          setCvData({ ...cvData!, skills: { ...cvData.skills, technical: newSkills } });
+                        }}
+                        placeholder="Keyword"
+                        className="flex-1 px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
+                      />
+                      <button
+                        onClick={() => {
+                          const newSkills = [...cvData.skills.technical];
+                          const newKeywords = skill.keywords.filter((_: any, i: number) => i !== kIndex);
+                          newSkills[index] = { ...skill, keywords: newKeywords };
+                          setCvData({ ...cvData!, skills: { ...cvData.skills, technical: newSkills } });
+                        }}
+                        className="text-red-600 hover:text-red-800"
+                        title="Delete Keyword"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           )}
         />
       </div>
       <div className="mt-8">
-        <h3 className="text-lg font-semibold text-text mb-4">Methodologies</h3>
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-semibold text-text">Methodologies</h3>
+          <button
+            onClick={() => {
+              setCvData({
+                ...cvData!,
+                skills: { 
+                  ...cvData!.skills, 
+                  methodologies: ["", ...cvData!.skills.methodologies] 
+                },
+              });
+            }}
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          >
+            <Plus className="w-4 h-4" />
+            Add Methodologies
+          </button>
+        </div>
         <div className="space-y-2">
           {cvData.skills.methodologies.map((methodology: string, index: number) => (
             <div key={index} className="flex gap-2">
@@ -1541,7 +1639,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
             };
             setCvData({
               ...cvData!,
-              coverLetters: [...cvData!.coverLetters, newCoverLetter],
+              coverLetters: [newCoverLetter, ...cvData!.coverLetters],
             });
           }}
           className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
@@ -1720,7 +1818,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
             };
             setCvData({
               ...cvData!,
-              projects: [...(cvData!.projects || []), newProject],
+              projects: [newProject, ...(cvData!.projects || [])],
             });
           }}
           className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
@@ -1770,16 +1868,47 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
                   newProjects[index] = { ...project, description: e.target.value };
                   setCvData({ ...cvData!, projects: newProjects });
                 }}
-                rows={2}
+                rows={4}
                 className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
               />
             </div>
             <div className="mt-4">
-              <label className="block text-sm font-medium text-text mb-1">Contributions</label>
-              <div className="flex flex-wrap gap-2 mb-2">
-                {(project.contributions || []).map((contrib: string, cIndex: number) => (
-                  <div key={cIndex} className="flex items-center bg-chipbg text-chiptext px-3 py-1 rounded-full text-sm font-medium gap-1">
-                    <span>{contrib}</span>
+              <div className="flex justify-between items-center mb-2">
+                <h3 className="text-md font-semibold text-text">Contributions</h3>
+                <button
+                  onClick={() => {
+                    const newProjects = [...cvData.projects];
+                    const newContribs = [...(project.contributions || []), ""];
+                    newProjects[index] = { ...project, contributions: newContribs };
+                    setCvData({ ...cvData!, projects: newProjects });
+                  }}
+                  className="flex items-center gap-1 px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-xs"
+                >
+                  <Plus className="w-3 h-3" />
+                  Add Contribution
+                </button>
+              </div>
+              <DragDropList
+                items={project.contributions || []}
+                onReorder={newOrder => {
+                  const newProjects = [...cvData.projects];
+                  newProjects[index] = { ...project, contributions: newOrder };
+                  setCvData({ ...cvData!, projects: newProjects });
+                }}
+                renderItem={(contrib, cIndex) => (
+                  <div className="flex items-center gap-2 mb-2">
+                    <input
+                      type="text"
+                      value={contrib}
+                      onChange={e => {
+                        const newProjects = [...cvData.projects];
+                        const newContribs = [...(project.contributions || [])];
+                        newContribs[cIndex] = e.target.value;
+                        newProjects[index] = { ...project, contributions: newContribs };
+                        setCvData({ ...cvData!, projects: newProjects });
+                      }}
+                      className="flex-1 px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
+                    />
                     <button
                       onClick={() => {
                         const newProjects = [...cvData.projects];
@@ -1787,46 +1916,25 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
                         newProjects[index] = { ...project, contributions: newContribs };
                         setCvData({ ...cvData!, projects: newProjects });
                       }}
-                      className="ml-1 text-red-600 hover:text-red-800"
-                      title="Remove Contribution"
+                      className="ml-2 text-red-600 hover:text-red-800"
+                      title="Delete contribution"
                     >
-                      &times;
+                      <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
-                ))}
-                <input
-                  type="text"
-                  placeholder="Add contribution..."
-                  value={project._newContrib || ""}
-                  onChange={e => {
-                    const newProjects = [...cvData.projects];
-                    newProjects[index]._newContrib = e.target.value;
-                    setCvData({ ...cvData!, projects: newProjects });
-                  }}
-                  onKeyDown={e => {
-                    if (e.key === "Enter" && project._newContrib && project._newContrib.trim()) {
-                      const newProjects = [...cvData.projects];
-                      newProjects[index].contributions = [...(project.contributions || []), project._newContrib.trim()];
-                      newProjects[index]._newContrib = "";
-                      setCvData({ ...cvData!, projects: newProjects });
-                    }
-                  }}
-                  className="px-3 py-1 border border-border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text text-sm"
-                />
-              </div>
+                )}
+              />
             </div>
-            <div className="flex justify-end mt-4">
-              <button
-                onClick={() => {
-                  const newProjects = cvData.projects.filter((_: any, i: number) => i !== index);
-                  setCvData({ ...cvData!, projects: newProjects });
-                }}
-                className="text-red-600 hover:text-red-800 px-4 py-2 rounded"
-                title="Delete Project"
-              >
-                Delete
-              </button>
-            </div>
+            <button
+              onClick={() => {
+                const newProjects = cvData.projects.filter((_: any, i: number) => i !== index);
+                setCvData({ ...cvData!, projects: newProjects });
+              }}
+              className="absolute top-2 right-2 text-red-600 hover:text-red-800"
+              title="Delete Project"
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
           </div>
         )}
       />
@@ -1839,8 +1947,6 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
         return renderBasicsTab();
       case "contacts":
         return renderContactsTab();
-      case "tools":
-        return renderToolsTab();
       case "work":
         return renderWorkTab();
       case "education":
@@ -1855,6 +1961,8 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
         return renderCoverLettersTab();
       case "projects":
         return renderProjectsTab();
+      case "backup-restore":
+        return renderBackupRestoreTab();
       default:
         const customTab = cvData.customTabs.find((tab) => tab.id === activeTab);
         if (customTab) {
@@ -1907,6 +2015,17 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
     link.click();
     URL.revokeObjectURL(url);
     setToast({ message: 'Backup downloaded!', type: 'success' });
+  };
+  
+  // Render the Backup-Restore tab
+  const renderBackupRestoreTab = () => {
+    return (
+      <BackupRestore 
+        cvData={cvData} 
+        onDataChange={onDataChange} 
+        setCvData={setCvData} 
+      />
+    );
   };
 
   return (

@@ -6,7 +6,9 @@
   "scripts": {
     "start": "node start-cron.js",
     "cron": "node cron-scheduler.js",
-    "once": "node run-once.js"
+    "once": "node run-once.js",
+    "restore": "node restore-backup.js",
+    "list-backups": "node restore-backup.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.7",

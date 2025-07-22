@@ -156,7 +156,7 @@ export const defaultCVData: CVData = {
     }
   ],
   "customTabs": [],
-  "tabOrder": ["basics", "contacts", "work", "education", "skills", "certificates", "languages", "coverLetters"],
+  "tabOrder": ["basics", "contacts", "work", "education", "skills", "certificates", "languages", "coverLetters", "projects", "backup-restore"],
   "assets": {
     "images": {},
     "pdfs": {}
