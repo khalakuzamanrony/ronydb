@@ -42,8 +42,16 @@ The main workflow runs at **6:00 AM UTC**, which corresponds to **12:00 PM BST**
 
 The main workflow runs these tasks together:
 1. **Keepalive Update**: Updates the keepalive table to maintain database activity
-2. **CV Data Backup**: Creates a backup of all CV data in the backup-restore table
+2. **CV Data Backup**: Creates an encrypted backup of all CV data in the backup-restore table
 3. **Cleanup**: Removes old backups, keeping only the latest 2
+
+## Environment Variables
+
+The workflows require the following environment variables set as GitHub secrets:
+
+1. **SUPABASE_URL**: The URL of your Supabase instance
+2. **SUPABASE_SERVICE_ROLE_KEY**: The service role key for Supabase API access
+3. **VITE_ENCRYPTION_KEY**: The encryption key used to encrypt backup data
 
 ## Manual Testing
 
@@ -78,4 +86,4 @@ Check the Actions tab in your GitHub repository to:
 
 **Use `daily-cron.yml` for your main daily tasks.**
 **Use `test-cron.yml` for manual testing.**
-**Ignore the other workflows - they're redundant.** 
+**Ignore the other workflows - they're redundant.**
