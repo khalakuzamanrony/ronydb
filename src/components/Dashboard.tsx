@@ -1437,7 +1437,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
             };
             setCvData({
               ...cvData!,
-              certificates: [...cvData!.certificates, newCertificate],
+              certificates: [newCertificate, ...cvData!.certificates],
             });
           }}
           className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
@@ -1557,7 +1557,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
             };
             setCvData({
               ...cvData!,
-              languages: [...cvData!.languages, newLanguage],
+              languages: [newLanguage, ...cvData!.languages],
             });
           }}
           className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
@@ -1830,7 +1830,17 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
         items={cvData.projects || []}
         onReorder={(newOrder: typeof cvData.projects) => setCvData({ ...cvData!, projects: newOrder })}
         renderItem={(project: typeof cvData.projects[0], index: number, dragProps: any) => (
-          <div key={index} className="bg-sectionheader rounded-lg p-4 mb-4">
+          <div key={index} className="bg-sectionheader rounded-lg p-4 mb-4 relative">
+            <button
+              onClick={() => {
+                const newProjects = cvData.projects.filter((_: any, i: number) => i !== index);
+                setCvData({ ...cvData!, projects: newProjects });
+              }}
+              className="absolute top-2 right-2 text-red-600 hover:text-red-800"
+              title="Delete Project"
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
             <div className="flex flex-col md:flex-row gap-4">
               <div className="flex-1">
                 <label className="block text-sm font-medium text-text mb-1">Project Name</label>
@@ -1925,16 +1935,6 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
                 )}
               />
             </div>
-            <button
-              onClick={() => {
-                const newProjects = cvData.projects.filter((_: any, i: number) => i !== index);
-                setCvData({ ...cvData!, projects: newProjects });
-              }}
-              className="absolute top-2 right-2 text-red-600 hover:text-red-800"
-              title="Delete Project"
-            >
-              <Trash2 className="w-4 h-4" />
-            </button>
           </div>
         )}
       />
