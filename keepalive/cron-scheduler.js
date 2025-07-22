@@ -1,6 +1,7 @@
-require('dotenv').config();
+require('dotenv').config({ path: './.env' });
 const cron = require('node-cron');
 const { createClient } = require('@supabase/supabase-js');
+const { encryptData } = require('./encryptionUtils');
 
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -80,7 +81,7 @@ async function backupAndPrune() {
     const { error: insertError } = await supabase
       .from('backup-restore')
       .insert([{ 
-        data: cvData, 
+        data: encryptData(cvData),
         created_at: createdAt,
         backup_number: newBackupNumber
       }]);
@@ -149,4 +150,4 @@ cron.schedule(cronExpression, dailyTask, {
 console.log('Running initial task for testing...');
 dailyTask();
 
-console.log('Cron scheduler is running. Press Ctrl+C to stop.'); 
+console.log('Cron scheduler is running. Press Ctrl+C to stop.');

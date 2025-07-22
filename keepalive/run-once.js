@@ -1,5 +1,6 @@
-require('dotenv').config();
+require('dotenv').config({ path: './.env' });
 const { createClient } = require('@supabase/supabase-js');
+const { encryptData } = require('./encryptionUtils');
 
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -79,7 +80,7 @@ async function backupAndPrune() {
     const { error: insertError } = await supabase
       .from('backup-restore')
       .insert([{ 
-        data: cvData, 
+        data: encryptData(cvData),
         created_at: createdAt,
         backup_number: newBackupNumber
       }]);
@@ -133,4 +134,4 @@ async function runOnce() {
   process.exit(0);
 }
 
-runOnce(); 
+runOnce();
