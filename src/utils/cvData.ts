@@ -1,5 +1,6 @@
 import { CVData } from '../types/cv';
 import { supabase } from './supabaseClient';
+import { encryptData, decryptData } from './encryption';
 
 export const defaultCVData: CVData = {
   "basics": {
@@ -165,30 +166,50 @@ export const defaultCVData: CVData = {
 
 // Fetch CV data from Supabase
 export const fetchCVDataFromSupabase = async (): Promise<CVData | null> => {
-  const { data, error } = await supabase.from('cv_data').select('data').eq('id', 'main').single();
-  if (error) {
-    console.error('Error fetching CV data from Supabase:', error);
-    return null;
+  try {
+    const { data, error } = await supabase.from('cv_data').select('data').eq('id', 'main').single();
+    if (error) {
+      console.error('Error fetching CV data from Supabase:', error);
+      return null;
+    }
+    
+    if (!data?.data) return defaultCVData;
+    
+    // Decrypt the data if it's a string (encrypted)
+    let decryptedData;
+    if (typeof data.data === 'string') {
+      decryptedData = decryptData(data.data);
+      if (!decryptedData) {
+        console.error('Failed to decrypt data');
+        return defaultCVData;
+      }
+    } else {
+      // Handle case where data might not be encrypted yet during transition
+      decryptedData = data.data;
+    }
+    
+    // Merge with defaultCVData to ensure all fields exist
+    return {
+      ...defaultCVData,
+      ...decryptedData,
+      customTabs: decryptedData.customTabs || defaultCVData.customTabs,
+      tabOrder: decryptedData.tabOrder || defaultCVData.tabOrder,
+      assets: decryptedData.assets || defaultCVData.assets,
+      coverLetters: decryptedData.coverLetters || defaultCVData.coverLetters,
+      tools: decryptedData.tools || defaultCVData.tools,
+      basics: { ...defaultCVData.basics, ...(decryptedData.basics || {}) },
+      contacts: { ...defaultCVData.contacts, ...(decryptedData.contacts || {}) },
+      work: decryptedData.work || defaultCVData.work,
+      education: decryptedData.education || defaultCVData.education,
+      skills: { ...defaultCVData.skills, ...(decryptedData.skills || {}) },
+      projects: decryptedData.projects || defaultCVData.projects,
+      certificates: decryptedData.certificates || defaultCVData.certificates,
+      languages: decryptedData.languages || defaultCVData.languages
+    };
+  } catch (error) {
+    console.error('Error processing CV data:', error);
+    return defaultCVData;
   }
-  if (!data?.data) return defaultCVData;
-  // Merge with defaultCVData to ensure all fields exist
-  return {
-    ...defaultCVData,
-    ...data.data,
-    customTabs: data.data.customTabs || defaultCVData.customTabs,
-    tabOrder: data.data.tabOrder || defaultCVData.tabOrder,
-    assets: data.data.assets || defaultCVData.assets,
-    coverLetters: data.data.coverLetters || defaultCVData.coverLetters,
-    tools: data.data.tools || defaultCVData.tools,
-    basics: { ...defaultCVData.basics, ...(data.data.basics || {}) },
-    contacts: { ...defaultCVData.contacts, ...(data.data.contacts || {}) },
-    work: data.data.work || defaultCVData.work,
-    education: data.data.education || defaultCVData.education,
-    skills: { ...defaultCVData.skills, ...(data.data.skills || {}) },
-    projects: data.data.projects || defaultCVData.projects,
-    certificates: data.data.certificates || defaultCVData.certificates,
-    languages: data.data.languages || defaultCVData.languages,
-  };
 };
 
 export const getCVData = (): CVData => {
@@ -216,11 +237,14 @@ export const getCVData = (): CVData => {
 export const saveCVData = async (data: CVData): Promise<void> => {
   // localStorage.setItem('cvData', JSON.stringify(data)); // No longer save to localStorage
   try {
+    // Encrypt the data before saving to Supabase
+    const encryptedData = encryptData(data);
+    
     await supabase.from('cv_data').upsert([
-      { id: 'main', data }
+      { id: 'main', data: encryptedData }
     ], { onConflict: 'id' });
   } catch (error) {
-    console.error('Error saving CV data to Supabase:', error);
+    console.error('Error saving encrypted CV data to Supabase:', error);
   }
 };
 
