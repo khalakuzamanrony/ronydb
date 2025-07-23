@@ -55,6 +55,7 @@ const CustomFieldRow: React.FC<CustomFieldRowProps & { showDragHandle?: boolean;
             label=""
             value={field.value}
             onChange={(value, file) => onChange({ value })}
+            onDelete={() => onChange({ value: "" })}
             accept={field.type === "image" ? "image/*" : "*"}
             type={field.type}
             hideUploadButton={false}
@@ -96,4 +97,4 @@ const CustomFieldRow: React.FC<CustomFieldRowProps & { showDragHandle?: boolean;
   );
 };
 
-export default CustomFieldRow; 
+export default CustomFieldRow;

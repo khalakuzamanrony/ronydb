@@ -45,11 +45,63 @@ export const CustomFieldEditor: React.FC<CustomFieldEditorProps> = ({
     }
   };
 
-  const handleRemoveField = (id: string) => {
+  const handleRemoveField = async (id: string) => {
+    // Find the field to be removed
+    const fieldToRemove = fields.find(field => field.id === id);
+    
+    // If it's an image or file type with a value, delete from storage
+    if (fieldToRemove && (fieldToRemove.type === 'image' || fieldToRemove.type === 'file') && fieldToRemove.value) {
+      try {
+        // Extract filename from URL
+        const url = new URL(fieldToRemove.value);
+        const pathSegments = url.pathname.split('/');
+        const filename = pathSegments[pathSegments.length - 1];
+        
+        if (filename) {
+          // Delete from Supabase Storage
+          const { error } = await supabase.storage.from('files').remove([filename]);
+          if (error) {
+            console.error('Error deleting file from storage:', error);
+          }
+        }
+      } catch (error) {
+        console.error('Error extracting filename or deleting file:', error);
+      }
+    }
+    
+    // Remove the field from the list
     onFieldsChange(fields.filter(field => field.id !== id));
   };
 
-  const handleUpdateField = (id: string, updates: Partial<CustomField>) => {
+  const handleUpdateField = async (id: string, updates: Partial<CustomField>) => {
+    // Find the current field
+    const currentField = fields.find(field => field.id === id);
+    
+    // If updating a file/image field with a new value and the old value exists
+    if (currentField && 
+        (currentField.type === 'image' || currentField.type === 'file') && 
+        updates.value && 
+        currentField.value && 
+        updates.value !== currentField.value) {
+      try {
+        // Extract filename from the old URL
+        const url = new URL(currentField.value);
+        const pathSegments = url.pathname.split('/');
+        const filename = pathSegments[pathSegments.length - 1];
+        
+        if (filename) {
+          // Delete the old file from Supabase Storage
+          const { error } = await supabase.storage.from('files').remove([filename]);
+          if (error) {
+            console.error('Error deleting old file from storage:', error);
+          }
+        }
+      } catch (error) {
+        console.error('Error extracting filename or deleting old file:', error);
+      }
+    }
+    
+    // Update the field
     onFieldsChange(
       fields.map(field =>
         field.id === id ? { ...field, ...updates } : field

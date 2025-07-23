@@ -1,5 +1,5 @@
-import React, { useRef, useState } from 'react';
-import { Upload, Link } from 'lucide-react';
+import React, { useRef, useState, useEffect } from 'react';
+import { Upload, Link, Trash2 } from 'lucide-react';
 import { supabase } from '../utils/supabaseClient';
 
 interface FileUploadProps {
@@ -10,12 +10,33 @@ interface FileUploadProps {
   type?: 'image' | 'file';
   hideUploadButton?: boolean;
   compact?: boolean;
+  onDelete?: () => void;
 }
 
 const FileUpload: React.FC<FileUploadProps> = ({ label, value, onChange, accept, type = 'file', hideUploadButton = false, compact = false }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [currentFilePath, setCurrentFilePath] = useState<string | null>(null);
+  
+  // Extract filename from URL when value changes
+  useEffect(() => {
+    if (value) {
+      try {
+        // Extract the filename from the URL
+        const url = new URL(value);
+        const pathSegments = url.pathname.split('/');
+        const filename = pathSegments[pathSegments.length - 1];
+        if (filename) {
+          setCurrentFilePath(filename);
+        }
+      } catch (error) {
+        console.error('Error extracting filename from URL:', error);
+      }
+    } else {
+      setCurrentFilePath(null);
+    }
+  }, [value]);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -49,6 +70,28 @@ const FileUpload: React.FC<FileUploadProps> = ({ label, value, onChange, accept,
     onChange(e.target.value);
   };
 
+  const handleDeleteFile = async () => {
+    if (currentFilePath) {
+      try {
+        // Delete from Supabase Storage
+        const { error } = await supabase.storage.from('files').remove([currentFilePath]);
+        
+        if (error) {
+          console.error('Error deleting file from storage:', error);
+          alert('Failed to delete file: ' + error.message);
+          return;
+        }
+        
+        // Clear the value in the parent component
+        onChange('');
+        setCurrentFilePath(null);
+      } catch (error) {
+        console.error('Error in delete operation:', error);
+        alert('An error occurred while deleting the file');
+      }
+    }
+  };
+
   return (
     <div className={compact ? "space-y-0" : "space-y-3"}>
       {label && <label className="block text-sm font-medium text-text mb-2">{label}</label>}
@@ -64,6 +107,16 @@ const FileUpload: React.FC<FileUploadProps> = ({ label, value, onChange, accept,
             className={compact ? "w-full pl-10 pr-3 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text h-10 text-sm" : "w-full pl-10 pr-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text text-sm"}
           />
         </div>
+        {value && (
+          <button
+            type="button"
+            onClick={handleDeleteFile}
+            className={compact ? "flex items-center justify-center w-8 h-8 text-red-600 hover:bg-red-100 rounded-full transition-colors" : "flex items-center justify-center w-9 h-9 text-red-600 hover:bg-red-100 rounded-full transition-colors"}
+            title="Delete file"
+          >
+            <Trash2 className="w-4 h-4" />
+          </button>
+        )}
         {!hideUploadButton && (
           <button
             type="button"
