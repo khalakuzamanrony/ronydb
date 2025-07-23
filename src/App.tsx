@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { HomePage } from './components/HomePage';
 import LoginPage from './components/LoginPage';
 import Alutila999 from './components/Alutila999';
+import NotFoundPage from './components/NotFoundPage';
 import { getCVData, fetchCVDataFromSupabase } from './utils/cvData';
 import { CVData } from './types/cv';
 
@@ -65,8 +66,11 @@ function App() {
       setCurrentPage('dashboard');
     } else if (path === '/login') {
       setCurrentPage('login');
-    } else {
+    } else if (path === '/') {
       setCurrentPage('home');
+    } else {
+      // Any other path should show 404
+      setCurrentPage('404');
     }
   }, []);
 
@@ -81,6 +85,9 @@ function App() {
     };
     if (currentPage === 'home' || currentPage === 'dashboard') {
       fetchData();
+    } else {
+      // For other pages (login, 404), don't load data
+      setLoading(false);
     }
     return () => { ignore = true; };
   }, [currentPage]);
@@ -99,6 +106,10 @@ function App() {
     window.history.pushState({}, '', '/');
   };
 
+  const handleNavigateHome = () => {
+    setCurrentPage('home');
+  };
+
   // Handle browser navigation
   useEffect(() => {
     const handlePopState = () => {
@@ -107,8 +118,10 @@ function App() {
         setCurrentPage('dashboard');
       } else if (path === '/login') {
         setCurrentPage('login');
-      } else {
+      } else if (path === '/') {
         setCurrentPage('home');
+      } else {
+        setCurrentPage('404');
       }
     };
 
@@ -129,8 +142,10 @@ function App() {
           setCurrentPage('dashboard');
         } else if (href === '/login') {
           setCurrentPage('login');
-        } else {
+        } else if (href === '/') {
           setCurrentPage('home');
+        } else {
+          setCurrentPage('404');
         }
       }
     };
@@ -141,8 +156,8 @@ function App() {
 
 
 
-  // Show loader screen while loading
-  if (loading || !cvData) {
+  // Show loader screen while loading (but not for login or 404 pages)
+  if ((loading || !cvData) && currentPage !== 'login' && currentPage !== '404') {
     return <LoaderScreen />;
   }
 
@@ -162,6 +177,10 @@ function App() {
 
   if (currentPage === 'login') {
     return <LoginPage onLogin={handleLogin} />;
+  }
+
+  if (currentPage === '404') {
+    return <NotFoundPage onNavigateHome={handleNavigateHome} />;
   }
 
   return <>
