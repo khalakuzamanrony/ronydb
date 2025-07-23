@@ -1,4 +1,3 @@
-@ -1,196 +0,0 @@
 # ronydb
 
 ronydb is a full-stack web application for managing, displaying, and interacting with personal or professional data—such as CVs, files, and custom fields. It features a modern React frontend, Node.js backend, and integrates with Supabase for storage and authentication.
