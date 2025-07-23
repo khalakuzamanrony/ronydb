@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "migrate-encryption": "tsx scripts/runMigration.ts",
     "migrate-direct": "tsx scripts/directMigration.ts",
-    "migrate-standalone": "node scripts/standaloneEncryption.js"
+    "migrate-standalone": "node scripts/standaloneEncryption.js",
+    "migrate-key": "node scripts/keyMigration.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.51.0",

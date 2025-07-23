@@ -329,70 +329,52 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ cvData, onDataChange, set
     try {
       setLoading(true);
       
-      // 1. Fetch all data from cv_data table
-      const { data: cvDataRecords, error: fetchError } = await supabase
-        .from('cv_data')
-        .select('*');
-
-      if (fetchError) throw fetchError;
-      if (!cvDataRecords || cvDataRecords.length === 0) {
-        throw new Error('No data found to re-encrypt');
-      }
-
-      // 2. Fetch all backups
-      const { data: backupRecords, error: backupFetchError } = await supabase
-        .from('backup-restore')
-        .select('*');
-
-      if (backupFetchError) throw backupFetchError;
+      // 1. Create a backup before changing the key
+      await createBackup();
+      setToast({ message: 'Created backup before key change', type: 'success' });
       
-      // 3. Create a function to re-encrypt data with the new key
-      const reEncryptData = (data: string) => {
-        // First decrypt with the current key
-        const oldKey = currentKey;
-        const decrypted = CryptoJS.AES.decrypt(data, oldKey).toString(CryptoJS.enc.Utf8);
+      // 2. Re-encrypt local data with the new key
+      if (cvData) {
+        // First encrypt with the new key
+        const encryptedData = CryptoJS.AES.encrypt(
+          JSON.stringify(cvData),
+          secretKeyState.newKey
+        ).toString();
         
-        // Then encrypt with the new key
-        return CryptoJS.AES.encrypt(decrypted, secretKeyState.newKey).toString();
-      };
-
-      // 4. Re-encrypt and update all backups
-      if (backupRecords && backupRecords.length > 0) {
-        for (const backup of backupRecords) {
-          if (backup.data) {
-            try {
-              const reEncryptedData = reEncryptData(backup.data);
-              
-              const { error: updateError } = await supabase
-                .from('backup-restore')
-                .update({ data: reEncryptedData })
-                .eq('id', backup.id);
-
-              if (updateError) throw updateError;
-            } catch (error) {
-              console.error(`Error re-encrypting backup ${backup.id}:`, error);
-              // Continue with other backups even if one fails
-            }
-          }
-        }
+        // Save to Supabase with the new encryption
+        const { error: updateError } = await supabase
+          .from('cv_data')
+          .upsert([{ id: 'main', data: encryptedData }], { onConflict: 'id' });
+        
+        if (updateError) throw updateError;
       }
-
-      // 5. Update the current key in the environment variables
+      
+      // 3. Update the current key in the client environment
       // Note: This is a client-side change and will only persist for this session
-      // The actual .env files need to be updated separately
       import.meta.env.VITE_ENCRYPTION_KEY = secretKeyState.newKey;
       setCurrentKey(secretKeyState.newKey);
       
-      // 6. Reset the form
+      // 4. Reset the form
       setSecretKeyState({
         showInput: false,
         newKey: ""
       });
 
-      setToast({ message: 'Encryption key changed successfully! Please update your .env files.', type: 'success' });
+      setToast({ 
+        message: 'Encryption key changed for this session! Important: You MUST run the key migration script to update all data and .env files.', 
+        type: 'success' 
+      });
+      
+      // Show detailed instructions after a short delay
+      setTimeout(() => {
+        setToast({ 
+          message: 'To complete the key change process, run: NEW_ENCRYPTION_KEY=' + secretKeyState.newKey + ' node scripts/keyMigration.js', 
+          type: 'success' 
+        });
+      }, 5000);
     } catch (error) {
       console.error('Error changing encryption key:', error);
-      setToast({ message: 'Failed to change encryption key', type: 'error' });
+      setToast({ message: 'Failed to change encryption key: ' + (error as Error).message, type: 'error' });
     } finally {
       setLoading(false);
     }
