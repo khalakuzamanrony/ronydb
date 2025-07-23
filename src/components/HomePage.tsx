@@ -44,6 +44,7 @@ import { supabase } from "../utils/supabaseClient";
 import { downloadFile } from "../utils/cvData";
 import { fetchCVDataFromSupabase } from "../utils/cvData";
 import ThemeToggle from "./ThemeToggle";
+import "../styles/homepage.css";
 
 interface HomePageProps {
   cvData: CVData;
@@ -2230,11 +2231,12 @@ ${lang.language}: ${lang.fluency}
     });
 
   return (
-    <div className="min-h-screen bg-bg text-text">
+    <div className="homepage-container min-h-screen bg-bg text-text">
+      <link rel="stylesheet" href="styles.css" />
       <div className="flex justify-end p-4">
         {/* Remove the old ThemeToggle from the top right outside the header. */}
       </div>
-      <div className="max-w-4xl mx-auto px-2 sm:px-4 md:px-6 py-4 md:py-6">
+      <div className="max-w-4xl mx-auto px-2 sm:px-4 md:px-6 py-4 md:py-6 select-none" style={{ userSelect: 'none', WebkitUserSelect: 'none', MozUserSelect: 'none', msUserSelect: 'none' }}>
         {/* Header */}
         <header className="flex flex-row items-center justify-between mb-8 gap-2">
           <div className="text-2xl font-bold text-primary">Rony.DB</div>

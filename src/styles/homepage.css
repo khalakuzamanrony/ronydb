@@ -1,0 +1,48 @@
+/* Prevent cursor blinking and text selection on homepage elements */
+.homepage-container * {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  cursor: default;
+}
+
+/* Allow text selection only for specific interactive elements */
+.homepage-container input,
+.homepage-container textarea,
+.homepage-container select,
+.homepage-container [contenteditable="true"] {
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+  user-select: text;
+  cursor: text;
+}
+
+/* Ensure buttons have pointer cursor */
+.homepage-container button {
+  cursor: pointer;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* Ensure links have pointer cursor */
+.homepage-container a {
+  cursor: pointer;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* Prevent text cursor on div elements */
+.homepage-container div {
+  cursor: default;
+}
+
+/* Prevent focus outline on non-interactive elements */
+.homepage-container div:focus {
+  outline: none;
+}
