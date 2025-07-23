@@ -1058,18 +1058,6 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
             <div className="mt-4">
               <div className="flex justify-between items-center mb-2">
                 <h3 className="text-md font-semibold text-text">Highlights</h3>
-                <button
-                  onClick={() => {
-                    const newJobs = [...cvData.work];
-                    const newHighlights = [...job.highlights, ""];
-                    newJobs[index] = { ...job, highlights: newHighlights };
-                    setCvData({ ...cvData!, work: newJobs });
-                  }}
-                  className="flex items-center gap-1 px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-xs"
-                >
-                  <Plus className="w-3 h-3" />
-                  Add Highlights
-                </button>
               </div>
               <DragDropList
                 items={job.highlights}
@@ -1107,6 +1095,18 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
                   </div>
                 )}
               />
+              <button
+                onClick={() => {
+                  const newJobs = [...cvData.work];
+                  const newHighlights = [...job.highlights, ""];
+                  newJobs[index] = { ...job, highlights: newHighlights };
+                  setCvData({ ...cvData!, work: newJobs });
+                }}
+                className="flex items-center gap-1 px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-xs mt-2 w-full justify-center"
+              >
+                <Plus className="w-3 h-3" />
+                Add Highlight
+              </button>
             </div>
           </div>
         )}
@@ -1341,18 +1341,6 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
               <div className="mt-2">
                 <div className="flex justify-between items-center mb-2">
                   <h4 className="text-sm font-medium text-text">Keywords</h4>
-                  <button
-                    onClick={() => {
-                      const newSkills = [...cvData.skills.technical];
-                      const newKeywords = [...skill.keywords, ""];
-                      newSkills[index] = { ...skill, keywords: newKeywords };
-                      setCvData({ ...cvData!, skills: { ...cvData.skills, technical: newSkills } });
-                    }}
-                    className="flex items-center gap-1 px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-xs"
-                  >
-                    <Plus className="w-3 h-3" />
-                    Add Skill Keyword
-                  </button>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {skill.keywords.map((keyword: string, kIndex: number) => (
@@ -1387,34 +1375,15 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
                   
                   <button
                     onClick={() => {
-                      const newPasswordBank = [...cvData.passwordBank];
-                      const newAccount = {
-                        email: "",
-                        username: "",
-                        password: "",
-                        recoveryPhone: "",
-                        recoveryEmail: "",
-                        modificationDate: new Date().toISOString().split('T')[0],
-                        twoFactorEnabled: false,
-                        twoFactorPhone: "",
-                        twoFactorEmail: "",
-                        twoFactorDetails: "",
-                        additionalData: "",
-                        isExpanded: true
-                      };
-                      newPasswordBank[vendorIndex] = {
-                        ...vendor,
-                        accounts: [...(vendor.accounts || []), newAccount]
-                      };
-                      setCvData({
-                        ...cvData,
-                        passwordBank: newPasswordBank
-                      });
+                      const newSkills = [...cvData.skills.technical];
+                      const newKeywords = [...skill.keywords, ""];
+                      newSkills[index] = { ...skill, keywords: newKeywords };
+                      setCvData({ ...cvData!, skills: { ...cvData.skills, technical: newSkills } });
                     }}
-                    className="w-full mt-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
+                    className="flex items-center gap-1 px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-xs mt-2 w-full justify-center"
                   >
-                    <Plus className="w-4 h-4" />
-                    Add New Account
+                    <Plus className="w-3 h-3" />
+                    Add Skill Keyword
                   </button>
                 </div>
               </div>
@@ -1948,18 +1917,6 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
             <div className="mt-4">
               <div className="flex justify-between items-center mb-2">
                 <h3 className="text-md font-semibold text-text">Contributions</h3>
-                <button
-                  onClick={() => {
-                    const newProjects = [...cvData.projects];
-                    const newContribs = [...(project.contributions || []), ""];
-                    newProjects[index] = { ...project, contributions: newContribs };
-                    setCvData({ ...cvData!, projects: newProjects });
-                  }}
-                  className="flex items-center gap-1 px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-xs"
-                >
-                  <Plus className="w-3 h-3" />
-                  Add Contribution
-                </button>
               </div>
               <DragDropList
                 items={project.contributions || []}
@@ -1997,6 +1954,20 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
                   </div>
                 )}
               />
+              <div className="mt-2">
+                <button
+                  onClick={() => {
+                    const newProjects = [...cvData.projects];
+                    const newContribs = [...(project.contributions || []), ""];
+                    newProjects[index] = { ...project, contributions: newContribs };
+                    setCvData({ ...cvData!, projects: newProjects });
+                  }}
+                  className="flex items-center gap-1 px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-xs"
+                >
+                  <Plus className="w-3 h-3" />
+                  Add Contribution
+                </button>
+              </div>
             </div>
           </div>
         )}
