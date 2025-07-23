@@ -1299,6 +1299,17 @@ ${lang.language}: ${lang.fluency}
                               {edu.institution}
                             </p>
                           </div>
+                            {edu.url && (
+                            <a
+                              href={edu.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-copybg hover:bg-accent text-primary hover:text-white transition-colors duration-200"
+                              title="Open in new tab"
+                            >
+                              <ExternalLink className="w-4 h-4" />
+                            </a>
+                          )}    
                           <CopyButton
                             text={edu.institution}
                             className="ml-1 flex-shrink-0"

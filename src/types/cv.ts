@@ -47,6 +47,9 @@ export interface CVData {
     customFields: CustomField[];
     googleSheetDb?: string;
     googleSheetDbLabel?: string;
+    latestManualBackup?: string;
+    latestManualBackupFile?: File;
+    key?: string;
     customLink1?: string;
     customLink2?: string;
     customLink3?: string;

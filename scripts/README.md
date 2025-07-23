@@ -6,17 +6,6 @@ This directory contains utility scripts for managing and maintaining the RonyDB 
 
 ## Available Scripts
 
-### keyMigration.js
-
-A script for migrating encrypted data from an old encryption key to a new one. This script is essential when changing the encryption key in your application.
-
-**Documentation:** [README_KEY_MIGRATION.md](./README_KEY_MIGRATION.md)
-
-**Usage:**
-```bash
-NEW_ENCRYPTION_KEY=your_new_key_here npm run migrate-key
-```
-
 ### loadEnv.ts
 
 A utility module for loading environment variables from `.env` files. This module is used by other scripts to access configuration settings.
@@ -34,13 +23,13 @@ console.log(envVars.SOME_VARIABLE);
 Most scripts can be run using npm commands defined in the root `package.json` file. For example:
 
 ```bash
-npm run migrate-key
+npm run migrate-encryption
 ```
 
 Alternatively, you can run Node.js scripts directly:
 
 ```bash
-node scripts/keyMigration.js
+node scripts/loadEnv.ts
 ```
 
 For TypeScript scripts, you may need to use ts-node:

@@ -359,6 +359,31 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
         />
       </div>
       
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <FileUpload
+          label="Latest Manual Backup"
+          value={cvData.basics.latestManualBackup || ''}
+          onChange={(value, file) => setCvData({...cvData!, basics: {...cvData!.basics, latestManualBackup: value, latestManualBackupFile: file}})}          
+          accept=".json"
+        />
+        <div>
+          <label className="block text-sm font-medium text-text mb-2">
+            Key
+          </label>
+          <input
+            type="text"
+            value={cvData.basics.key || ''}
+            onChange={(e) =>
+              setCvData({
+                ...cvData!,
+                basics: { ...cvData!.basics, key: e.target.value },
+              })
+            }
+            className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
+          />
+        </div>
+      </div>
+      
       <div className="mt-6 md:mt-8">
         <label className="block text-lg font-semibold text-text mb-4">Custom Fields</label>
         <DragDropList

@@ -23,7 +23,7 @@ The application implements AES encryption for sensitive data stored in Supabase:
 - **Encryption Process:** Data is encrypted using AES (Advanced Encryption Standard) before being saved to Supabase
 - **Environment Variables:** Encryption key is stored in `.env` file as `VITE_ENCRYPTION_KEY`
 - **Automatic Handling:** Encryption/decryption happens automatically when saving/retrieving data
-- **Migration Tool:** Run `npm run migrate-encryption` to encrypt existing unencrypted data
+- **Encryption Management:** Data is automatically encrypted and decrypted using the key in the environment variables
 
 ## Project Structure
 
@@ -35,13 +35,12 @@ ronydb/
 │   ├── files/              # Static files (images, PDFs)
 │   ├── types/              # TypeScript type definitions
 │   ├── utils/              # Utility functions (Supabase, data helpers)
-│   │   ├── encryption.ts   # Encryption/decryption utilities
-│   │   └── migrateToEncryption.ts # Migration utility for encrypting existing data
+│   │   └── encryption.ts   # Encryption/decryption utilities
 │   └── App.tsx             # Main React app entry
 ├── e2e/                    # End-to-end Playwright tests
 ├── public/                 # Static public assets
 ├── scripts/                # Utility scripts
-│   └── runMigration.ts     # Script to run data encryption migration
+│   └── loadEnv.ts          # Script to load environment variables
 ├── package.json            # Project metadata and scripts
 ├── tailwind.config.js      # Tailwind CSS configuration
 ├── vite.config.ts          # Vite build configuration

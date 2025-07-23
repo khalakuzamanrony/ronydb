@@ -1,10 +1,10 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Download, Upload, Save, List, RefreshCw, Eye, EyeOff, Key } from "lucide-react";
+import { Download, Upload, Save, List, RefreshCw } from "lucide-react"; // Key import removed
 import { supabase } from "../utils/supabaseClient";
 import { encryptData, decryptData } from "../utils/encryption";
 import { CVData } from "../types/cv";
 import Toast from "./Toast";
-import CopyButton from "./CopyButton";
+// CopyButton import removed as it's no longer needed
 import CryptoJS from 'crypto-js';
 
 interface BackupRestoreProps {
@@ -13,10 +13,7 @@ interface BackupRestoreProps {
   setCvData: (data: CVData) => void;
 }
 
-interface SecretKeyState {
-  showInput: boolean;
-  newKey: string;
-}
+// SecretKeyState interface removed as it's no longer needed
 
 interface Backup {
   id: string;
@@ -31,12 +28,7 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ cvData, onDataChange, set
   const [showBackups, setShowBackups] = useState<boolean>(false);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const [showCurrentKey, setShowCurrentKey] = useState<boolean>(false);
-  const [secretKeyState, setSecretKeyState] = useState<SecretKeyState>({
-    showInput: false,
-    newKey: ""
-  });
-  const [currentKey, setCurrentKey] = useState<string>("");
+  // Secret key state variables removed as they are no longer needed
 
   // Fetch backups when showBackups is true
   useEffect(() => {
@@ -56,22 +48,7 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ cvData, onDataChange, set
     return '';
   };
 
-  // Fetch current encryption key when component mounts
-  useEffect(() => {
-    // Get the encryption key using the same method as in encryption.ts
-    const key = getEnv('VITE_ENCRYPTION_KEY');
-    
-    // For testing, use the known key value if environment variable is not available
-    if (!key) {
-      // Fallback to hardcoded key for testing
-      setCurrentKey("#%$RroinyaholoAllahrBanda83640*!!");
-      console.log("Using fallback key");
-    } else {
-      // Make sure we're setting a string value
-      setCurrentKey(String(key));
-      console.log("Using environment key");
-    }
-  }, []);
+  // Encryption key fetching useEffect removed as it's no longer needed
 
   const fetchBackups = async () => {
     setLoading(true);
@@ -320,65 +297,7 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ cvData, onDataChange, set
     }
   };
 
-  const handleChangeEncryptionKey = async () => {
-    if (!secretKeyState.newKey.trim()) {
-      setToast({ message: 'Please enter a new encryption key', type: 'error' });
-      return;
-    }
-
-    try {
-      setLoading(true);
-      
-      // 1. Create a backup before changing the key
-      await createBackup();
-      setToast({ message: 'Created backup before key change', type: 'success' });
-      
-      // 2. Re-encrypt local data with the new key
-      if (cvData) {
-        // First encrypt with the new key
-        const encryptedData = CryptoJS.AES.encrypt(
-          JSON.stringify(cvData),
-          secretKeyState.newKey
-        ).toString();
-        
-        // Save to Supabase with the new encryption
-        const { error: updateError } = await supabase
-          .from('cv_data')
-          .upsert([{ id: 'main', data: encryptedData }], { onConflict: 'id' });
-        
-        if (updateError) throw updateError;
-      }
-      
-      // 3. Update the current key in the client environment
-      // Note: This is a client-side change and will only persist for this session
-      import.meta.env.VITE_ENCRYPTION_KEY = secretKeyState.newKey;
-      setCurrentKey(secretKeyState.newKey);
-      
-      // 4. Reset the form
-      setSecretKeyState({
-        showInput: false,
-        newKey: ""
-      });
-
-      setToast({ 
-        message: 'Encryption key changed for this session! Important: You MUST run the key migration script to update all data and .env files.', 
-        type: 'success' 
-      });
-      
-      // Show detailed instructions after a short delay
-      setTimeout(() => {
-        setToast({ 
-          message: 'To complete the key change process, run: NEW_ENCRYPTION_KEY=' + secretKeyState.newKey + ' node scripts/keyMigration.js', 
-          type: 'success' 
-        });
-      }, 5000);
-    } catch (error) {
-      console.error('Error changing encryption key:', error);
-      setToast({ message: 'Failed to change encryption key: ' + (error as Error).message, type: 'error' });
-    } finally {
-      setLoading(false);
-    }
-  };
+  // handleChangeEncryptionKey function removed as it's no longer needed
 
   return (
     <div className="grid grid-cols-1 gap-6">
@@ -488,90 +407,7 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ cvData, onDataChange, set
         </div>
       </div>
 
-      {/* Change Secret Key Section */}
-      <div className="bg-card border border-border rounded-lg p-4 md:p-6">
-        <h3 className="text-lg font-semibold mb-4">Change Secret Key</h3>
-        <div className="space-y-4">
-          <div className="flex flex-col gap-4">
-            {/* View Current Key */}
-            <div className="space-y-2">
-              <h4 className="font-medium">Current Encryption Key</h4>
-              <div className="flex items-center gap-2 p-3 bg-row border border-border rounded-md">
-                <div className="flex-1 font-mono text-sm overflow-x-auto whitespace-normal break-all">
-                  {showCurrentKey 
-                    ? currentKey || 'No key found'
-                    : "••••••••••••••••••••••••••••••••"}
-                </div>
-                {showCurrentKey && currentKey && (
-                  <CopyButton text={currentKey} className="ml-2 flex-shrink-0" />
-                )}
-              </div>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setShowCurrentKey(!showCurrentKey)}
-                  className="flex items-center gap-2 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors"
-                >
-                  {showCurrentKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  {showCurrentKey ? "Hide Key" : "View Key"}
-                </button>
-              </div>
-
-              <p className="text-xs text-gray-500">
-                This is the key used to encrypt and decrypt your data. Keep it secure.  
-              </p>
-            </div>
-
-            {/* Change Key */}
-            <div className="space-y-2">
-              <h4 className="font-medium">Change Encryption Key</h4>
-              {secretKeyState.showInput ? (
-                <div className="space-y-3">
-                  <input
-                    type="text"
-                    value={secretKeyState.newKey}
-                    onChange={(e) => setSecretKeyState({...secretKeyState, newKey: e.target.value})}
-                    placeholder="Enter new encryption key"
-                    className="w-full p-2 border border-border rounded-md bg-input bg-sectionheader"
-                  />
-                  <div className="flex gap-2">
-                    <button
-                      onClick={handleChangeEncryptionKey}
-                      disabled={loading || !secretKeyState.newKey.trim()}
-                      className="flex items-center gap-2 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      <Key className="w-4 h-4" />
-                      Change Key
-                    </button>
-                    <button
-                      onClick={() => setSecretKeyState({showInput: false, newKey: ""})}
-                      className="flex items-center gap-2 px-3 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-md transition-colors"
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <button
-                  onClick={() => setSecretKeyState({...secretKeyState, showInput: true})}
-                  className="flex items-center gap-2 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors"
-                >
-                  <Key className="w-4 h-4" />
-                  Change Key
-                </button>
-              )}
-              <p className="text-xs text-gray-500">
-                Changing the key will re-encrypt all your data with the new key. This process cannot be undone.
-                <br />
-                <strong>Important:</strong> After changing the key, you must manually update the VITE_ENCRYPTION_KEY in both .env files:
-                <br />
-                1. Root directory .env file
-                <br />
-                2. keepalive/.env file
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
+      {/* Change Secret Key Section removed as it's no longer needed */}
 
       {/* Toast notification */}
       {toast && (
