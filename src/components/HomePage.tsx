@@ -48,13 +48,11 @@ import ThemeToggle from "./ThemeToggle";
 interface HomePageProps {
   cvData: CVData;
   setCvData: (data: CVData) => void;
-  onNavigateToDashboard: () => void;
 }
 
 export const HomePage: React.FC<HomePageProps> = ({
   cvData,
   setCvData,
-  onNavigateToDashboard,
 }) => {
   // Set browser tab title
   React.useEffect(() => {
@@ -2241,14 +2239,7 @@ ${lang.language}: ${lang.fluency}
         <header className="flex flex-row items-center justify-between mb-8 gap-2">
           <div className="text-2xl font-bold text-primary">Rony.DB</div>
           <div className="flex items-center gap-1 sm:gap-4">
-            <button
-              onClick={onNavigateToDashboard}
-              className="bg-card text-primary rounded-full hover:bg-sectionheader transition-colors flex items-center justify-center w-10 h-10 border border-border"
-              title="Dashboard"
-              aria-label="Dashboard"
-            >
-              <Settings className="w-5 h-5" />
-            </button>
+
             {/* <button
               onClick={downloadAsJSON}
               className="bg-card text-primary rounded-full hover:bg-sectionheader transition-colors flex items-center justify-center w-10 h-10 border border-border"

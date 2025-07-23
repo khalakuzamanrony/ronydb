@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { HomePage } from './components/HomePage';
 import LoginPage from './components/LoginPage';
-import Dashboard from './components/Dashboard';
+import Alutila999 from './components/Alutila999';
 import { getCVData, fetchCVDataFromSupabase } from './utils/cvData';
 import { CVData } from './types/cv';
 
@@ -61,7 +61,7 @@ function App() {
     }
     // Handle navigation based on URL
     const path = window.location.pathname;
-    if (path === '/dashboard') {
+    if (path === '/alutila999') {
       setCurrentPage('dashboard');
     } else if (path === '/login') {
       setCurrentPage('login');
@@ -89,7 +89,7 @@ function App() {
     setIsAuthenticated(true);
     localStorage.setItem('isAuthenticated', 'true');
     setCurrentPage('dashboard');
-    window.history.pushState({}, '', '/dashboard');
+    window.history.pushState({}, '', '/alutila999');
   };
 
   const handleLogout = () => {
@@ -103,7 +103,7 @@ function App() {
   useEffect(() => {
     const handlePopState = () => {
       const path = window.location.pathname;
-      if (path === '/dashboard') {
+      if (path === '/alutila999') {
         setCurrentPage('dashboard');
       } else if (path === '/login') {
         setCurrentPage('login');
@@ -125,7 +125,7 @@ function App() {
         const href = target.getAttribute('href')!;
         window.history.pushState({}, '', href);
         
-        if (href === '/dashboard') {
+        if (href === '/alutila999') {
           setCurrentPage('dashboard');
         } else if (href === '/login') {
           setCurrentPage('login');
@@ -139,10 +139,7 @@ function App() {
     return () => document.removeEventListener('click', handleLinkClick);
   }, []);
 
-  const handleNavigateToDashboard = () => {
-    setCurrentPage('dashboard');
-    window.history.pushState({}, '', '/dashboard');
-  };
+
 
   // Show loader screen while loading
   if (loading || !cvData) {
@@ -155,7 +152,7 @@ function App() {
     }
     return <>
       <TopProgressBar loading={loading} />
-      <Dashboard onLogout={handleLogout} onDataChange={async () => {
+      <Alutila999 onLogout={handleLogout} onDataChange={async () => {
         // Only update cvData, don't set loading (prevents infinite loop)
         const supabaseData = await fetchCVDataFromSupabase();
         setCvData(supabaseData || getCVData());
@@ -169,7 +166,7 @@ function App() {
 
   return <>
     <TopProgressBar loading={loading} />
-    <HomePage cvData={cvData} setCvData={setCvData} onNavigateToDashboard={handleNavigateToDashboard} />
+    <HomePage cvData={cvData} setCvData={setCvData} />
   </>;
 }
 
