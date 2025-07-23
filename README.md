@@ -1,3 +1,4 @@
+@ -1,196 +0,0 @@
 # ronydb
 
 ronydb is a full-stack web application for managing, displaying, and interacting with personal or professional data—such as CVs, files, and custom fields. It features a modern React frontend, Node.js backend, and integrates with Supabase for storage and authentication.
@@ -32,7 +33,6 @@ ronydb/
 ├── backend/                # Node.js backend (API, business logic)
 ├── src/                    # Frontend source code (React + TypeScript)
 │   ├── components/         # Reusable UI components
-│   ├── files/              # Static files (images, PDFs)
 │   ├── types/              # TypeScript type definitions
 │   ├── utils/              # Utility functions (Supabase, data helpers)
 │   │   └── encryption.ts   # Encryption/decryption utilities
@@ -90,8 +90,8 @@ ronydb/
 
 - Access the app at `http://localhost:5173` (or the port specified by Vite)
 - **Demo Credentials:**
-  - Username: `ronydbv1`
-  - Password: `###Rony@@@7669!!!`
+  - Username: ``
+  - Password: `legacy`
 - Log in or register using your Supabase credentials
 - Use the dashboard to manage your data, upload files, and customize fields
 
@@ -193,4 +193,3 @@ This project is licensed under the MIT License. See [LICENSE](LICENSE) for detai
 - [Vite](https://vitejs.dev/)
 - [Tailwind CSS](https://tailwindcss.com/)
 - [Playwright](https://playwright.dev/)
-
