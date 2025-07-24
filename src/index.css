@@ -3,7 +3,8 @@
 @tailwind utilities;
 
 :root {
-  --color-bg: #f9fafb;
+  --color-bg: #cececed3;
+ 
   --color-card: #fff;
   --color-border: #e5e7eb;
   --color-text: #18181b;
@@ -15,11 +16,15 @@
   --color-copy-bg: #e0e7ff;
   --color-chip-bg: #e5e7eb;
   --color-chip-text: #18181b;
-  focus-visible: none;
+  --focus-visible: none;
 }
 
+
+
+
+
 .dark {
-  --color-bg: #18181b;
+  --color-bg: #18181b; 
   --color-card: #232336;
   --color-border: #37374a;
   --color-text: #f3f4f6;
@@ -31,8 +36,24 @@
   --color-copy-bg: #312e81;
   --color-chip-bg: #334155;
   --color-chip-text: #f3f4f6;
-  focus-visible: none;
+  --focus-visible: none;
 }
+
+/* .dark {
+  --color-bg: #384b38;
+  --color-card: #0c3312;
+  --color-border: #c7c7c7;
+  --color-text: #c5d9ff;
+  --color-primary: #c5d9ff;
+  --color-secondary: #c5d9ff;
+  --color-accent: #ac24fb;
+  --color-row: #233627;
+  --color-section-header: #0f270e;
+  --color-copy-bg: #2e8140;
+  --color-chip-bg: #334155;
+  --color-chip-text: #f3f4f6;
+  --focus-visible: none;
+} */
 
 .animate-progress-bar {
   animation: progressBar 1.2s cubic-bezier(0.4,0,0.2,1) infinite;
@@ -75,4 +96,60 @@
 @keyframes spinReverse {
   0% { transform: rotate(360deg); }
   100% { transform: rotate(0deg); }
+}
+
+@keyframes pulse-slow {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 0.4; }
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+    opacity: 0.6;
+  }
+  50% {
+    transform: translateY(-8px);
+    opacity: 1;
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.7;
+  }
+}
+
+/* Smooth transitions for the progress bar */
+.progress-bar {
+  transition: width 0.3s ease-out;
+}
+
+/* Add smooth transitions for theme switching */
+* {
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Ensure the loading screen takes full viewport */
+html, body, #root {
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+}
+
+/* Add a subtle gradient animation to the background */
+.bg-gradient-animate {
+  background-size: 200% 200%;
+  animation: gradientBG 8s ease infinite;
+}
+
+@keyframes gradientBG {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
