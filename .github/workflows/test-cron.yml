@@ -1,5 +1,4 @@
 name: Test Cron Scheduler
-
 on:
   workflow_dispatch:
     inputs:
@@ -21,21 +20,50 @@ jobs:
       SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
       SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
       VITE_ENCRYPTION_KEY: ${{ secrets.VITE_ENCRYPTION_KEY }}
-
+      
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
+        
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
-
+          
       - name: Install dependencies
         run: npm install
-
+        
       - name: Run backup task once
-        run: node run-once.js
+        id: backup-task
+        run: |
+          node run-once.js
+          echo "status=Success" >> $GITHUB_OUTPUT
+          
+          # Calculate next run time (tomorrow at 6:00 AM UTC)
+          next_run=$(date -u -d "tomorrow 06:00" "+%Y-%m-%dT%H:%M:%SZ")
+          echo "next_run=$next_run" >> $GITHUB_OUTPUT
+
+      - name: Format next schedule
+        id: format-schedule
+        run: |
+          # Convert UTC to BST (GMT+6) for display
+          next_run_utc="${{ steps.backup-task.outputs.next_run }}"
+          next_run_bst=$(date -u -d "$next_run_utc +6 hours" "+%A : %-m/%-d/%Y : %I:%M %p")
+          echo "formatted_schedule=$next_run_bst" >> $GITHUB_OUTPUT
+
+      - name: Send Telegram notification
+        uses: appleboy/telegram-action@master
+        with:
+          token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          to: ${{ secrets.TELEGRAM_CHAT_ID }}
+          message: |
+            Rony.DB (Test)
+            
+            Backup Creation: ${{ steps.backup-task.outputs.status }}
+            
+            Next schedule: ${{ steps.format-schedule.outputs.formatted_schedule }}
+            
+            Thank you ;)
 
       - name: Log completion
         run: |
