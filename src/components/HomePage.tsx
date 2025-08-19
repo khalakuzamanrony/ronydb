@@ -3,6 +3,7 @@ import {
   Copy,
   Download,
   ChevronDown,
+  ChevronRight,
   ExternalLink,
   Mail,
   Phone,
@@ -15,6 +16,8 @@ import {
   FileText,
   Settings,
   Hash,
+  User,
+  Layers,
 } from "lucide-react";
 import {
   FaLinkedin,
@@ -63,6 +66,7 @@ export const HomePage: React.FC<HomePageProps> = ({
   const [showDownloadMenu, setShowDownloadMenu] = React.useState(false);
   const [resumeUrl, setResumeUrl] = React.useState<string | null>(null);
   const [imageUrl, setImageUrl] = React.useState<string | null>(null);
+  const [expandedAcademicEntries, setExpandedAcademicEntries] = React.useState<Record<string, boolean>>({});
 
   React.useEffect(() => {
     // Fetch public URLs from Supabase Storage
@@ -107,6 +111,7 @@ export const HomePage: React.FC<HomePageProps> = ({
     "contacts",
     "work",
     "education",
+    "academic",
     "skills",
     "projects",
     "certificates",
@@ -129,6 +134,13 @@ export const HomePage: React.FC<HomePageProps> = ({
 
   const toggleSection = (key: string) => {
     setExpandedSections((prev) => ({ ...prev, [key]: !prev[key] }));
+  };
+
+  const toggleAcademicExpansion = (id: string) => {
+    setExpandedAcademicEntries((prev) => ({
+      ...prev,
+      [id]: !prev[id],
+    }));
   };
 
   const calculateDuration = (startDate: string, endDate?: string) => {
@@ -205,6 +217,26 @@ Score: ${edu.score}
 `
   )
   .join("\n")}
+
+ACADEMIC RECORDS
+${cvData.academic
+  ? cvData.academic
+      .map(
+        (academic) => `
+${academic.title || "Academic Entry"}
+${academic.degreeName} at ${academic.instituteName}
+${academic.session ? `Session: ${academic.session}` : ""}
+${academic.examYear ? `Exam Year: ${academic.examYear}` : ""}
+${academic.gpa ? `GPA: ${academic.gpa}` : ""}
+${academic.files && academic.files.length > 0
+  ? `Documents:\n${academic.files
+      .map((file) => `• ${file.name}${file.label ? ` (${file.label})` : ""}`)
+      .join("\n")}`
+  : ""}
+`
+      )
+      .join("\n")
+  : ""}
 
 SKILLS
 ${cvData.skills.technical
@@ -399,6 +431,8 @@ ${lang.language}: ${lang.fluency}
 
   const renderCustomTab = (tab: import("../types/cv").CustomTab) => {
     if (!tab.customFields || tab.customFields.length === 0) return null;
+    // Check if custom fields should be visible on homepage
+    if (cvData.customFieldsVisibility?.[tab.id] === false) return null;
     const expanded = expandedSections[tab.id] ?? true;
     return (
       <section key={tab.id} className="mb-8">
@@ -657,7 +691,8 @@ ${lang.language}: ${lang.fluency}
 
                   {/* Custom Fields Row: show two per row, styled like Resume */}
                   {cvData.basics.customFields &&
-                    cvData.basics.customFields.length > 0 && (
+                    cvData.basics.customFields.length > 0 &&
+                    cvData.customFieldsVisibility?.basics !== false && (
                       <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
                         {cvData.basics.customFields
                           .filter((field) => {
@@ -1359,6 +1394,258 @@ ${lang.language}: ${lang.fluency}
                                 </div>
                               </div>
                             ))}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </section>
+        );
+        
+      case "academic":
+        const academicExpanded = expandedSections["academic"];
+        return (
+          <section className="mb-8">
+            <div className="bg-card border border-border rounded-lg shadow-md">
+              <div
+                className="flex items-center cursor-pointer select-none bg-sectionheader px-6 py-4 rounded-t-lg border-b border-border"
+                onClick={() => toggleSection("academic")}
+              >
+                <GraduationCap className="w-6 h-6 mr-2 text-blue-600" />
+                <h2 className="text-2xl font-bold text-primary flex-1">
+                  Academic Records
+                </h2>
+                <span className="ml-2">
+                  <ChevronDown
+                    className={`w-5 h-5 transition-transform ${
+                      academicExpanded ? "" : "rotate-180"
+                    }`}
+                  />
+                </span>
+              </div>
+              {academicExpanded && cvData.academic && (
+                <div className="p-6 pt-4">
+                  <div className="space-y-4">
+                    {cvData.academic.map((academic, index) => (
+                      <div
+                        key={academic.id}
+                        className="bg-card border border-border rounded-lg shadow-md p-6"
+                      >
+                        <div className="flex items-center justify-between mb-2 w-full overflow-hidden">
+                          <div className="flex items-center flex-1 min-w-0">
+                            <button
+                              onClick={() => toggleAcademicExpansion(academic.id)}
+                              className="text-text hover:text-blue-500 mr-2"
+                              aria-label={expandedAcademicEntries[academic.id] ? "Collapse" : "Expand"}
+                            >
+                              {expandedAcademicEntries[academic.id] ? (
+                                <ChevronDown className="w-5 h-5" />
+                              ) : (
+                                <ChevronRight className="w-5 h-5" />
+                              )}
+                            </button>
+                            <h3 className="text-xl font-semibold text-secondary truncate">
+                              {academic.title || `Academic Entry #${index + 1}`}
+                            </h3>
+                          </div>
+                          <CopyButton
+                            text={academic.title || `Academic Entry #${index + 1}`}
+                            className="ml-1 flex-shrink-0"
+                          />
+                        </div>
+                        
+                        {expandedAcademicEntries[academic.id] && (
+                          <div className="mt-4 space-y-3">
+                            <div className="flex items-center justify-between mb-2 w-full overflow-hidden">
+                              <div className="flex-1 min-w-0">
+                                <p className="text-blue-600 font-medium truncate">
+                                  {academic.degreeName} at {academic.instituteName}
+                                </p>
+                              </div>
+                              <CopyButton
+                                text={`${academic.degreeName} at ${academic.instituteName}`}
+                                className="ml-1 flex-shrink-0"
+                              />
+                            </div>
+                            
+                            {academic.name && (
+                              <div className="flex items-center text-secondary mb-2 w-full overflow-hidden">
+                                <div className="flex items-center flex-1 min-w-0">
+                                  <User className="w-4 h-4 mr-1" />
+                                  <span className="truncate">Name: {academic.name}</span>
+                                </div>
+                                <CopyButton
+                                  text={`Name: ${academic.name}`}
+                                  className="ml-1 flex-shrink-0"
+                                />
+                              </div>
+                            )}
+
+                            {academic.fatherName && (
+                              <div className="flex items-center text-secondary mb-2 w-full overflow-hidden">
+                                <div className="flex items-center flex-1 min-w-0">
+                                  <User className="w-4 h-4 mr-1" />
+                                  <span className="truncate">Father's Name: {academic.fatherName}</span>
+                                </div>
+                                <CopyButton
+                                  text={`Father's Name: ${academic.fatherName}`}
+                                  className="ml-1 flex-shrink-0"
+                                />
+                              </div>
+                            )}
+
+                            {academic.motherName && (
+                              <div className="flex items-center text-secondary mb-2 w-full overflow-hidden">
+                                <div className="flex items-center flex-1 min-w-0">
+                                  <User className="w-4 h-4 mr-1" />
+                                  <span className="truncate">Mother's Name: {academic.motherName}</span>
+                                </div>
+                                <CopyButton
+                                  text={`Mother's Name: ${academic.motherName}`}
+                                  className="ml-1 flex-shrink-0"
+                                />
+                              </div>
+                            )}
+
+                            {academic.rollNumber && (
+                              <div className="flex items-center text-secondary mb-2 w-full overflow-hidden">
+                                <div className="flex items-center flex-1 min-w-0">
+                                  <Hash className="w-4 h-4 mr-1" />
+                                  <span className="truncate">Roll: {academic.rollNumber}</span>
+                                </div>
+                                <CopyButton
+                                  text={`Roll: ${academic.rollNumber}`}
+                                  className="ml-1 flex-shrink-0"
+                                />
+                              </div>
+                            )}
+
+                            {academic.registrationNumber && (
+                              <div className="flex items-center text-secondary mb-2 w-full overflow-hidden">
+                                <div className="flex items-center flex-1 min-w-0">
+                                  <Hash className="w-4 h-4 mr-1" />
+                                  <span className="truncate">Registration: {academic.registrationNumber}</span>
+                                </div>
+                                <CopyButton
+                                  text={`Registration: ${academic.registrationNumber}`}
+                                  className="ml-1 flex-shrink-0"
+                                />
+                              </div>
+                            )}
+
+                            {academic.dateOfBirth && (
+                              <div className="flex items-center text-secondary mb-2 w-full overflow-hidden">
+                                <div className="flex items-center flex-1 min-w-0">
+                                  <Calendar className="w-4 h-4 mr-1" />
+                                  <span className="truncate">Date of Birth: {academic.dateOfBirth}</span>
+                                </div>
+                                <CopyButton
+                                  text={`Date of Birth: ${academic.dateOfBirth}`}
+                                  className="ml-1 flex-shrink-0"
+                                />
+                              </div>
+                            )}
+
+                            {academic.group && (
+                              <div className="flex items-center text-secondary mb-2 w-full overflow-hidden">
+                                <div className="flex items-center flex-1 min-w-0">
+                                  <Layers className="w-4 h-4 mr-1" />
+                                  <span className="truncate">Group: {academic.group}</span>
+                                </div>
+                                <CopyButton
+                                  text={`Group: ${academic.group}`}
+                                  className="ml-1 flex-shrink-0"
+                                />
+                              </div>
+                            )}
+                            
+                            {academic.session && (
+                              <div className="flex items-center text-secondary mb-2 w-full overflow-hidden">
+                                <div className="flex items-center flex-1 min-w-0">
+                                  <Calendar className="w-4 h-4 mr-1" />
+                                  <span className="truncate">Session: {academic.session}</span>
+                                </div>
+                                <CopyButton
+                                  text={`Session: ${academic.session}`}
+                                  className="ml-1 flex-shrink-0"
+                                />
+                              </div>
+                            )}
+                            
+                            {academic.examYear && (
+                              <div className="flex items-center text-secondary mb-2 w-full overflow-hidden">
+                                <div className="flex items-center flex-1 min-w-0">
+                                  <Calendar className="w-4 h-4 mr-1" />
+                                  <span className="truncate">Exam Year: {academic.examYear}</span>
+                                </div>
+                                <CopyButton
+                                  text={`Exam Year: ${academic.examYear}`}
+                                  className="ml-1 flex-shrink-0"
+                                />
+                              </div>
+                            )}
+                            
+                            {academic.gpa && (
+                              <div className="flex items-center text-secondary overflow-hidden justify-between">
+                                <span className="font-medium">GPA:</span>
+                                <span className="ml-2">{academic.gpa}</span>
+                                <div className="flex flex-row gap-2 ml-auto">
+                                  <CopyButton
+                                    text={`GPA: ${academic.gpa}`}
+                                    className="ml-1"
+                                  />
+                                </div>
+                              </div>
+                            )}
+                            
+                            {academic.files && academic.files.length > 0 && (
+                              <div className="mt-4">
+                                <h4 className="font-semibold text-secondary mb-2">Documents</h4>
+                                <div className="space-y-2">
+                                  {academic.files.map((file, fileIndex) => (
+                                    <div key={fileIndex} className="flex items-center justify-between p-3 bg-sectionheader rounded-lg">
+                                      <div className="flex items-center flex-1 min-w-0">
+                                        <FileText className="w-4 h-4 mr-2 text-blue-600" />
+                                        <div className="flex flex-col">
+                                          <span className="text-secondary truncate">{file.name}</span>
+                                          {file.label && <span className="text-sm text-gray-500">{file.label}</span>}
+                                        </div>
+                                      </div>
+                                      <div className="flex space-x-2">
+                                        <a
+                                          href={file.url}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-copybg hover:bg-accent text-primary hover:text-white transition-colors duration-200"
+                                          title="View document"
+                                        >
+                                          <ExternalLink className="w-4 h-4" />
+                                        </a>
+                                        <a
+                                          href={file.url}
+                                          download={file.name}
+                                          className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-copybg hover:bg-accent text-primary hover:text-white transition-colors duration-200"
+                                          title="Download document"
+                                          onClick={(e) => {
+                                            e.preventDefault();
+                                            downloadFile(file.url, file.name);
+                                          }}
+                                        >
+                                          <Download className="w-4 h-4" />
+                                        </a>
+                                        <CopyButton
+                                          text={file.url}
+                                          className="flex-shrink-0"
+                                        />
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
                           </div>
                         )}
                       </div>
@@ -2217,10 +2504,15 @@ ${lang.language}: ${lang.fluency}
     "languages",
     "coverLetters",
     "projects",
+    "academic",
   ];
   // Render all sections (built-in and custom) in tabOrder
   const renderAllSections = () =>
     tabOrder.map((sectionName) => {
+      // Check if tab is visible (default to true if not set)
+      const isVisible = cvData.tabVisibility?.[sectionName] !== false;
+      if (!isVisible) return null;
+      
       if (builtInSections.includes(sectionName)) {
         return renderSection(sectionName);
       }

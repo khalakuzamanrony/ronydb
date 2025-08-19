@@ -14,6 +14,7 @@ const DragDropList: React.FC<DragDropListProps> = ({ items, onReorder, renderIte
   const handleDragStart = (e: React.DragEvent, index: number) => {
     setDraggedIndex(index);
     e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', index.toString());
   };
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -23,7 +24,11 @@ const DragDropList: React.FC<DragDropListProps> = ({ items, onReorder, renderIte
 
   const handleDrop = (e: React.DragEvent, dropIndex: number) => {
     e.preventDefault();
-    if (draggedIndex === null || draggedIndex === dropIndex) return;
+    
+    if (draggedIndex === null || draggedIndex === dropIndex) {
+      setDraggedIndex(null);
+      return;
+    }
 
     const newItems = [...items];
     const draggedItem = newItems[draggedIndex];
@@ -34,15 +39,20 @@ const DragDropList: React.FC<DragDropListProps> = ({ items, onReorder, renderIte
     setDraggedIndex(null);
   };
 
+  const handleDragEnd = () => {
+    setDraggedIndex(null);
+  };
+
   return (
     <div className={className}>
       {items.map((item, index) => (
         <div
-          key={index}
+          key={item.id || item.name || index}
           draggable
           onDragStart={(e) => handleDragStart(e, index)}
           onDragOver={handleDragOver}
           onDrop={(e) => handleDrop(e, index)}
+          onDragEnd={handleDragEnd}
           className={`flex items-center gap-2 p-3 border rounded-lg mb-3 cursor-move ${
             draggedIndex === index ? 'opacity-50' : ''
           }`}

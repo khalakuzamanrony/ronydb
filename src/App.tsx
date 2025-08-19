@@ -5,6 +5,7 @@ import Alutila999 from './components/Alutila999';
 import NotFoundPage from './components/NotFoundPage';
 import { getCVData, fetchCVDataFromSupabase } from './utils/cvData';
 import { CVData } from './types/cv';
+import { supabase } from './utils/supabaseClient';
 
 // Simple top progress bar component
 function TopProgressBar({ loading }: { loading: boolean }) {
@@ -107,13 +108,44 @@ function App() {
   const [currentPage, setCurrentPage] = useState('home');
   const [cvData, setCvData] = useState<CVData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [authChecking, setAuthChecking] = useState(true);
 
   // Initial mount: check auth and set page
   useEffect(() => {
-    const authStatus = localStorage.getItem('isAuthenticated');
-    if (authStatus === 'true') {
-      setIsAuthenticated(true);
-    }
+    const checkAuth = async () => {
+      try {
+        // Check Supabase session
+        const { data } = await supabase.auth.getSession();
+        if (data.session) {
+          console.log('User authenticated:', data.session.user.email);
+          setIsAuthenticated(true);
+        } else {
+          // No valid session
+          console.log('No valid session found');
+          setIsAuthenticated(false);
+        }
+      } catch (error) {
+        console.error('Auth check error:', error);
+        setIsAuthenticated(false);
+      } finally {
+        setAuthChecking(false);
+      }
+    };
+    
+    checkAuth();
+    
+    // Set up auth state change listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        console.log('Auth state changed:', event, session ? 'User logged in' : 'User logged out');
+        if (session) {
+          setIsAuthenticated(true);
+        } else {
+          setIsAuthenticated(false);
+        }
+      }
+    );
+    
     // Handle navigation based on URL
     const path = window.location.pathname;
     if (path === '/alutila999') {
@@ -126,6 +158,11 @@ function App() {
       // Any other path should show 404
       setCurrentPage('404');
     }
+    
+    // Cleanup subscription
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   // Fetch fresh data only when currentPage changes to home or dashboard
@@ -147,15 +184,15 @@ function App() {
   }, [currentPage]);
 
   const handleLogin = () => {
+    console.log('Login successful, redirecting to dashboard');
     setIsAuthenticated(true);
-    localStorage.setItem('isAuthenticated', 'true');
     setCurrentPage('dashboard');
     window.history.pushState({}, '', '/alutila999');
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
     setIsAuthenticated(false);
-    localStorage.removeItem('isAuthenticated');
     setCurrentPage('home');
     window.history.pushState({}, '', '/');
   };
@@ -210,13 +247,15 @@ function App() {
 
 
 
-  // Show loader screen while loading (but not for login or 404 pages)
-  if ((loading || !cvData) && currentPage !== 'login' && currentPage !== '404') {
+  // Show loader screen while checking auth or loading data
+  if (authChecking || ((loading || !cvData) && currentPage !== 'login' && currentPage !== '404')) {
     return <LoaderScreen />;
   }
 
+  // Dashboard page - requires authentication
   if (currentPage === 'dashboard') {
     if (!isAuthenticated) {
+      console.log('User not authenticated, redirecting to login page');
       return <LoginPage onLogin={handleLogin} />;
     }
     return <>
@@ -229,14 +268,25 @@ function App() {
     </>;
   }
 
+  // Login page
   if (currentPage === 'login') {
     return <LoginPage onLogin={handleLogin} />;
   }
 
+  // 404 page
   if (currentPage === '404') {
     return <NotFoundPage onNavigateHome={handleNavigateHome} />;
   }
 
+  // Home page - no longer requires authentication
+  if (currentPage === 'home') {
+    console.log('Showing homepage without authentication');
+    return <>
+      <TopProgressBar loading={loading} />
+      <HomePage cvData={cvData} setCvData={setCvData} />
+    </>;
+  }
+  
   return <>
     <TopProgressBar loading={loading} />
     <HomePage cvData={cvData} setCvData={setCvData} />

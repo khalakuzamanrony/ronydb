@@ -1,6 +1,7 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { Upload, Link, Trash2 } from 'lucide-react';
 import { supabase } from '../utils/supabaseClient';
+import CopyButton from './CopyButton';
 
 interface FileUploadProps {
   label: string;
@@ -104,8 +105,13 @@ const FileUpload: React.FC<FileUploadProps> = ({ label, value, onChange, accept,
             value={value}
             onChange={handleUrlChange}
             placeholder="Paste URL here"
-            className={compact ? "w-full pl-10 pr-3 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text h-10 text-sm" : "w-full pl-10 pr-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text text-sm"}
+            className={compact ? "w-full pl-10 pr-10 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text h-10 text-sm" : "w-full pl-10 pr-10 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text text-sm"}
           />
+          {value && (
+            <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+              <CopyButton text={value} className="flex-shrink-0" />
+            </div>
+          )}
         </div>
         {value && (
           <button

@@ -34,6 +34,34 @@ export interface PasswordVendor {
   isExpanded?: boolean;
 }
 
+export interface AcademicEntry {
+  id: string;
+  title: string;
+  degreeName: string;
+  instituteName: string;
+  instituteCode: string;
+  group: string;
+  session: string;
+  examYear: string;
+  level: string;
+  board: string;
+  rollNumber: string;
+  registrationNumber: string;
+  dateOfBirth: string;
+  gender: string;
+  name: string;
+  fatherName: string;
+  motherName: string;
+  gpa: string;
+  files: {
+    name: string;
+    url: string;
+    label: string;
+    file?: File;
+  }[];
+  customFields: CustomField[];
+}
+
 export interface CVData {
   basics: {
     name: string;
@@ -128,6 +156,8 @@ export interface CVData {
     content: string;
   }[];
   tabOrder: string[];
+  tabVisibility: { [key: string]: boolean };
+  customFieldsVisibility: { [key: string]: boolean };
   assets: {
     images: { [key: string]: string };
     pdfs: { [key: string]: string };
@@ -140,4 +170,5 @@ export interface CVData {
     customFields: CustomField[];
   }[];
   passwordBank: PasswordVendor[];
+  academic: AcademicEntry[];
 }

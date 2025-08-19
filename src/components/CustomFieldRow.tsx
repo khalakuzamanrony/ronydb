@@ -1,6 +1,7 @@
 import React from "react";
 import FileUpload from "./FileUpload";
 import { Trash2, GripVertical } from "lucide-react";
+import CopyButton from "./CopyButton";
 
 export interface CustomField {
   id: string;
@@ -49,39 +50,50 @@ const CustomFieldRow: React.FC<CustomFieldRowProps & { showDragHandle?: boolean;
           <option value="file">File</option>
         </select>
       </div>
-      <div className="w-full sm:flex-1 md:flex-1">
+      <div className="w-full sm:flex-1 md:flex-1 relative">
         {field.type === "image" || field.type === "file" ? (
-          <FileUpload
-            label=""
-            value={field.value}
-            onChange={(value, file) => onChange({ value })}
-            onDelete={() => onChange({ value: "" })}
-            accept={field.type === "image" ? "image/*" : "*"}
-            type={field.type}
-            hideUploadButton={false}
-            compact={true}
-            className="w-full"
-          />
+          <div className="flex flex-col gap-2">
+            <div className="relative">
+              <FileUpload
+                label=""
+                value={field.value}
+                onChange={(value, file) => onChange({ value })}
+                onDelete={() => onChange({ value: "" })}
+                accept={field.type === "image" ? "image/*" : "*"}
+                type={field.type}
+                hideUploadButton={false}
+                compact={true}
+                className="w-full"
+              />
+            </div>
+          </div>
         ) : (
-          <input
-            type={field.type === "number" ? "number" : field.type === "date" ? "date" : "text"}
-            value={field.value}
-            onChange={e => onChange({ value: e.target.value })}
-            placeholder={
-              field.type === "text"
-                ? "Enter text"
-                : field.type === "link"
-                ? "Paste link (https://...)"
-                : field.type === "date"
-                ? "Select date"
-                : field.type === "number"
-                ? "Enter number"
-                : field.type === "file"
-                ? "Upload file"
-                : "Value"
-            }
-            className="w-full h-10 px-3 border border-border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-text min-w-0 bg-transparent text-sm"
-          />
+          <div className="relative">
+            <input
+              type={field.type === "number" ? "number" : field.type === "date" ? "date" : "text"}
+              value={field.value}
+              onChange={e => onChange({ value: e.target.value })}
+              placeholder={
+                field.type === "text"
+                  ? "Enter text"
+                  : field.type === "link"
+                  ? "Paste link (https://...)"
+                  : field.type === "date"
+                  ? "Select date"
+                  : field.type === "number"
+                  ? "Enter number"
+                  : field.type === "file"
+                  ? "Upload file"
+                  : "Value"
+              }
+              className="w-full h-10 px-3 border border-border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-text min-w-0 bg-transparent text-sm pr-10"
+            />
+            {field.value && (
+              <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
+                <CopyButton text={field.value} className="flex-shrink-0" />
+              </div>
+            )}
+          </div>
         )}
       </div>
       {showDelete && (

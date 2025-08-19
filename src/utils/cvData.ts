@@ -156,12 +156,47 @@ export const defaultCVData: CVData = {
     }
   ],
   "customTabs": [],
-  "tabOrder": ["basics", "contacts", "work", "education", "skills", "certificates", "languages", "coverLetters", "projects", "backup-restore"],
+  "tabOrder": ["basics", "contacts", "work", "education", "skills", "certificates", "languages", "coverLetters", "projects", "academic", "backup-restore"],
   "assets": {
     "images": {},
     "pdfs": {}
   },
-  "tools": []
+  "tools": [],
+  "academic": [
+    {
+      "id": "1",
+      "title": "SSC Certificate",
+      "degreeName": "Secondary School Certificate",
+      "instituteName": "Bogra Cantonment Public School & College",
+      "instituteCode": "1234",
+      "group": "Science",
+      "session": "2013-2015",
+      "examYear": "2015",
+      "level": "Secondary",
+      "board": "Rajshahi",
+      "rollNumber": "123456",
+      "registrationNumber": "987654",
+      "dateOfBirth": "2000-01-01",
+      "gender": "Male",
+      "name": "Khalekuzzaman Rony",
+      "fatherName": "Father's Name",
+      "motherName": "Mother's Name",
+      "gpa": "5.00",
+      "files": [
+        {
+          "name": "SSC Certificate.pdf",
+          "url": "https://example.com/ssc-certificate.pdf",
+          "label": "SSC Certificate Document"
+        },
+        {
+          "name": "Marksheet.pdf",
+          "url": "https://example.com/marksheet.pdf",
+          "label": "SSC Marksheet"
+        }
+      ],
+      "customFields": []
+    }
+  ]
 };
 
 // Fetch CV data from Supabase
@@ -204,7 +239,8 @@ export const fetchCVDataFromSupabase = async (): Promise<CVData | null> => {
       skills: { ...defaultCVData.skills, ...(decryptedData.skills || {}) },
       projects: decryptedData.projects || defaultCVData.projects,
       certificates: decryptedData.certificates || defaultCVData.certificates,
-      languages: decryptedData.languages || defaultCVData.languages
+      languages: decryptedData.languages || defaultCVData.languages,
+      academic: decryptedData.academic || defaultCVData.academic
     };
   } catch (error) {
     console.error('Error processing CV data:', error);
@@ -224,7 +260,8 @@ export const getCVData = (): CVData => {
         customTabs: data.customTabs || defaultCVData.customTabs,
         tabOrder: data.tabOrder || defaultCVData.tabOrder,
         assets: data.assets || defaultCVData.assets,
-        coverLetters: data.coverLetters || defaultCVData.coverLetters
+        coverLetters: data.coverLetters || defaultCVData.coverLetters,
+        academic: data.academic || defaultCVData.academic
       };
     } catch (error) {
       console.error('Error parsing stored CV data:', error);

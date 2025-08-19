@@ -1,5 +1,15 @@
 import React, { useState, useEffect, useRef } from "react";
 import BackupRestore from "./BackupRestore";
+import EmailManager from "./EmailManager";
+import { supabase } from "../utils/supabaseClient";
+import { 
+  startDevToolsProtection, 
+  showConsoleWarning, 
+  setDevToolsProtectionEnabled, 
+  isDevToolsProtectionEnabled, 
+  initializeDevToolsProtection 
+} from "../utils/devToolsProtection";
+import { testEncryption, decryptUserData } from "../utils/encryption";
 import {
   LogOut,
   Save,
@@ -21,6 +31,10 @@ import {
   Copy,
   Eye,
   EyeOff,
+  ChevronDown,
+  ChevronRight,
+  Shield,
+  ShieldOff,
 } from "lucide-react";
 import {
   FaLinkedin,
@@ -62,10 +76,54 @@ interface DashboardProps {
 }
 
 const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
-  // Set browser tab title
-  useEffect(() => {
-    document.title = "Dashboard | Rony.DB";
-  }, []);
+  // State for current user info
+  const [currentUser, setCurrentUser] = useState<{name: string, email: string, role: string} | null>(null);
+
+  // Load current user info
+  const loadCurrentUser = async () => {
+    try {
+      const userEmail = localStorage.getItem('current_user_email');
+      if (userEmail) {
+        // Get all encrypted records and find matching email
+        const { data: allRecords, error } = await supabase
+          .from('allowed_emails')
+          .select('email, name, role');
+
+        if (error) {
+          console.error('Failed to load user records:', error);
+          return;
+        }
+
+        if (!allRecords || allRecords.length === 0) {
+          return;
+        }
+
+        // Find matching user by decrypting emails
+        for (const record of allRecords) {
+          try {
+            const decryptedData = decryptUserData(record);
+            // console.log('Checking user record for:', userEmail.toLowerCase());
+            // console.log('Decrypted email:', decryptedData?.email);
+            
+            if (decryptedData && decryptedData.email && decryptedData.email === userEmail.toLowerCase()) {
+              setCurrentUser({
+                name: decryptedData.name || 'Unknown User',
+                email: decryptedData.email,
+                role: decryptedData.role || 'user'
+              });
+              // console.log('User found and set:', decryptedData.email);
+              return;
+            }
+          } catch (decryptError) {
+            console.error('Error decrypting user record:', decryptError);
+          }
+        }
+        console.log('No matching user found for:', userEmail);
+      }
+    } catch (error) {
+      console.error('Failed to load current user:', error);
+    }
+  };
 
   // All hooks at the top
   const [cvData, setCvData] = useState<CVData | null>(null);
@@ -79,6 +137,8 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
   const [passwordVisibility, setPasswordVisibility] = useState<{[key: string]: boolean}>({});
+  const [expandedAcademicEntries, setExpandedAcademicEntries] = useState<Record<string, boolean>>({});
+  const [devToolsProtectionEnabled, setDevToolsProtectionEnabledState] = useState(true);
 
   // Function to toggle password visibility
   const togglePasswordVisibility = (vendorIndex: number, accountIndex: number) => {
@@ -95,10 +155,30 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
     setToast({ message: "Copied to clipboard!", type: "success" });
   };
 
+  // Toggle dev tools protection
+  const toggleDevToolsProtection = () => {
+    const newState = !devToolsProtectionEnabled;
+    setDevToolsProtectionEnabled(newState);
+    setDevToolsProtectionEnabledState(newState);
+    setToast({ 
+      message: `Dev Tools Security ${newState ? 'Enabled' : 'Disabled'}`, 
+      type: "success" 
+    });
+  };
+
+  useEffect(() => {
+    document.title = "Dashboard | Rony.DB";
+    loadCurrentUser();
+    
+    // Initialize security protection
+    initializeDevToolsProtection();
+    setDevToolsProtectionEnabledState(isDevToolsProtectionEnabled());
+  }, []);
+
   useEffect(() => {
     (async () => {
       const supabaseData = await fetchCVDataFromSupabase();
-      // One-time fix: ensure 'projects', 'passwordBank', and 'backup-restore' are in tabOrder for this session only
+      // One-time fix: ensure 'projects', 'passwordBank', 'academic', and 'backup-restore' are in tabOrder for this session only
       if (supabaseData && Array.isArray(supabaseData.tabOrder)) {
         const updatedTabOrder = [...supabaseData.tabOrder];
         let needsUpdate = false;
@@ -113,14 +193,74 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
           needsUpdate = true;
         }
         
+        if (!updatedTabOrder.includes('academic')) {
+          // Add academic tab after education tab for better organization
+          const educationIndex = updatedTabOrder.indexOf('education');
+          if (educationIndex !== -1) {
+            updatedTabOrder.splice(educationIndex + 1, 0, 'academic');
+          } else {
+            updatedTabOrder.push('academic');
+          }
+          needsUpdate = true;
+        }
+        
         if (!updatedTabOrder.includes('backup-restore')) {
           updatedTabOrder.push('backup-restore');
+          needsUpdate = true;
+        }
+        
+        if (!updatedTabOrder.includes('email-manager')) {
+          updatedTabOrder.push('email-manager');
           needsUpdate = true;
         }
         
         // Initialize passwordBank if it doesn't exist
         if (!supabaseData.passwordBank) {
           supabaseData.passwordBank = [];
+          needsUpdate = true;
+        }
+        
+        // Initialize academic if it doesn't exist
+        if (!supabaseData.academic) {
+          supabaseData.academic = [];
+          needsUpdate = true;
+        }
+        
+        // Initialize tabVisibility if it doesn't exist
+        if (!supabaseData.tabVisibility) {
+          supabaseData.tabVisibility = {
+            basics: true,
+            contacts: true,
+            work: true,
+            education: true,
+            academic: true,
+            skills: true,
+            projects: true,
+            certificates: true,
+            languages: true,
+            coverLetters: true,
+            passwordBank: true,
+            'backup-restore': true,
+            'email-manager': true
+          };
+          needsUpdate = true;
+        }
+
+        // Initialize customFieldsVisibility if it doesn't exist
+        if (!supabaseData.customFieldsVisibility) {
+          supabaseData.customFieldsVisibility = {
+            basics: true,
+            contacts: true,
+            work: true,
+            education: true,
+            academic: true,
+            skills: true,
+            projects: true,
+            certificates: true,
+            languages: true,
+            tools: true,
+            passwordBank: true
+          };
           needsUpdate = true;
         }
         
@@ -165,7 +305,34 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
     if (onDataChange) onDataChange();
   };
 
-  const addCustomTab = () => {
+  // Reusable toggle component for custom fields visibility
+  const CustomFieldsToggle = ({ sectionId, label }: { sectionId: string; label?: string }) => (
+    <div className="flex items-center gap-2">
+      <span className="text-sm font-medium text-text">{label || "Show on Homepage"}:</span>
+      <button
+        onClick={() => {
+          setCvData({
+            ...cvData!,
+            customFieldsVisibility: {
+              ...cvData!.customFieldsVisibility,
+              [sectionId]: !cvData!.customFieldsVisibility?.[sectionId]
+            }
+          });
+        }}
+        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+          cvData!.customFieldsVisibility?.[sectionId] ? 'bg-blue-600' : 'bg-gray-300'
+        }`}
+      >
+        <span
+          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+            cvData!.customFieldsVisibility?.[sectionId] ? 'translate-x-6' : 'translate-x-1'
+          }`}
+        />
+      </button>
+    </div>
+  );
+
+  const addNewTab = () => {
     const newTab: CustomTab = {
       id: Date.now().toString(),
       name: "New Tab",
@@ -246,6 +413,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
     { id: "tools", label: "My Tools" },
     { id: "work", label: "Work Experience" },
     { id: "education", label: "Education" },
+    { id: "academic", label: "Academic" },
     { id: "skills", label: "Skills" },
     { id: "certificates", label: "Certificates" },
     { id: "languages", label: "Languages" },
@@ -253,6 +421,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
     { id: "projects", label: "Projects" },
     { id: "passwordBank", label: "Password Bank" },
     { id: "backup-restore", label: "Backup-Restore" },
+    { id: "email-manager", label: "Email Manager" },
   ];
   const customTabsMap = Object.fromEntries(
     cvData.customTabs.map((tab) => [tab.id, tab])
@@ -385,7 +554,10 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
       </div>
       
       <div className="mt-6 md:mt-8">
-        <label className="block text-lg font-semibold text-text mb-4">Custom Fields</label>
+        <div className="flex items-center justify-between mb-4">
+          <label className="block text-lg font-semibold text-text">Custom Fields</label>
+          <CustomFieldsToggle sectionId="basics" />
+        </div>
         <DragDropList
           items={cvData.basics.customFields}
           onReorder={newOrder => setCvData({
@@ -1139,6 +1311,660 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
     </div>
   );
 
+  // Academic Tab
+  const renderAcademicTab = () => {
+    // Toggle expansion state for an entry
+    const toggleExpansion = (id: string) => {
+      setExpandedAcademicEntries(prev => ({
+        ...prev,
+        [id]: !prev[id]
+      }));
+    };
+    
+    return (
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <h3 className="text-lg font-semibold text-text">Academic</h3>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium text-text">Show on Homepage:</span>
+              <button
+                onClick={() => {
+                  setCvData({
+                    ...cvData!,
+                    tabVisibility: {
+                      ...cvData!.tabVisibility,
+                      academic: !cvData!.tabVisibility?.academic
+                    }
+                  });
+                }}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                  cvData!.tabVisibility?.academic ? 'bg-blue-600' : 'bg-gray-300'
+                }`}
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                    cvData!.tabVisibility?.academic ? 'translate-x-6' : 'translate-x-1'
+                  }`}
+                />
+              </button>
+            </div>
+            <button
+              onClick={() => {
+                const newAcademic = {
+                  id: Date.now().toString(),
+                  title: `Academic Entry #${cvData.academic.length + 1}`,
+                  degreeName: "",
+                  instituteName: "",
+                  instituteCode: "",
+                  group: "",
+                  session: "",
+                  examYear: "",
+                  level: "",
+                  board: "",
+                  rollNumber: "",
+                  registrationNumber: "",
+                  dateOfBirth: "",
+                  gender: "",
+                  name: "",
+                  fatherName: "",
+                  motherName: "",
+                  gpa: "",
+                  files: [],
+                  customFields: [],
+                };
+                setCvData({
+                  ...cvData!,
+                  academic: [newAcademic, ...cvData!.academic],
+                });
+                // Auto-expand the newly added entry
+                setExpandedAcademicEntries(prev => ({
+                  ...prev,
+                  [newAcademic.id]: true
+                }));
+              }}
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            >
+              <Plus className="w-4 h-4" />
+              Add Academic Entry
+            </button>
+          </div>
+        </div>
+        <DragDropList
+          items={cvData.academic}
+          onReorder={(newOrder) => setCvData({ ...cvData!, academic: newOrder })}
+          renderItem={(academic, index) => (
+            <div className="bg-sectionheader p-4 rounded-lg">
+              <div className="flex justify-between items-center">
+                <div className="flex items-center gap-2 flex-grow">
+                  <button
+                    onClick={() => toggleExpansion(academic.id)}
+                    className="text-text hover:text-blue-500"
+                    aria-label={expandedAcademicEntries[academic.id] ? "Collapse" : "Expand"}
+                  >
+                    {expandedAcademicEntries[academic.id] ? (
+                      <ChevronDown className="w-5 h-5" />
+                    ) : (
+                      <ChevronRight className="w-5 h-5" />
+                    )}
+                  </button>
+                  <input
+                    type="text"
+                    value={academic.title || `Academic Entry #${index + 1}`}
+                    onChange={e => {
+                      const newAcademic = [...cvData.academic];
+                      newAcademic[index] = { ...academic, title: e.target.value };
+                      setCvData({ ...cvData!, academic: newAcademic });
+                    }}
+                    className="font-medium text-text bg-transparent border-none focus:outline-none focus:ring-2 focus:ring-blue-500 rounded px-2 py-1 flex-grow"
+                    placeholder={`Academic Entry #${index + 1}`}
+                  />
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => {
+                      const newAcademic = cvData.academic.filter((_: any, i: number) => i !== index);
+                      setCvData({ ...cvData!, academic: newAcademic });
+                    }}
+                    className="text-red-600 hover:text-red-800"
+                    title="Delete entry"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+              
+              {expandedAcademicEntries[academic.id] && (
+                <div className="mt-4 space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <div className="flex justify-between items-center mb-2">
+                        <label className="block text-sm font-medium text-text">Degree Name</label>
+                        {academic.degreeName && (
+                          <button
+                            onClick={() => {
+                              navigator.clipboard.writeText(academic.degreeName);
+                            }}
+                            className="text-blue-500 hover:text-blue-700"
+                            title="Copy degree name"
+                          >
+                            <Copy className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
+                      <input
+                        type="text"
+                        value={academic.degreeName}
+                        onChange={e => {
+                          const newAcademic = [...cvData.academic];
+                          newAcademic[index] = { ...academic, degreeName: e.target.value };
+                          setCvData({ ...cvData!, academic: newAcademic });
+                        }}
+                        className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
+                      />
+                    </div>
+                    <div>
+                      <div className="flex justify-between items-center mb-2">
+                        <label className="block text-sm font-medium text-text">Institute Name</label>
+                        {academic.instituteName && (
+                          <button
+                            onClick={() => {
+                              navigator.clipboard.writeText(academic.instituteName);
+                            }}
+                            className="text-blue-500 hover:text-blue-700"
+                            title="Copy institute name"
+                          >
+                            <Copy className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
+                      <input
+                        type="text"
+                        value={academic.instituteName}
+                        onChange={e => {
+                          const newAcademic = [...cvData.academic];
+                          newAcademic[index] = { ...academic, instituteName: e.target.value };
+                          setCvData({ ...cvData!, academic: newAcademic });
+                        }}
+                        className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
+                      />
+                    </div>
+                    <div>
+                      <div className="flex justify-between items-center mb-2">
+                        <label className="block text-sm font-medium text-text">Institute Code</label>
+                        {academic.instituteCode && (
+                          <button
+                            onClick={() => {
+                              navigator.clipboard.writeText(academic.instituteCode);
+                            }}
+                            className="text-blue-500 hover:text-blue-700"
+                            title="Copy institute code"
+                          >
+                            <Copy className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
+                      <input
+                        type="text"
+                        value={academic.instituteCode}
+                        onChange={e => {
+                          const newAcademic = [...cvData.academic];
+                          newAcademic[index] = { ...academic, instituteCode: e.target.value };
+                          setCvData({ ...cvData!, academic: newAcademic });
+                        }}
+                        className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
+                      />
+                    </div>
+                    <div>
+                      <div className="flex justify-between items-center mb-2">
+                        <label className="block text-sm font-medium text-text">Group</label>
+                        {academic.group && (
+                          <button
+                            onClick={() => {
+                              navigator.clipboard.writeText(academic.group);
+                            }}
+                            className="text-blue-500 hover:text-blue-700"
+                            title="Copy group"
+                          >
+                            <Copy className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
+                      <input
+                        type="text"
+                        value={academic.group}
+                        onChange={e => {
+                          const newAcademic = [...cvData.academic];
+                          newAcademic[index] = { ...academic, group: e.target.value };
+                          setCvData({ ...cvData!, academic: newAcademic });
+                        }}
+                        className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
+                      />
+                    </div>
+                    <div>
+                      <div className="flex justify-between items-center mb-2">
+                        <label className="block text-sm font-medium text-text">Session</label>
+                        {academic.session && (
+                          <button
+                            onClick={() => {
+                              navigator.clipboard.writeText(academic.session);
+                            }}
+                            className="text-blue-500 hover:text-blue-700"
+                            title="Copy session"
+                          >
+                            <Copy className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
+                      <input
+                        type="text"
+                        value={academic.session}
+                        onChange={e => {
+                          const newAcademic = [...cvData.academic];
+                          newAcademic[index] = { ...academic, session: e.target.value };
+                          setCvData({ ...cvData!, academic: newAcademic });
+                        }}
+                        className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
+                      />
+                    </div>
+                    <div>
+                      <div className="flex justify-between items-center mb-2">
+                        <label className="block text-sm font-medium text-text">Exam Year</label>
+                        {academic.examYear && (
+                          <button
+                            onClick={() => {
+                              navigator.clipboard.writeText(academic.examYear);
+                            }}
+                            className="text-blue-500 hover:text-blue-700"
+                            title="Copy exam year"
+                          >
+                            <Copy className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
+                      <input
+                        type="text"
+                        value={academic.examYear}
+                        onChange={e => {
+                          const newAcademic = [...cvData.academic];
+                          newAcademic[index] = { ...academic, examYear: e.target.value };
+                          setCvData({ ...cvData!, academic: newAcademic });
+                        }}
+                        className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
+                      />
+                    </div>
+                    <div>
+                      <div className="flex justify-between items-center mb-2">
+                        <label className="block text-sm font-medium text-text">Level</label>
+                        {academic.level && (
+                          <button
+                            onClick={() => {
+                              navigator.clipboard.writeText(academic.level);
+                            }}
+                            className="text-blue-500 hover:text-blue-700"
+                            title="Copy level"
+                          >
+                            <Copy className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
+                      <input
+                        type="text"
+                        value={academic.level}
+                        onChange={e => {
+                          const newAcademic = [...cvData.academic];
+                          newAcademic[index] = { ...academic, level: e.target.value };
+                          setCvData({ ...cvData!, academic: newAcademic });
+                        }}
+                        className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
+                      />
+                    </div>
+                    <div>
+                      <div className="flex justify-between items-center mb-2">
+                        <label className="block text-sm font-medium text-text">Board</label>
+                        {academic.board && (
+                          <button
+                            onClick={() => {
+                              navigator.clipboard.writeText(academic.board);
+                            }}
+                            className="text-blue-500 hover:text-blue-700"
+                            title="Copy board"
+                          >
+                            <Copy className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
+                      <input
+                        type="text"
+                        value={academic.board}
+                        onChange={e => {
+                          const newAcademic = [...cvData.academic];
+                          newAcademic[index] = { ...academic, board: e.target.value };
+                          setCvData({ ...cvData!, academic: newAcademic });
+                        }}
+                        className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
+                      />
+                    </div>
+                    <div>
+                      <div className="flex justify-between items-center mb-2">
+                        <label className="block text-sm font-medium text-text">Roll Number</label>
+                        {academic.rollNumber && (
+                          <button
+                            onClick={() => {
+                              navigator.clipboard.writeText(academic.rollNumber);
+                            }}
+                            className="text-blue-500 hover:text-blue-700"
+                            title="Copy roll number"
+                          >
+                            <Copy className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
+                      <input
+                        type="text"
+                        value={academic.rollNumber}
+                        onChange={e => {
+                          const newAcademic = [...cvData.academic];
+                          newAcademic[index] = { ...academic, rollNumber: e.target.value };
+                          setCvData({ ...cvData!, academic: newAcademic });
+                        }}
+                        className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
+                      />
+                    </div>
+                    <div>
+                      <div className="flex justify-between items-center mb-2">
+                        <label className="block text-sm font-medium text-text">Registration Number</label>
+                        {academic.registrationNumber && (
+                          <button
+                            onClick={() => {
+                              navigator.clipboard.writeText(academic.registrationNumber);
+                            }}
+                            className="text-blue-500 hover:text-blue-700"
+                            title="Copy registration number"
+                          >
+                            <Copy className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
+                      <input
+                        type="text"
+                        value={academic.registrationNumber}
+                        onChange={e => {
+                          const newAcademic = [...cvData.academic];
+                          newAcademic[index] = { ...academic, registrationNumber: e.target.value };
+                          setCvData({ ...cvData!, academic: newAcademic });
+                        }}
+                        className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
+                      />
+                    </div>
+                    <div>
+                      <div className="flex justify-between items-center mb-2">
+                        <label className="block text-sm font-medium text-text">Date of Birth</label>
+                        {academic.dateOfBirth && (
+                          <button
+                            onClick={() => {
+                              navigator.clipboard.writeText(academic.dateOfBirth);
+                            }}
+                            className="text-blue-500 hover:text-blue-700"
+                            title="Copy date of birth"
+                          >
+                            <Copy className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
+                      <input
+                        type="text"
+                        value={academic.dateOfBirth}
+                        onChange={e => {
+                          const newAcademic = [...cvData.academic];
+                          newAcademic[index] = { ...academic, dateOfBirth: e.target.value };
+                          setCvData({ ...cvData!, academic: newAcademic });
+                        }}
+                        className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
+                      />
+                    </div>
+                    <div>
+                      <div className="flex justify-between items-center mb-2">
+                        <label className="block text-sm font-medium text-text">Gender</label>
+                        {academic.gender && (
+                          <button
+                            onClick={() => {
+                              navigator.clipboard.writeText(academic.gender);
+                            }}
+                            className="text-blue-500 hover:text-blue-700"
+                            title="Copy gender"
+                          >
+                            <Copy className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
+                      <input
+                        type="text"
+                        value={academic.gender}
+                        onChange={e => {
+                          const newAcademic = [...cvData.academic];
+                          newAcademic[index] = { ...academic, gender: e.target.value };
+                          setCvData({ ...cvData!, academic: newAcademic });
+                        }}
+                        className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
+                      />
+                    </div>
+                    <div>
+                      <div className="flex justify-between items-center mb-2">
+                        <label className="block text-sm font-medium text-text">Name</label>
+                        {academic.name && (
+                          <button
+                            onClick={() => {
+                              navigator.clipboard.writeText(academic.name);
+                            }}
+                            className="text-blue-500 hover:text-blue-700"
+                            title="Copy name"
+                          >
+                            <Copy className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
+                      <input
+                        type="text"
+                        value={academic.name}
+                        onChange={e => {
+                          const newAcademic = [...cvData.academic];
+                          newAcademic[index] = { ...academic, name: e.target.value };
+                          setCvData({ ...cvData!, academic: newAcademic });
+                        }}
+                        className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
+                      />
+                    </div>
+                    <div>
+                      <div className="flex justify-between items-center mb-2">
+                        <label className="block text-sm font-medium text-text">Father's Name</label>
+                        {academic.fatherName && (
+                          <button
+                            onClick={() => {
+                              navigator.clipboard.writeText(academic.fatherName);
+                            }}
+                            className="text-blue-500 hover:text-blue-700"
+                            title="Copy father's name"
+                          >
+                            <Copy className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
+                      <input
+                        type="text"
+                        value={academic.fatherName}
+                        onChange={e => {
+                          const newAcademic = [...cvData.academic];
+                          newAcademic[index] = { ...academic, fatherName: e.target.value };
+                          setCvData({ ...cvData!, academic: newAcademic });
+                        }}
+                        className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
+                      />
+                    </div>
+                    <div>
+                      <div className="flex justify-between items-center mb-2">
+                        <label className="block text-sm font-medium text-text">Mother's Name</label>
+                        {academic.motherName && (
+                          <button
+                            onClick={() => {
+                              navigator.clipboard.writeText(academic.motherName);
+                            }}
+                            className="text-blue-500 hover:text-blue-700"
+                            title="Copy mother's name"
+                          >
+                            <Copy className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
+                      <input
+                        type="text"
+                        value={academic.motherName}
+                        onChange={e => {
+                          const newAcademic = [...cvData.academic];
+                          newAcademic[index] = { ...academic, motherName: e.target.value };
+                          setCvData({ ...cvData!, academic: newAcademic });
+                        }}
+                        className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
+                      />
+                    </div>
+                    <div>
+                      <div className="flex justify-between items-center mb-2">
+                        <label className="block text-sm font-medium text-text">GPA</label>
+                        {academic.gpa && (
+                          <button
+                            onClick={() => {
+                              navigator.clipboard.writeText(academic.gpa);
+                            }}
+                            className="text-blue-500 hover:text-blue-700"
+                            title="Copy GPA"
+                          >
+                            <Copy className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
+                      <input
+                        type="text"
+                        value={academic.gpa}
+                        onChange={e => {
+                          const newAcademic = [...cvData.academic];
+                          newAcademic[index] = { ...academic, gpa: e.target.value };
+                          setCvData({ ...cvData!, academic: newAcademic });
+                        }}
+                        className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
+                      />
+                    </div>
+                  </div>
+                  
+                  {/* File Upload Section */}
+                  <div className="mt-4">
+                    <div className="flex justify-between items-center mb-2">
+                      <h3 className="text-md font-semibold text-text">Files</h3>
+                    </div>
+                    
+                    {/* Display existing files */}
+                    {academic.files && academic.files.length > 0 && (
+                      <div className="mb-4 space-y-2">
+                        {academic.files.map((file, fileIndex) => (
+                          <div key={fileIndex} className="flex items-center justify-between bg-row p-2 rounded-lg">
+                            <div className="flex items-center space-x-2">
+                              <span className="text-text">{file.name}</span>
+                              <input
+                                type="text"
+                                value={file.label || ''}
+                                onChange={e => {
+                                  const newAcademic = [...cvData.academic];
+                                  const newFiles = [...academic.files];
+                                  newFiles[fileIndex] = { ...file, label: e.target.value };
+                                  newAcademic[index] = { ...academic, files: newFiles };
+                                  setCvData({ ...cvData!, academic: newAcademic });
+                                }}
+                                placeholder="Add label"
+                                className="ml-2 px-2 py-1 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-row text-text"
+                              />
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              {file.url && (
+                                <>
+                                  <a 
+                                    href={file.url} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                    className="text-blue-500 hover:text-blue-700"
+                                    title="View file"
+                                  >
+                                    <ExternalLink className="w-4 h-4" />
+                                  </a>
+                                  <a 
+                                    href={file.url} 
+                                    download={file.name}
+                                    className="text-blue-500 hover:text-blue-700"
+                                    title="Download file"
+                                  >
+                                    <Download className="w-4 h-4" />
+                                  </a>
+                                  <button
+                                    onClick={() => {
+                                      navigator.clipboard.writeText(file.url);
+                                    }}
+                                    className="text-blue-500 hover:text-blue-700"
+                                    title="Copy link"
+                                  >
+                                    <Copy className="w-4 h-4" />
+                                  </button>
+                                </>
+                              )}
+                              <button
+                                onClick={() => {
+                                  const newAcademic = [...cvData.academic];
+                                  const newFiles = [...academic.files];
+                                  newFiles.splice(fileIndex, 1);
+                                  newAcademic[index] = { ...academic, files: newFiles };
+                                  setCvData({ ...cvData!, academic: newAcademic });
+                                }}
+                                className="text-red-600 hover:text-red-800"
+                                title="Delete file"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    
+                    {/* Add new file */}
+                    <div className="space-y-2">
+                      <FileUpload
+                        label="Add File"
+                        value=""
+                        onChange={(value, file) => {
+                          if (value && file) {
+                            const newAcademic = [...cvData.academic];
+                            const newFiles = [...(academic.files || [])];
+                            newFiles.push({
+                              name: file.name,
+                              url: value,
+                              label: "",
+                              file: file
+                            });
+                            newAcademic[index] = { ...academic, files: newFiles };
+                            setCvData({ ...cvData!, academic: newAcademic });
+                          }
+                        }}
+                        accept="*/*"
+                      />
+                      <p className="text-xs text-gray-500">You can add a label to each file after uploading</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        />
+      </div>
+    );
+  };
+  
   // Education Tab
   const renderEducationTab = () => (
     <div className="space-y-6">
@@ -1823,6 +2649,10 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
           )}
         </div>
       </div>
+      <div className="flex items-center justify-between mb-4">
+        <label className="block text-lg font-semibold text-text">Custom Fields</label>
+        <CustomFieldsToggle sectionId={tab.id} />
+      </div>
       <DragDropList
         items={tab.customFields}
         onReorder={(newOrder) =>
@@ -2010,6 +2840,8 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
         return renderWorkTab();
       case "education":
         return renderEducationTab();
+      case "academic":
+        return renderAcademicTab();
       case "skills":
         return renderSkillsTab();
       case "certificates":
@@ -2024,6 +2856,8 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
         return renderPasswordBankTab();
       case "backup-restore":
         return renderBackupRestoreTab();
+      case "email-manager":
+        return renderEmailManagerTab();
       default:
         const customTab = cvData.customTabs.find((tab) => tab.id === activeTab);
         if (customTab) {
@@ -2058,7 +2892,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
     }
   };
 
-  // State for password visibility - moved outside the render function to follow React Hooks rules
+  // State management for password visibility - moved outside the render function to follow React Hooks rules
   const renderPasswordBankTab = () => {
     // Initialize passwordBank if it doesn't exist
     if (!cvData.passwordBank) {
@@ -2662,6 +3496,13 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
     );
   };
 
+  // Render the Email Manager tab
+  const renderEmailManagerTab = () => {
+    return (
+      <EmailManager className="mt-4" />
+    );
+  };
+
   return (
     <>
       {/* Toast for data saved */}
@@ -2689,20 +3530,45 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
           {/* Tab Order Card at the Top */}
           <section className="mb-4 md:mb-8">
             <div className="rounded-lg overflow-hidden border border-border">
-              <div className="bg-sectionheader px-4 md:px-6 py-3 md:py-4 border-b border-border rounded-t-lg">
+              <div className="bg-sectionheader px-4 md:px-6 py-3 md:py-4 border-b border-border rounded-t-lg flex items-center justify-between">
                 <h3 className="text-base md:text-lg font-semibold text-text m-0">
                   Tab Order
                 </h3>
+                {/* User Info Display */}
+                <div className="flex items-center space-x-3 text-sm">
+                  <div className="text-right">
+                    {currentUser ? (
+                      <>
+                        <div className="font-medium text-text">{currentUser.name}</div>
+                        <div className="font-small text-xs">{currentUser.email}</div>
+                        <div className={`text-xs px-2 py-1 rounded-full ${
+                          currentUser.role === 'admin' 
+                            ? 'bg-purple-50 text-purple-800 dark:bg-purple-900 dark:text-purple-200' 
+                            : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
+                        }`}>
+                          {currentUser.role.toUpperCase()}
+                        </div>
+                      </>
+                    ) : (
+                      <div className="text-gray-500 text-xs">Loading user...</div>
+                    )}
+                  </div>
+                </div>
               </div>
               <div className="bg-card px-4 md:px-6 py-3 md:py-4 rounded-b-lg">
                 <DragDropList
-                  items={cvData.tabOrder.map((id) => ({
-                    id,
-                    label: tabs.find((t) => t.id === id)?.label || id,
-                  }))}
-                  onReorder={(newOrder) =>
-                    reorderTabs(newOrder.map((item) => item.id))
-                  }
+                  items={cvData.tabOrder
+                    .filter(id => !['passwordBank', 'backup-restore', 'email-manager'].includes(id))
+                    .map((id) => ({
+                      id,
+                      label: tabs.find((t) => t.id === id)?.label || id,
+                    }))}
+                  onReorder={(newOrder) => {
+                    const systemTabs = ['passwordBank', 'backup-restore', 'email-manager'];
+                    const reorderedIds = newOrder.map((item) => item.id);
+                    const fullOrder = [...reorderedIds, ...systemTabs];
+                    reorderTabs(fullOrder);
+                  }}
                   renderItem={(item) => (
                     <div className="flex items-center gap-3">
                       <span className="font-medium text-sm md:text-base">{item.label}</span>
@@ -2783,6 +3649,26 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
                     </button>
                   </div>
 
+                  {/* Dev Tools Security Toggle */}
+                  <div className="flex items-center gap-2 bg-card rounded-lg shadow px-2 py-1 border border-border">
+                    <button
+                      onClick={toggleDevToolsProtection}
+                      className={`inline-flex items-center justify-center w-8 h-8 md:w-9 md:h-9 rounded-md transition-colors ${
+                        devToolsProtectionEnabled 
+                          ? 'bg-green-100 text-green-600 hover:bg-green-200' 
+                          : 'bg-red-100 text-red-600 hover:bg-red-200'
+                      }`}
+                      title={`Dev Tools Security: ${devToolsProtectionEnabled ? 'Enabled' : 'Disabled'}`}
+                      type="button"
+                    >
+                      {devToolsProtectionEnabled ? (
+                        <Shield className="w-4 h-4 md:w-5 md:h-5" />
+                      ) : (
+                        <ShieldOff className="w-4 h-4 md:w-5 md:h-5" />
+                      )}
+                    </button>
+                  </div>
+
                   {/* Backup/Restore Button Group - Mobile Optimized */}
                   <div className="flex gap-1 bg-card rounded-lg shadow px-1 md:px-2 py-1 border border-border">
                     <button
@@ -2814,7 +3700,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
 
               {/* Tabs - Mobile Responsive */}
               <div className="flex flex-wrap gap-1 md:gap-2 px-4 md:px-6 py-3 md:py-4 bg-card border-t border-border rounded-b-lg">
-                {tabs.map((tab) => (
+                {tabs.filter(tab => !['passwordBank', 'backup-restore', 'email-manager'].includes(tab.id)).map((tab) => (
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
@@ -2830,13 +3716,35 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
                   </button>
                 ))}
                 <button
-                  onClick={addCustomTab}
+                  onClick={addNewTab}
                   className="flex items-center gap-1 md:gap-2 px-2 md:px-3 py-1 md:py-1.5 rounded-md text-xs md:text-sm font-medium bg-card text-primary border border-border hover:bg-row ml-1 md:ml-2"
                 >
                   <Plus className="w-3 h-3 md:w-4 md:h-4" />
                   <span className="hidden sm:inline">Add Custom Tab</span>
                   <span className="sm:hidden">Add</span>
                 </button>
+                
+                {/* Horizontal Divider */}
+                <div className="w-full h-px bg-border my-2"></div>
+                
+                {/* System Tabs Group */}
+                <div className="w-full flex flex-wrap gap-1 md:gap-2">
+                  {tabs.filter(tab => ['passwordBank', 'backup-restore', 'email-manager'].includes(tab.id)).map((tab) => (
+                    <button
+                      key={tab.id}
+                      onClick={() => setActiveTab(tab.id)}
+                      className={`px-2 md:px-3 py-1 md:py-1.5 rounded-md text-xs md:text-sm font-medium transition-colors duration-200 border border-border
+                        ${
+                          activeTab === tab.id
+                            ? "bg-primary text-white shadow"
+                            : "bg-row text-text hover:bg-sectionheader"
+                        }
+                      `}
+                    >
+                      {tab.label}
+                    </button>
+                  ))}
+                </div>
               </div>
               {/* Tab Content */}
               <div className="p-4 md:p-6">{renderTabContent()}</div>
