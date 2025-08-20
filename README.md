@@ -10,7 +10,6 @@ A sophisticated, secure web application for managing and showcasing personal dat
 - **Restricted Access:** Google OAuth with allowlist-based authorization
 - **Data Encryption:** AES encryption for sensitive information
 - **Row Level Security:** Database-level access controls
-- **Hidden Admin Panel:** Secure dashboard accessible only via direct URL (`/alutila999`)
 
 ### 📊 **Data Management**
 - **Comprehensive CV Builder:** Manage basics, work experience, education, skills, projects, certificates, languages
@@ -103,11 +102,10 @@ ronydb/
 1. **Google OAuth Integration:** Secure authentication via Supabase Auth
 2. **Allowlist Verification:** Email validation against `allowed_users` table with RLS
 3. **Session Management:** JWT tokens with automatic refresh
-4. **Route Protection:** Hidden admin routes (`/alutila999`) with authentication guards
 
 ### Data Encryption & Protection
 - **AES-256 Encryption:** CryptoJS implementation for sensitive data
-- **Environment-Based Keys:** Secure key management via `VITE_ENCRYPTION_KEY`
+- **Environment-Based Keys:** Secure key management via 
 - **Dual Environment Support:** Works in both Vite and Node.js contexts
 - **Encrypted Storage:** Password bank and sensitive fields encrypted before database storage
 
