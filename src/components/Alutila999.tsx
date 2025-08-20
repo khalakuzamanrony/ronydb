@@ -11,30 +11,404 @@ import {
 } from "../utils/devToolsProtection";
 import { testEncryption, decryptUserData } from "../utils/encryption";
 import {
-  LogOut,
-  Save,
+  User,
+  Phone,
+  Code,
+  Briefcase,
+  GraduationCap,
+  BookOpen,
+  Award,
+  Languages,
+  FileText,
+  FolderOpen,
+  Lock,
+  Database,
+  Mail,
+  Settings,
   Plus,
-  Trash2,
-  GripVertical,
-  Edit,
-  Linkedin,
-  Github,
-  Twitter,
-  Facebook,
-  Instagram,
-  Globe,
-  Hash,
-  Layers,
+  Save,
   ExternalLink,
+  LogOut,
   Download,
   Upload,
-  Copy,
-  Eye,
-  EyeOff,
-  ChevronDown,
-  ChevronRight,
   Shield,
   ShieldOff,
+  Eye,
+  EyeOff,
+  Copy,
+  Check,
+  X,
+  Edit,
+  Trash2,
+  Calendar,
+  MapPin,
+  Globe,
+  Building,
+  Star,
+  ChevronDown,
+  ChevronUp,
+  AlertCircle,
+  CheckCircle,
+  Clock,
+  Zap,
+  Target,
+  TrendingUp,
+  BarChart3,
+  PieChart,
+  Activity,
+  Users,
+  MessageSquare,
+  Heart,
+  Bookmark,
+  Share2,
+  Filter,
+  Search,
+  SortAsc,
+  SortDesc,
+  MoreHorizontal,
+  MoreVertical,
+  GripVertical,
+  RefreshCw,
+  ArrowLeft,
+  ArrowRight,
+  ArrowUp,
+  ArrowDown,
+  ChevronLeft,
+  ChevronRight,
+  Home,
+  Menu,
+  Bell,
+  HelpCircle,
+  Info,
+  Lightbulb,
+  Flag,
+  Tag,
+  Link,
+  Image,
+  Video,
+  Music,
+  File,
+  Folder,
+  Archive,
+  Inbox,
+  Send,
+  Reply,
+  Forward,
+  Paperclip,
+  Smile,
+  ThumbsUp,
+  ThumbsDown,
+  Coffee,
+  Gift,
+  Camera,
+  Mic,
+  Phone as PhoneIcon,
+  Mail as MailIcon,
+  MessageCircle,
+  Headphones,
+  Speaker,
+  Volume2,
+  VolumeX,
+  Play,
+  Pause,
+  Stop,
+  SkipBack,
+  SkipForward,
+  Repeat,
+  Shuffle,
+  Maximize,
+  Minimize,
+  Square,
+  Circle,
+  Triangle,
+  Hexagon,
+  Octagon,
+  Diamond,
+  Pentagon,
+  Star as StarIcon,
+  Heart as HeartIcon,
+  Sun,
+  Moon,
+  Cloud,
+  CloudRain,
+  CloudSnow,
+  Zap as ZapIcon,
+  Thermometer,
+  Droplets,
+  Wind,
+  Compass,
+  Navigation,
+  Map,
+  MapPin as MapPinIcon,
+  Route,
+  Car,
+  Truck,
+  Bus,
+  Train,
+  Plane,
+  Ship,
+  Bike,
+  Scooter,
+  Footprints,
+  Rocket,
+  Satellite,
+  Wifi,
+  WifiOff,
+  Bluetooth,
+  Radio,
+  Tv,
+  Monitor,
+  Smartphone,
+  Tablet,
+  Laptop,
+  Desktop,
+  Watch,
+  Gamepad2,
+  Joystick,
+  Keyboard,
+  Mouse,
+  Printer,
+  Scanner,
+  Fax,
+  HardDrive,
+  Cpu,
+  MemoryStick,
+  BatteryLow,
+  Battery,
+  BatteryCharging,
+  Power,
+  PowerOff,
+  Plug,
+  Unplug,
+  Cable,
+  Usb,
+  Ethernet,
+  Server,
+  Database as DatabaseIcon,
+  Cloud as CloudIcon,
+  CloudUpload,
+  CloudDownload,
+  CloudSync,
+  Backup,
+  Restore,
+  Import,
+  Export,
+  Sync,
+  Update,
+  Upgrade,
+  Download as DownloadIcon,
+  Upload as UploadIcon,
+  Share,
+  ShareIcon,
+  Link2,
+  Unlink,
+  Copy as CopyIcon,
+  Cut,
+  Paste,
+  Scissors,
+  Clipboard,
+  ClipboardCopy,
+  ClipboardPaste,
+  ClipboardList,
+  ClipboardCheck,
+  ClipboardX,
+  FileText as FileTextIcon,
+  File as FileIcon,
+  Folder as FolderIcon,
+  FolderOpen as FolderOpenIcon,
+  FolderPlus,
+  FolderMinus,
+  FolderX,
+  Archive as ArchiveIcon,
+  Package,
+  Box,
+  Container,
+  Layers,
+  Stack,
+  Grid,
+  List,
+  Table,
+  Columns,
+  Rows,
+  Layout,
+  Sidebar,
+  PanelLeft,
+  PanelRight,
+  PanelTop,
+  PanelBottom,
+  Split,
+  Merge,
+  Combine,
+  Separate,
+  Group,
+  Ungroup,
+  Align,
+  AlignLeft,
+  AlignCenter,
+  AlignRight,
+  AlignJustify,
+  AlignTop,
+  AlignMiddle,
+  AlignBottom,
+  Distribute,
+  DistributeHorizontal,
+  DistributeVertical,
+  Flip,
+  FlipHorizontal,
+  FlipVertical,
+  Rotate,
+  RotateCw,
+  RotateCcw,
+  Scale,
+  Move,
+  Resize,
+  Crop,
+  Zoom,
+  ZoomIn,
+  ZoomOut,
+  Focus,
+  Blur,
+  Contrast,
+  Brightness,
+  Saturation,
+  Hue,
+  Invert,
+  Grayscale,
+  Sepia,
+  Vintage,
+  Retro,
+  Modern,
+  Classic,
+  Elegant,
+  Bold,
+  Italic,
+  Underline,
+  Strikethrough,
+  Subscript,
+  Superscript,
+  Quote,
+  Code2,
+  Terminal,
+  Command,
+  Prompt,
+  Shell,
+  Console,
+  Debug,
+  Bug,
+  BugOff,
+  Test,
+  TestTube,
+  Flask,
+  Beaker,
+  Microscope,
+  Telescope,
+  Binoculars,
+  Magnifier,
+  MagnifyingGlass,
+  Lens,
+  Eyedropper,
+  Pipette,
+  Syringe,
+  Pill,
+  Capsule,
+  Tablet as TabletIcon,
+  Bandage,
+  Stethoscope,
+  Thermometer as ThermometerIcon,
+  Siren,
+  Ambulance,
+  Hospital,
+  Cross,
+  Plus as PlusIcon,
+  Minus,
+  Equal,
+  NotEqual,
+  LessThan,
+  LessThanEqual,
+  GreaterThan,
+  GreaterThanEqual,
+  Percent,
+  Hash,
+  AtSign,
+  Dollar,
+  Euro,
+  Pound,
+  Yen,
+  Rupee,
+  Bitcoin,
+  Ethereum,
+  Litecoin,
+  Dogecoin,
+  CreditCard,
+  DebitCard,
+  PaymentCard,
+  Wallet,
+  Purse,
+  Piggy,
+  Bank,
+  Vault,
+  Safe,
+  Lock as LockIcon,
+  Unlock,
+  Key,
+  Keyhole,
+  Password,
+  Fingerprint,
+  FaceId,
+  Retina,
+  Iris,
+  Voice,
+  Signature,
+  Certificate,
+  Badge,
+  Medal,
+  Trophy,
+  Crown,
+  Gem,
+  Diamond as DiamondIcon,
+  Ruby,
+  Emerald,
+  Sapphire,
+  Pearl,
+  Gold,
+  Silver,
+  Bronze,
+  Platinum,
+  Titanium,
+  Steel,
+  Iron,
+  Copper,
+  Aluminum,
+  Lead,
+  Zinc,
+  Tin,
+  Nickel,
+  Cobalt,
+  Chromium,
+  Manganese,
+  Magnesium,
+  Calcium,
+  Sodium,
+  Potassium,
+  Lithium,
+  Hydrogen,
+  Helium,
+  Neon,
+  Argon,
+  Krypton,
+  Xenon,
+  Radon,
+  Oxygen,
+  Nitrogen,
+  Carbon,
+  Silicon,
+  Phosphorus,
+  Sulfur,
+  Chlorine,
+  Fluorine,
+  Bromine,
+  Iodine,
+  Astatine
 } from "lucide-react";
 import {
   FaLinkedin,
@@ -128,7 +502,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
   // All hooks at the top
   const [cvData, setCvData] = useState<CVData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState("basics");
+  const [activeTab, setActiveTab] = useState("dashboard");
   const [showSuccess, setShowSuccess] = useState(false);
   const [editingTabName, setEditingTabName] = useState<string | null>(null);
   const [newTabName, setNewTabName] = useState("");
@@ -138,7 +512,67 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
   const [passwordVisibility, setPasswordVisibility] = useState<{[key: string]: boolean}>({});
   const [expandedAcademicEntries, setExpandedAcademicEntries] = useState<Record<string, boolean>>({});
-  const [devToolsProtectionEnabled, setDevToolsProtectionEnabledState] = useState(true);
+  const [devToolsProtectionEnabled, setDevToolsProtectionEnabledState] = useState(false);
+  const [showEmailManager, setShowEmailManager] = useState(false);
+  const [showProfileDropdown, setShowProfileDropdown] = useState(false);
+  const [recentChanges, setRecentChanges] = useState<Array<{
+    table: string;
+    action: string;
+    item: string;
+    time: string;
+    timestamp: number;
+  }>>([]);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Handle click outside dropdown to close it
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setShowProfileDropdown(false);
+      }
+    };
+
+    if (showProfileDropdown) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showProfileDropdown]);
+
+  // Function to add a change to recent changes
+  const addRecentChange = (table: string, action: string, item: string) => {
+    const now = new Date();
+    const timeAgo = (timestamp: number) => {
+      const diff = Date.now() - timestamp;
+      const minutes = Math.floor(diff / 60000);
+      const hours = Math.floor(diff / 3600000);
+      const days = Math.floor(diff / 86400000);
+      
+      if (minutes < 1) return 'Just now';
+      if (minutes < 60) return `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
+      if (hours < 24) return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+      return `${days} day${days > 1 ? 's' : ''} ago`;
+    };
+
+    const newChange = {
+      table,
+      action,
+      item,
+      time: timeAgo(now.getTime()),
+      timestamp: now.getTime()
+    };
+
+    setRecentChanges(prev => {
+      const updated = [newChange, ...prev].slice(0, 10); // Keep only last 10 changes
+      // Update time strings for all changes
+      return updated.map(change => ({
+        ...change,
+        time: timeAgo(change.timestamp)
+      }));
+    });
+  };
 
   // Function to toggle password visibility
   const togglePasswordVisibility = (vendorIndex: number, accountIndex: number) => {
@@ -408,31 +842,32 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
   // Now it's safe to use cvData, including in the tabs array
   // Build tabs array from tabOrder, mapping ids to built-in and custom tabs
   const builtInTabs = [
-    { id: "basics", label: "Basic Info" },
-    { id: "contacts", label: "Contacts" },
-    { id: "tools", label: "My Tools" },
-    { id: "work", label: "Work Experience" },
-    { id: "education", label: "Education" },
-    { id: "academic", label: "Academic" },
-    { id: "skills", label: "Skills" },
-    { id: "certificates", label: "Certificates" },
-    { id: "languages", label: "Languages" },
-    { id: "coverLetters", label: "Cover Letters" },
-    { id: "projects", label: "Projects" },
-    { id: "passwordBank", label: "Password Bank" },
-    { id: "backup-restore", label: "Backup-Restore" },
-    { id: "email-manager", label: "Email Manager" },
+    { id: "dashboard", label: "Dashboard", icon: BarChart3 },
+    { id: "basics", label: "Basic Info", icon: User },
+    { id: "contacts", label: "Contacts", icon: Phone },
+    { id: "mytools", label: "My Tools", icon: Code },
+    { id: "work", label: "Work Experience", icon: Briefcase },
+    { id: "education", label: "Education", icon: GraduationCap },
+    { id: "academic", label: "Academic", icon: BookOpen },
+    { id: "skills", label: "Skills & Certificates", icon: Award },
+    { id: "languages", label: "Languages", icon: Languages },
+    { id: "coverletters", label: "Cover Letters", icon: FileText },
+    { id: "projects", label: "Projects", icon: FolderOpen },
+    { id: "passwordBank", label: "Password Bank", icon: Lock },
+    { id: "backup-restore", label: "Backup-Restore", icon: Database },
+    { id: "email-manager", label: "Email Manager", icon: Mail },
+    { id: "tab-organization", label: "Tab Organization", icon: Settings },
   ];
   const customTabsMap = Object.fromEntries(
     cvData.customTabs.map((tab) => [tab.id, tab])
   );
-  const tabs = cvData.tabOrder.map((id) => {
+  const tabs = [...cvData.tabOrder.map((id) => {
     const builtIn = builtInTabs.find((t) => t.id === id);
     if (builtIn) return builtIn;
     const custom = customTabsMap[id];
-    if (custom) return { id: custom.id, label: custom.name };
-    return { id, label: id };
-  });
+    if (custom) return { id: custom.id, label: custom.name, icon: Settings };
+    return { id, label: id, icon: Settings };
+  }), { id: "tab-organization", label: "Tab Organization", icon: Settings }];
 
   const reorderTabs = (newOrder: string[]) => {
     setCvData((cvData) => {
@@ -2832,10 +3267,14 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
 
   const renderTabContent = () => {
     switch (activeTab) {
+      case "dashboard":
+        return renderDashboardTab();
       case "basics":
         return renderBasicsTab();
       case "contacts":
         return renderContactsTab();
+      case "tools":
+        return renderToolsTab();
       case "work":
         return renderWorkTab();
       case "education":
@@ -2858,12 +3297,14 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
         return renderBackupRestoreTab();
       case "email-manager":
         return renderEmailManagerTab();
+      case "tab-organization":
+        return renderTabOrganizationContent();
       default:
         const customTab = cvData.customTabs.find((tab) => tab.id === activeTab);
         if (customTab) {
           return renderCustomTab(customTab);
         }
-        return renderBasicsTab();
+        return <div>Tab not found</div>;
     }
   };
 
@@ -3503,253 +3944,557 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onDataChange }) => {
     );
   };
 
+  // Render Dashboard tab with statistics and recent changes
+  const renderDashboardTab = () => {
+    const totalEntries = Object.values(cvData).reduce((count, value) => {
+      if (Array.isArray(value)) return count + value.length;
+      return count;
+    }, 0);
+
+    // Use real recent changes data
+
+    return (
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex items-center space-x-3 mb-6">
+          <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+            <BarChart3 className="w-4 h-4 text-white" />
+          </div>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Dashboard Overview</h2>
+        </div>
+
+        {/* Statistics Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {/* Total Entries */}
+          <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl p-6 text-white">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-blue-100 text-sm font-medium">Total Entries</p>
+                <p className="text-3xl font-bold">{totalEntries}</p>
+              </div>
+              <Database className="w-8 h-8 text-blue-200" />
+            </div>
+          </div>
+
+          {/* Work Experience */}
+          <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-xl p-6 text-white">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-green-100 text-sm font-medium">Work Experience</p>
+                <p className="text-3xl font-bold">{cvData.work?.length || 0}</p>
+              </div>
+              <Briefcase className="w-8 h-8 text-green-200" />
+            </div>
+          </div>
+
+          {/* Projects */}
+          <div className="bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl p-6 text-white">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-purple-100 text-sm font-medium">Projects</p>
+                <p className="text-3xl font-bold">{cvData.projects?.length || 0}</p>
+              </div>
+              <FolderOpen className="w-8 h-8 text-purple-200" />
+            </div>
+          </div>
+
+          {/* Skills */}
+          <div className="bg-gradient-to-r from-orange-500 to-orange-600 rounded-xl p-6 text-white">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-orange-100 text-sm font-medium">Skills</p>
+                <p className="text-3xl font-bold">{cvData.skills?.length || 0}</p>
+              </div>
+              <Award className="w-8 h-8 text-orange-200" />
+            </div>
+          </div>
+        </div>
+
+        {/* Supabase Statistics */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Database Stats */}
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+              <Server className="w-5 h-5 mr-2 text-blue-500" />
+              Supabase Statistics
+            </h3>
+            <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <span className="text-gray-600 dark:text-gray-400">Database Status</span>
+                <span className="flex items-center text-green-600">
+                  <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                  Active
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-gray-600 dark:text-gray-400">Storage Used</span>
+                <span className="text-gray-900 dark:text-white font-medium">2.3 MB / 500 MB</span>
+              </div>
+              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                <div className="bg-blue-500 h-2 rounded-full" style={{ width: '0.46%' }}></div>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-gray-600 dark:text-gray-400">API Requests (24h)</span>
+                <span className="text-gray-900 dark:text-white font-medium">1,247</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-gray-600 dark:text-gray-400">Performance</span>
+                <span className="text-green-600 font-medium">Excellent</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Recent Changes */}
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+              <Clock className="w-5 h-5 mr-2 text-green-500" />
+              Recent Changes
+            </h3>
+            <div className="space-y-4">
+              {recentChanges.length === 0 ? (
+                <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                  <Clock className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                  <p className="text-sm">No recent changes yet</p>
+                  <p className="text-xs">Start editing your CV to see activity here</p>
+                </div>
+              ) : (
+                recentChanges.map((change, index) => (
+                <div key={index} className="flex items-start space-x-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                  <div className={`w-2 h-2 rounded-full mt-2 ${
+                    change.action === 'Added' ? 'bg-green-500' : 'bg-blue-500'
+                  }`}></div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-gray-900 dark:text-white">
+                      {change.action} in {change.table}
+                    </p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 truncate">
+                      {change.item}
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                      {change.time}
+                    </p>
+                  </div>
+                </div>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Data Distribution Chart */}
+        <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+            <PieChart className="w-5 h-5 mr-2 text-purple-500" />
+            Data Distribution
+          </h3>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="text-center">
+              <div className="w-16 h-16 mx-auto bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center mb-2">
+                <Briefcase className="w-8 h-8 text-blue-600" />
+              </div>
+              <p className="text-sm font-medium text-gray-900 dark:text-white">{cvData.work?.length || 0}</p>
+              <p className="text-xs text-gray-500">Work</p>
+            </div>
+            <div className="text-center">
+              <div className="w-16 h-16 mx-auto bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mb-2">
+                <FolderOpen className="w-8 h-8 text-green-600" />
+              </div>
+              <p className="text-sm font-medium text-gray-900 dark:text-white">{cvData.projects?.length || 0}</p>
+              <p className="text-xs text-gray-500">Projects</p>
+            </div>
+            <div className="text-center">
+              <div className="w-16 h-16 mx-auto bg-purple-100 dark:bg-purple-900 rounded-full flex items-center justify-center mb-2">
+                <Award className="w-8 h-8 text-purple-600" />
+              </div>
+              <p className="text-sm font-medium text-gray-900 dark:text-white">{cvData.skills?.length || 0}</p>
+              <p className="text-xs text-gray-500">Skills</p>
+            </div>
+            <div className="text-center">
+              <div className="w-16 h-16 mx-auto bg-orange-100 dark:bg-orange-900 rounded-full flex items-center justify-center mb-2">
+                <GraduationCap className="w-8 h-8 text-orange-600" />
+              </div>
+              <p className="text-sm font-medium text-gray-900 dark:text-white">{cvData.education?.length || 0}</p>
+              <p className="text-xs text-gray-500">Education</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Quick Actions */}
+        <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+            <Zap className="w-5 h-5 mr-2 text-yellow-500" />
+            Quick Actions
+          </h3>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <button
+              onClick={() => setActiveTab('work')}
+              className="flex items-center justify-center p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors"
+            >
+              <Briefcase className="w-5 h-5 mr-2 text-blue-600" />
+              <span className="text-sm font-medium text-blue-600">Add Work</span>
+            </button>
+            <button
+              onClick={() => setActiveTab('projects')}
+              className="flex items-center justify-center p-4 bg-green-50 dark:bg-green-900/20 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/40 transition-colors"
+            >
+              <FolderOpen className="w-5 h-5 mr-2 text-green-600" />
+              <span className="text-sm font-medium text-green-600">Add Project</span>
+            </button>
+            <button
+              onClick={() => setActiveTab('skills')}
+              className="flex items-center justify-center p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-900/40 transition-colors"
+            >
+              <Award className="w-5 h-5 mr-2 text-purple-600" />
+              <span className="text-sm font-medium text-purple-600">Add Skill</span>
+            </button>
+            <button
+              onClick={() => setActiveTab('backup-restore')}
+              className="flex items-center justify-center p-4 bg-orange-50 dark:bg-orange-900/20 rounded-lg hover:bg-orange-100 dark:hover:bg-orange-900/40 transition-colors"
+            >
+              <Download className="w-5 h-5 mr-2 text-orange-600" />
+              <span className="text-sm font-medium text-orange-600">Backup</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // Render Tab Organization content
+  const renderTabOrganizationContent = () => (
+    <div className="space-y-6">
+      <div className="flex items-center space-x-3 mb-6">
+        <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
+          <Settings className="w-4 h-4 text-white" />
+        </div>
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Tab Organization</h2>
+      </div>
+      <p className="text-gray-600 dark:text-gray-400 mb-4">Drag and drop to reorder your tabs</p>
+      <DragDropList
+        items={cvData.tabOrder
+          .filter(id => !['passwordBank', 'backup-restore', 'email-manager', 'tab-organization'].includes(id))
+          .map((id) => ({
+            id,
+            label: tabs.find((t) => t.id === id)?.label || id,
+          }))}
+        onReorder={(newOrder) => {
+          const systemTabs = ['passwordBank', 'backup-restore', 'email-manager'];
+          const reorderedIds = newOrder.map((item) => item.id);
+          const fullOrder = [...reorderedIds, ...systemTabs];
+          reorderTabs(fullOrder);
+        }}
+        renderItem={(item) => (
+          <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600 hover:shadow-sm transition-shadow">
+            <div className="flex items-center space-x-3">
+              <GripVertical className="w-4 h-4 text-gray-400" />
+              <span className="font-medium text-gray-900 dark:text-white">{item.label}</span>
+            </div>
+            <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+          </div>
+        )}
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"
+      />
+    </div>
+  );
+
   return (
     <>
       {/* Toast for data saved */}
       {showSuccess && (
-        <div className="fixed top-6 right-6 z-50 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-2 animate-fade-in">
-          <Save className="w-5 h-5 mr-2" />
+        <div className="fixed top-20 right-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg z-[60]">
           Data saved successfully!
         </div>
       )}
       {toast && (
-        <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />
-      )}
-      {/* Main wrapper */}
-      <div className="min-h-screen bg-bg text-text">
-        <div className="flex justify-end p-2 md:p-4">
-          <ThemeToggle />
+        <div className="fixed top-20 right-4 z-[60]">
+          <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />
         </div>
-        <div className="max-w-6xl mx-auto px-2 sm:px-4 md:px-6 py-2 md:py-4 lg:py-8">
-          {/* Header with Rony.DB and backup/restore button group */}
-          <div className="flex items-center justify-between px-4 md:px-6 py-3 md:py-4 border-b border-border bg-bg">
-            <div className="text-xl md:text-2xl font-bold text-primary select-none tracking-wider">
-              Rony.DB
-            </div>
-          </div>
-          {/* Tab Order Card at the Top */}
-          <section className="mb-4 md:mb-8">
-            <div className="rounded-lg overflow-hidden border border-border">
-              <div className="bg-sectionheader px-4 md:px-6 py-3 md:py-4 border-b border-border rounded-t-lg flex items-center justify-between">
-                <h3 className="text-base md:text-lg font-semibold text-text m-0">
-                  Tab Order
-                </h3>
-                {/* User Info Display */}
-                <div className="flex items-center space-x-3 text-sm">
-                  <div className="text-right">
-                    {currentUser ? (
-                      <>
-                        <div className="font-medium text-text">{currentUser.name}</div>
-                        <div className="font-small text-xs">{currentUser.email}</div>
-                        <div className={`text-xs px-2 py-1 rounded-full ${
-                          currentUser.role === 'admin' 
-                            ? 'bg-purple-50 text-purple-800 dark:bg-purple-900 dark:text-purple-200' 
-                            : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
-                        }`}>
-                          {currentUser.role.toUpperCase()}
-                        </div>
-                      </>
-                    ) : (
-                      <div className="text-gray-500 text-xs">Loading user...</div>
-                    )}
+      )}
+      
+      {/* 2-Column Dashboard Layout */}
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
+        {/* Top Navigation Bar */}
+        <nav className="fixed top-0 left-0 right-0 z-50 bg-white dark:bg-gray-800 shadow-lg border-b border-gray-200 dark:border-gray-700">
+          <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex justify-between items-center h-16">
+              {/* Logo and Title */}
+              <div className="flex items-center space-x-4">
+                <div className="flex items-center">
+                  <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                    <span className="text-white font-bold text-sm">R</span>
                   </div>
+                  <h1 className="ml-3 text-xl font-bold text-gray-900 dark:text-white">Rony.DB</h1>
                 </div>
+                <div className="hidden md:block h-6 w-px bg-gray-300 dark:bg-gray-600"></div>
+                <div className="hidden md:block text-sm text-gray-600 dark:text-gray-400">Dashboard</div>
               </div>
-              <div className="bg-card px-4 md:px-6 py-3 md:py-4 rounded-b-lg">
-                <DragDropList
-                  items={cvData.tabOrder
-                    .filter(id => !['passwordBank', 'backup-restore', 'email-manager'].includes(id))
-                    .map((id) => ({
-                      id,
-                      label: tabs.find((t) => t.id === id)?.label || id,
-                    }))}
-                  onReorder={(newOrder) => {
-                    const systemTabs = ['passwordBank', 'backup-restore', 'email-manager'];
-                    const reorderedIds = newOrder.map((item) => item.id);
-                    const fullOrder = [...reorderedIds, ...systemTabs];
-                    reorderTabs(fullOrder);
-                  }}
-                  renderItem={(item) => (
-                    <div className="flex items-center gap-3">
-                      <span className="font-medium text-sm md:text-base">{item.label}</span>
+              {/* User Info & Profile Dropdown */}
+              {currentUser && (
+                <div className="relative" ref={dropdownRef}>
+                  <div className="flex items-center space-x-3">
+                    <div className="text-right">
+                      <div className="text-sm font-medium text-gray-900 dark:text-white">{currentUser.name}</div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">{currentUser.email}</div>
+                    </div>
+                    <button
+                      onClick={() => setShowProfileDropdown(!showProfileDropdown)}
+                      className="w-8 h-8 bg-gradient-to-r from-green-400 to-blue-500 rounded-full flex items-center justify-center hover:shadow-lg transition-shadow"
+                    >
+                      <span className="text-white font-semibold text-sm">{currentUser.name.charAt(0)}</span>
+                    </button>
+                  </div>
+
+                  {/* Dropdown Menu */}
+                  {showProfileDropdown && (
+                    <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-2 z-50">
+                      {/* Appearance Section */}
+                      <div className="px-4 py-2 border-b border-gray-200 dark:border-gray-700">
+                        <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Appearance</h3>
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-gray-700 dark:text-gray-300">Dark Mode</span>
+                          <ThemeToggle />
+                        </div>
+                      </div>
+
+                      {/* Actions Section */}
+                      <div className="px-4 py-2 border-b border-gray-200 dark:border-gray-700">
+                        <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Actions</h3>
+                        <div className="space-y-1">
+                          <button
+                            onClick={() => {
+                              window.history.pushState({}, "", "/");
+                              const navEvent = new PopStateEvent("popstate");
+                              window.dispatchEvent(navEvent);
+                              setShowProfileDropdown(false);
+                            }}
+                            className="w-full flex items-center px-2 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
+                          >
+                            <ExternalLink className="w-4 h-4 mr-3" />
+                            View CV
+                          </button>
+                          <button
+                            onClick={() => {
+                              handleSave();
+                              setShowProfileDropdown(false);
+                            }}
+                            className="w-full flex items-center px-2 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
+                          >
+                            <Save className="w-4 h-4 mr-3" />
+                            Save Changes
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Security Section */}
+                      <div className="px-4 py-2 border-b border-gray-200 dark:border-gray-700">
+                        <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Security</h3>
+                        <button
+                          onClick={() => {
+                            toggleDevToolsProtection();
+                            setShowProfileDropdown(false);
+                          }}
+                          className="w-full flex items-center justify-between px-2 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
+                        >
+                          <div className="flex items-center">
+                            {devToolsProtectionEnabled ? <Shield className="w-4 h-4 mr-3" /> : <ShieldOff className="w-4 h-4 mr-3" />}
+                            Dev Tools Protection
+                          </div>
+                          <span className={`text-xs px-2 py-1 rounded ${
+                            devToolsProtectionEnabled 
+                              ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' 
+                              : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                          }`}>
+                            {devToolsProtectionEnabled ? 'ON' : 'OFF'}
+                          </span>
+                        </button>
+                      </div>
+
+                      {/* Backup Section */}
+                      <div className="px-4 py-2 border-b border-gray-200 dark:border-gray-700">
+                        <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Backup</h3>
+                        <div className="space-y-1">
+                          <button
+                            onClick={() => {
+                              handleDownloadBackup();
+                              setShowProfileDropdown(false);
+                            }}
+                            className="w-full flex items-center px-2 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
+                          >
+                            <Download className="w-4 h-4 mr-3" />
+                            Download Backup
+                          </button>
+                          <button
+                            onClick={() => {
+                              handleRestoreClick();
+                              setShowProfileDropdown(false);
+                            }}
+                            className="w-full flex items-center px-2 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
+                          >
+                            <Upload className="w-4 h-4 mr-3" />
+                            Upload Backup
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Account Section */}
+                      <div className="px-4 py-2">
+                        <button
+                          onClick={() => {
+                            onLogout();
+                            setShowProfileDropdown(false);
+                          }}
+                          className="w-full flex items-center px-2 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
+                        >
+                          <LogOut className="w-4 h-4 mr-3" />
+                          Logout
+                        </button>
+                      </div>
                     </div>
                   )}
-                  className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2 md:gap-3"
-                />
-              </div>
-            </div>
-          </section>
-
-          {/* Dashboard Header and Tabs Card */}
-          <section className="mb-8">
-            <div className="bg-card border border-border rounded-lg shadow-md">
-              {/* Header with title, view CV, save, logout */}
-              <div className="flex flex-col md:flex-row md:items-center md:justify-between bg-sectionheader px-4 md:px-6 py-4 rounded-t-lg border-b border-border">
-                <div className="flex items-center gap-4 mb-4 md:mb-0">
-                  <h1 className="text-xl md:text-2xl font-bold text-primary flex-1">
-                    Rony.DB Dashboard
-                  </h1>
+                  
+                  <input
+                    type="file"
+                    accept="application/json"
+                    ref={fileInputRef}
+                    style={{ display: "none" }}
+                    onChange={handleFileChange}
+                  />
                 </div>
-                <div className="flex items-center gap-1 md:gap-2 ml-auto">
-                  {/* Mobile: Icon-only buttons */}
-                  <div className="flex md:hidden gap-1">
+              )}
+            </div>
+          </div>
+        </nav>
+        
+        {/* Main Content Container with top padding for fixed header */}
+        <div className="flex pt-16 h-screen">
+          {/* Left Sidebar - 20% */}
+          <div className="w-1/5 bg-gray-50 dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 flex flex-col h-full">
+            <div className="flex-1 overflow-y-auto p-4">
+              
+              {/* Navigation Tabs - Organized by Sections */}
+              <nav className="space-y-4">
+                {/* Dashboard Section */}
+                <div>
+                  <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2 px-3">
+                    Dashboard
+                  </h3>
+                  <div className="space-y-1">
                     <button
-                      onClick={() => {
-                        window.history.pushState({}, "", "/");
-                        const navEvent = new PopStateEvent("popstate");
-                        window.dispatchEvent(navEvent);
-                      }}
-                      className="p-2 bg-card text-primary border border-border rounded-md hover:bg-row transition-colors"
-                      title="View CV"
-                    >
-                      <ExternalLink className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={handleSave}
-                      className="p-2 bg-card text-primary border border-border rounded-md hover:bg-row transition-colors"
-                      title="Save Changes"
-                    >
-                      <Save className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={onLogout}
-                      className="p-2 bg-card text-primary border border-border rounded-md hover:bg-row transition-colors"
-                      title="Logout"
-                    >
-                      <LogOut className="w-4 h-4" />
-                    </button>
-                  </div>
-
-                  {/* Desktop: Full buttons */}
-                  <div className="hidden md:flex items-center gap-2">
-                    <button
-                      onClick={() => {
-                        window.history.pushState({}, "", "/");
-                        const navEvent = new PopStateEvent("popstate");
-                        window.dispatchEvent(navEvent);
-                      }}
-                      className="px-2.5 py-1.5 bg-card text-primary border border-border rounded-full text-base hover:bg-row transition-colors"
-                      title="View CV"
-                    >
-                      <ExternalLink className="w-5 h-5" />
-                    </button>
-                    <button
-                      onClick={handleSave}
-                      className="px-2.5 py-1.5 bg-card text-primary border border-border rounded-full text-base hover:bg-row transition-colors"
-                      title="Save Changes"
-                    >
-                      <Save className="w-5 h-5" />
-                    </button>
-                    <button
-                      onClick={onLogout}
-                      className="px-2.5 py-1.5 bg-card text-primary border border-border rounded-full text-base hover:bg-row transition-colors"
-                      title="Logout"
-                    >
-                      <LogOut className="w-5 h-5" />
-                    </button>
-                  </div>
-
-                  {/* Dev Tools Security Toggle */}
-                  <div className="flex items-center gap-2 bg-card rounded-lg shadow px-2 py-1 border border-border">
-                    <button
-                      onClick={toggleDevToolsProtection}
-                      className={`inline-flex items-center justify-center w-8 h-8 md:w-9 md:h-9 rounded-md transition-colors ${
-                        devToolsProtectionEnabled 
-                          ? 'bg-green-100 text-green-600 hover:bg-green-200' 
-                          : 'bg-red-100 text-red-600 hover:bg-red-200'
+                      onClick={() => setActiveTab('dashboard')}
+                      className={`w-full flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 ${
+                        activeTab === 'dashboard'
+                          ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg transform scale-105"
+                          : "text-gray-700 dark:text-gray-300 hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 dark:hover:from-blue-900/20 dark:hover:to-purple-900/20"
                       }`}
-                      title={`Dev Tools Security: ${devToolsProtectionEnabled ? 'Enabled' : 'Disabled'}`}
-                      type="button"
                     >
-                      {devToolsProtectionEnabled ? (
-                        <Shield className="w-4 h-4 md:w-5 md:h-5" />
-                      ) : (
-                        <ShieldOff className="w-4 h-4 md:w-5 md:h-5" />
-                      )}
+                      <BarChart3 className="w-5 h-5 mr-3 flex-shrink-0" />
+                      <span className="truncate font-semibold">Dashboard</span>
                     </button>
                   </div>
+                </div>
 
-                  {/* Backup/Restore Button Group - Mobile Optimized */}
-                  <div className="flex gap-1 bg-card rounded-lg shadow px-1 md:px-2 py-1 border border-border">
-                    <button
-                      onClick={handleDownloadBackup}
-                      className="inline-flex items-center justify-center w-8 h-8 md:w-9 md:h-9 rounded-md hover:bg-accent/10 text-primary hover:text-blue-600 transition-colors"
-                      title="Download Backup"
-                      type="button"
-                    >
-                      <Download className="w-4 h-4 md:w-5 md:h-5" />
-                    </button>
-                    <button
-                      onClick={handleRestoreClick}
-                      className="inline-flex items-center justify-center w-8 h-8 md:w-9 md:h-9 rounded-md hover:bg-accent/10 text-primary hover:text-green-600 transition-colors"
-                      title="Restore Backup"
-                      type="button"
-                    >
-                      <Upload className="w-4 h-4 md:w-5 md:h-5" />
-                    </button>
-                    <input
-                      type="file"
-                      accept="application/json"
-                      ref={fileInputRef}
-                      style={{ display: "none" }}
-                      onChange={handleFileChange}
-                    />
+                {/* Content Sections Group */}
+                <div>
+                  <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2 px-3">
+                    Content Sections
+                  </h3>
+                  <div className="space-y-1">
+                    {tabs.filter(tab => !['passwordBank', 'backup-restore', 'email-manager', 'tab-organization', 'dashboard'].includes(tab.id)).map((tab) => {
+                      const IconComponent = tab.icon || Settings;
+                      return (
+                        <button
+                          key={tab.id}
+                          onClick={() => setActiveTab(tab.id)}
+                          className={`w-full flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 ${
+                            activeTab === tab.id
+                              ? "bg-blue-500 text-white shadow-md"
+                              : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                          }`}
+                        >
+                          <IconComponent className="w-5 h-5 mr-3 flex-shrink-0" />
+                          <span className="truncate">{tab.label}</span>
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
-              </div>
 
-              {/* Tabs - Mobile Responsive */}
-              <div className="flex flex-wrap gap-1 md:gap-2 px-4 md:px-6 py-3 md:py-4 bg-card border-t border-border rounded-b-lg">
-                {tabs.filter(tab => !['passwordBank', 'backup-restore', 'email-manager'].includes(tab.id)).map((tab) => (
-                  <button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
-                    className={`px-2 md:px-3 py-1 md:py-1.5 rounded-md text-xs md:text-sm font-medium transition-colors duration-200 border border-border
-                      ${
-                        activeTab === tab.id
-                          ? "bg-primary text-white shadow"
-                          : "bg-row text-text hover:bg-sectionheader"
-                      }
-                    `}
-                  >
-                    {tab.label}
-                  </button>
-                ))}
-                <button
-                  onClick={addNewTab}
-                  className="flex items-center gap-1 md:gap-2 px-2 md:px-3 py-1 md:py-1.5 rounded-md text-xs md:text-sm font-medium bg-card text-primary border border-border hover:bg-row ml-1 md:ml-2"
-                >
-                  <Plus className="w-3 h-3 md:w-4 md:h-4" />
-                  <span className="hidden sm:inline">Add Custom Tab</span>
-                  <span className="sm:hidden">Add</span>
-                </button>
-                
-                {/* Horizontal Divider */}
-                <div className="w-full h-px bg-border my-2"></div>
-                
-                {/* System Tabs Group */}
-                <div className="w-full flex flex-wrap gap-1 md:gap-2">
-                  {tabs.filter(tab => ['passwordBank', 'backup-restore', 'email-manager'].includes(tab.id)).map((tab) => (
-                    <button
-                      key={tab.id}
-                      onClick={() => setActiveTab(tab.id)}
-                      className={`px-2 md:px-3 py-1 md:py-1.5 rounded-md text-xs md:text-sm font-medium transition-colors duration-200 border border-border
-                        ${
-                          activeTab === tab.id
-                            ? "bg-primary text-white shadow"
-                            : "bg-row text-text hover:bg-sectionheader"
-                        }
-                      `}
-                    >
-                      {tab.label}
-                    </button>
-                  ))}
+                {/* Admin Tools Group */}
+                <div>
+                  <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2 px-3">
+                    Admin Tools
+                  </h3>
+                  <div className="space-y-1">
+                    {tabs.filter(tab => ['passwordBank', 'backup-restore', 'email-manager'].includes(tab.id)).map((tab) => {
+                      const IconComponent = tab.icon || Settings;
+                      return (
+                        <button
+                          key={tab.id}
+                          onClick={() => setActiveTab(tab.id)}
+                          className={`w-full flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 ${
+                            activeTab === tab.id
+                              ? "bg-purple-500 text-white shadow-md"
+                              : "text-gray-700 dark:text-gray-300 hover:bg-purple-50 dark:hover:bg-purple-900/20"
+                          }`}
+                        >
+                          <IconComponent className="w-5 h-5 mr-3 flex-shrink-0" />
+                          <span className="truncate">{tab.label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
-              </div>
-              {/* Tab Content */}
-              <div className="p-4 md:p-6">{renderTabContent()}</div>
+
+                {/* Settings Group */}
+                <div>
+                  <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2 px-3">
+                    Settings
+                  </h3>
+                  <div className="space-y-1">
+                    {tabs.filter(tab => tab.id === 'tab-organization').map((tab) => {
+                      const IconComponent = tab.icon || Settings;
+                      return (
+                        <button
+                          key={tab.id}
+                          onClick={() => setActiveTab(tab.id)}
+                          className={`w-full flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 ${
+                            activeTab === tab.id
+                              ? "bg-green-500 text-white shadow-md"
+                              : "text-gray-700 dark:text-gray-300 hover:bg-green-50 dark:hover:bg-green-900/20"
+                          }`}
+                        >
+                          <IconComponent className="w-5 h-5 mr-3 flex-shrink-0" />
+                          <span className="truncate">{tab.label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </nav>
             </div>
-          </section>
+            
+            {/* Add Tab Button at Bottom */}
+            <div className="p-4 border-t border-gray-200 dark:border-gray-700">
+              <button
+                onClick={addNewTab}
+                className="w-full inline-flex items-center justify-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Add Tab
+              </button>
+            </div>
+          </div>
+          
+          {/* Right Content Area - 80% */}
+          <div className="flex-1 overflow-y-auto h-full">
+            <div className="p-6">
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+                <div className="p-6">
+                  {renderTabContent()}
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </>
