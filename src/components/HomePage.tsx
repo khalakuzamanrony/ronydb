@@ -18,6 +18,8 @@ import {
   Hash,
   User,
   Layers,
+  Code,
+  BookOpen,
 } from "lucide-react";
 import {
   FaLinkedin,
@@ -63,7 +65,6 @@ export const HomePage: React.FC<HomePageProps> = ({
     document.title = "Rony.DB";
   }, []);
 
-  const [showDownloadMenu, setShowDownloadMenu] = React.useState(false);
   const [resumeUrl, setResumeUrl] = React.useState<string | null>(null);
   const [imageUrl, setImageUrl] = React.useState<string | null>(null);
   const [expandedAcademicEntries, setExpandedAcademicEntries] = React.useState<Record<string, boolean>>({});
@@ -164,117 +165,7 @@ export const HomePage: React.FC<HomePageProps> = ({
     }
   };
 
-  const downloadAsJSON = () => {
-    const dataStr = JSON.stringify(cvData, null, 2);
-    const dataBlob = new Blob([dataStr], { type: "application/json" });
-    const url = URL.createObjectURL(dataBlob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = "cv-data.json";
-    link.click();
-    URL.revokeObjectURL(url);
-    setShowDownloadMenu(false);
-  };
 
-  const downloadAsPDF = () => {
-    // Simple PDF generation - in a real app, you'd use a proper PDF library
-    const content = `
-CV - ${cvData.basics.name}
-
-BASIC INFORMATION
-Name: ${cvData.basics.name}
-Label: ${cvData.basics.label}
-Email: ${cvData.contacts.email ?? ""}
-Phone: ${cvData.contacts.phone ?? ""}
-Location: ${cvData.contacts.location?.city ?? ""}, ${
-      cvData.contacts.location?.country ?? ""
-    }
-Website: ${cvData.contacts.url ?? ""}
-
-SUMMARY
-${cvData.basics.summary}
-
-WORK EXPERIENCE
-${cvData.work
-  .map(
-    (job) => `
-${job.position} at ${job.name}
-${job.startDate} - ${job.endDate || "Present"}
-Location: ${job.location}
-${job.highlights.map((highlight) => `• ${highlight}`).join("\n")}
-`
-  )
-  .join("\n")}
-
-EDUCATION
-${cvData.education
-  .map(
-    (edu) => `
-${edu.studyType} in ${edu.area}
-${edu.institution}
-${edu.startDate} - ${edu.endDate}
-Score: ${edu.score}
-`
-  )
-  .join("\n")}
-
-ACADEMIC RECORDS
-${cvData.academic
-  ? cvData.academic
-      .map(
-        (academic) => `
-${academic.title || "Academic Entry"}
-${academic.degreeName} at ${academic.instituteName}
-${academic.session ? `Session: ${academic.session}` : ""}
-${academic.examYear ? `Exam Year: ${academic.examYear}` : ""}
-${academic.gpa ? `GPA: ${academic.gpa}` : ""}
-${academic.files && academic.files.length > 0
-  ? `Documents:\n${academic.files
-      .map((file) => `• ${file.name}${file.label ? ` (${file.label})` : ""}`)
-      .join("\n")}`
-  : ""}
-`
-      )
-      .join("\n")
-  : ""}
-
-SKILLS
-${cvData.skills.technical
-  .map(
-    (skill) => `
-${skill.name}: ${skill.keywords.join(", ")}
-`
-  )
-  .join("\n")}
-
-CERTIFICATES
-${cvData.certificates
-  .map(
-    (cert) => `
-${cert.name} - ${cert.issuer} (${cert.date})
-`
-  )
-  .join("\n")}
-
-LANGUAGES
-${cvData.languages
-  .map(
-    (lang) => `
-${lang.language}: ${lang.fluency}
-`
-  )
-  .join("\n")}
-    `;
-
-    const dataBlob = new Blob([content], { type: "text/plain" });
-    const url = URL.createObjectURL(dataBlob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = "cv.txt";
-    link.click();
-    URL.revokeObjectURL(url);
-    setShowDownloadMenu(false);
-  };
 
   const handleImageDownload = (imageUrl: string, filename: string) => {
     const link = document.createElement("a");
@@ -436,18 +327,20 @@ ${lang.language}: ${lang.fluency}
     const expanded = expandedSections[tab.id] ?? true;
     return (
       <section key={tab.id} className="mb-8">
-        <div className="bg-card border border-border rounded-lg shadow-md">
+        <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300">
           <div
-            className="flex items-center cursor-pointer select-none bg-sectionheader px-6 py-4 rounded-t-lg border-b border-border"
+            className="flex items-center cursor-pointer select-none bg-gradient-to-r from-sky-50 to-indigo-50 dark:from-sky-900/30 dark:to-indigo-900/30 px-8 py-6 rounded-t-2xl border-b border-gray-200/50 dark:border-gray-700/50 hover:from-sky-100 hover:to-indigo-100 dark:hover:from-sky-900/50 dark:hover:to-indigo-900/50 transition-all duration-200"
             onClick={() => toggleSection(tab.id)}
           >
-            <FileText className="w-6 h-6 mr-2 text-blue-600" />
-            <h2 className="text-2xl font-bold text-primary flex-1">
+            <div className="w-10 h-10 bg-gradient-to-r from-sky-500 to-indigo-600 rounded-xl flex items-center justify-center mr-4">
+              <FileText className="w-6 h-6 text-white" />
+            </div>
+            <h2 className="text-2xl font-bold bg-gradient-to-r from-sky-600 to-indigo-600 bg-clip-text text-transparent flex-1">
               {tab.name}
             </h2>
             <span className="ml-2">
               <ChevronDown
-                className={`w-5 h-5 transition-transform ${
+                className={`w-6 h-6 transition-transform duration-200 text-gray-500 ${
                   expanded ? "" : "rotate-180"
                 }`}
               />
@@ -480,18 +373,20 @@ ${lang.language}: ${lang.fluency}
       case "basics":
         return (
           <section className="mb-8">
-            <div className="bg-card border border-border rounded-lg shadow-md">
+            <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300">
               <div
-                className="flex items-center cursor-pointer select-none bg-sectionheader px-6 py-4 rounded-t-lg border-b border-border"
+                className="flex items-center cursor-pointer select-none bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/30 dark:to-purple-900/30 px-8 py-6 rounded-t-2xl border-b border-gray-200/50 dark:border-gray-700/50 hover:from-blue-100 hover:to-purple-100 dark:hover:from-blue-900/50 dark:hover:to-purple-900/50 transition-all duration-200"
                 onClick={() => toggleSection("basics")}
               >
-                <FileText className="w-6 h-6 mr-2 text-blue-600" />
-                <h2 className="text-2xl font-bold text-primary flex-1">
+                <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl flex items-center justify-center mr-4">
+                  <User className="w-6 h-6 text-white" />
+                </div>
+                <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent flex-1">
                   Basic Information
                 </h2>
                 <span className="ml-2">
                   <ChevronDown
-                    className={`w-5 h-5 transition-transform ${
+                    className={`w-6 h-6 transition-transform duration-200 text-gray-500 ${
                       expanded ? "" : "rotate-180"
                     }`}
                   />
@@ -867,18 +762,20 @@ ${lang.language}: ${lang.fluency}
         const [toolCol1, toolCol2] = splitColumns(toolProfiles);
         return (
           <section className="mb-8">
-            <div className="bg-card border border-border rounded-lg shadow-md ">
+            <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300">
               <div
-                className="flex items-center cursor-pointer select-none bg-sectionheader px-6 py-4 rounded-t-lg border-b border-border"
+                className="flex items-center cursor-pointer select-none bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900/30 dark:to-blue-900/30 px-8 py-6 rounded-t-2xl border-b border-gray-200/50 dark:border-gray-700/50 hover:from-green-100 hover:to-blue-100 dark:hover:from-green-900/50 dark:hover:to-blue-900/50 transition-all duration-200"
                 onClick={() => toggleSection("contacts")}
               >
-                <Mail className="w-6 h-6 mr-2 text-blue-600" />
-                <h2 className="text-2xl font-bold text-primary flex-1">
+                <div className="w-10 h-10 bg-gradient-to-r from-green-500 to-blue-600 rounded-xl flex items-center justify-center mr-4">
+                  <Mail className="w-6 h-6 text-white" />
+                </div>
+                <h2 className="text-2xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent flex-1">
                   Contact Information
                 </h2>
                 <span className="ml-2">
                   <ChevronDown
-                    className={`w-5 h-5 transition-transform ${
+                    className={`w-6 h-6 transition-transform duration-200 text-gray-500 ${
                       expanded ? "" : "rotate-180"
                     }`}
                   />
@@ -1119,18 +1016,20 @@ ${lang.language}: ${lang.fluency}
       case "work":
         return (
           <section className="mb-8">
-            <div className="bg-card border border-border rounded-lg shadow-md">
+            <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300">
               <div
-                className="flex items-center cursor-pointer select-none bg-sectionheader px-6 py-4 rounded-t-lg border-b border-border"
+                className="flex items-center cursor-pointer select-none bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/30 dark:to-pink-900/30 px-8 py-6 rounded-t-2xl border-b border-gray-200/50 dark:border-gray-700/50 hover:from-purple-100 hover:to-pink-100 dark:hover:from-purple-900/50 dark:hover:to-pink-900/50 transition-all duration-200"
                 onClick={() => toggleSection("work")}
               >
-                <Briefcase className="w-6 h-6 mr-2 text-blue-600" />
-                <h2 className="text-2xl font-bold text-primary flex-1">
+                <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-600 rounded-xl flex items-center justify-center mr-4">
+                  <Briefcase className="w-6 h-6 text-white" />
+                </div>
+                <h2 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent flex-1">
                   Work Experience
                 </h2>
                 <span className="ml-2">
                   <ChevronDown
-                    className={`w-5 h-5 transition-transform ${
+                    className={`w-6 h-6 transition-transform duration-200 text-gray-500 ${
                       expanded ? "" : "rotate-180"
                     }`}
                   />
@@ -1291,18 +1190,20 @@ ${lang.language}: ${lang.fluency}
       case "education":
         return (
           <section className="mb-8">
-            <div className="bg-card border border-border rounded-lg shadow-md">
+            <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300">
               <div
-                className="flex items-center cursor-pointer select-none bg-sectionheader px-6 py-4 rounded-t-lg border-b border-border"
+                className="flex items-center cursor-pointer select-none bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-900/30 dark:to-red-900/30 px-8 py-6 rounded-t-2xl border-b border-gray-200/50 dark:border-gray-700/50 hover:from-orange-100 hover:to-red-100 dark:hover:from-orange-900/50 dark:hover:to-red-900/50 transition-all duration-200"
                 onClick={() => toggleSection("education")}
               >
-                <GraduationCap className="w-6 h-6 mr-2 text-blue-600" />
-                <h2 className="text-2xl font-bold text-primary flex-1">
+                <div className="w-10 h-10 bg-gradient-to-r from-orange-500 to-red-600 rounded-xl flex items-center justify-center mr-4">
+                  <GraduationCap className="w-6 h-6 text-white" />
+                </div>
+                <h2 className="text-2xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent flex-1">
                   Education
                 </h2>
                 <span className="ml-2">
                   <ChevronDown
-                    className={`w-5 h-5 transition-transform ${
+                    className={`w-6 h-6 transition-transform duration-200 text-gray-500 ${
                       expanded ? "" : "rotate-180"
                     }`}
                   />
@@ -1409,18 +1310,20 @@ ${lang.language}: ${lang.fluency}
         const academicExpanded = expandedSections["academic"];
         return (
           <section className="mb-8">
-            <div className="bg-card border border-border rounded-lg shadow-md">
+            <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300">
               <div
-                className="flex items-center cursor-pointer select-none bg-sectionheader px-6 py-4 rounded-t-lg border-b border-border"
+                className="flex items-center cursor-pointer select-none bg-gradient-to-r from-indigo-50 to-cyan-50 dark:from-indigo-900/30 dark:to-cyan-900/30 px-8 py-6 rounded-t-2xl border-b border-gray-200/50 dark:border-gray-700/50 hover:from-indigo-100 hover:to-cyan-100 dark:hover:from-indigo-900/50 dark:hover:to-cyan-900/50 transition-all duration-200"
                 onClick={() => toggleSection("academic")}
               >
-                <GraduationCap className="w-6 h-6 mr-2 text-blue-600" />
-                <h2 className="text-2xl font-bold text-primary flex-1">
+                <div className="w-10 h-10 bg-gradient-to-r from-indigo-500 to-cyan-600 rounded-xl flex items-center justify-center mr-4">
+                  <BookOpen className="w-6 h-6 text-white" />
+                </div>
+                <h2 className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-cyan-600 bg-clip-text text-transparent flex-1">
                   Academic Records
                 </h2>
                 <span className="ml-2">
                   <ChevronDown
-                    className={`w-5 h-5 transition-transform ${
+                    className={`w-6 h-6 transition-transform duration-200 text-gray-500 ${
                       academicExpanded ? "" : "rotate-180"
                     }`}
                   />
@@ -1660,18 +1563,18 @@ ${lang.language}: ${lang.fluency}
       case "skills":
         return (
           <section className="mb-8">
-            <div className="bg-card border border-border rounded-lg shadow-md">
+            <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300">
               <div
-                className="flex items-center cursor-pointer select-none bg-sectionheader px-6 py-4 rounded-t-lg border-b border-border"
+                className="flex items-center cursor-pointer select-none bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-900/30 dark:to-teal-900/30 px-8 py-6 rounded-t-2xl border-b border-gray-200/50 dark:border-gray-700/50 hover:from-emerald-100 hover:to-teal-100 dark:hover:from-emerald-900/50 dark:hover:to-teal-900/50 transition-all duration-200"
                 onClick={() => toggleSection("skills")}
               >
-                <Award className="w-6 h-6 mr-2 text-blue-600" />
-                <h2 className="text-2xl font-bold text-primary flex-1">
-                  Skills
-                </h2>
+                <div className="w-10 h-10 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center mr-4">
+                  <Award className="w-6 h-6 text-white" />
+                </div>
+                <h2 className="text-2xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent flex-1">Skills</h2>
                 <span className="ml-2">
                   <ChevronDown
-                    className={`w-5 h-5 transition-transform ${
+                    className={`w-6 h-6 transition-transform duration-200 text-gray-500 ${
                       expanded ? "" : "rotate-180"
                     }`}
                   />
@@ -1929,18 +1832,20 @@ ${lang.language}: ${lang.fluency}
         if (!cvData.projects || cvData.projects.length === 0) return null;
         return (
           <section className="mb-8">
-            <div className="bg-card border border-border rounded-lg shadow-md">
+            <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300">
               <div
-                className="flex items-center cursor-pointer select-none bg-sectionheader px-6 py-4 rounded-t-lg border-b border-border"
+                className="flex items-center cursor-pointer select-none bg-gradient-to-r from-violet-50 to-purple-50 dark:from-violet-900/30 dark:to-purple-900/30 px-8 py-6 rounded-t-2xl border-b border-gray-200/50 dark:border-gray-700/50 hover:from-violet-100 hover:to-purple-100 dark:hover:from-violet-900/50 dark:hover:to-purple-900/50 transition-all duration-200"
                 onClick={() => toggleSection("projects")}
               >
-                <FileText className="w-6 h-6 mr-2 text-blue-600" />
-                <h2 className="text-2xl font-bold text-primary flex-1">
+                <div className="w-10 h-10 bg-gradient-to-r from-violet-500 to-purple-600 rounded-xl flex items-center justify-center mr-4">
+                  <Code className="w-6 h-6 text-white" />
+                </div>
+                <h2 className="text-2xl font-bold bg-gradient-to-r from-violet-600 to-purple-600 bg-clip-text text-transparent flex-1">
                   Projects
                 </h2>
                 <span className="ml-2">
                   <ChevronDown
-                    className={`w-5 h-5 transition-transform ${
+                    className={`w-6 h-6 transition-transform duration-200 text-gray-500 ${
                       expanded ? "" : "rotate-180"
                     }`}
                   />
@@ -2060,20 +1965,24 @@ ${lang.language}: ${lang.fluency}
         );
 
       case "certificates":
+        if (!cvData.certificates || cvData.certificates.length === 0)
+          return null;
         return (
           <section className="mb-8">
-            <div className="bg-card border border-border rounded-lg shadow-md">
+            <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300">
               <div
-                className="flex items-center cursor-pointer select-none bg-sectionheader px-6 py-4 rounded-t-lg border-b border-border"
+                className="flex items-center cursor-pointer select-none bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-900/30 dark:to-yellow-900/30 px-8 py-6 rounded-t-2xl border-b border-gray-200/50 dark:border-gray-700/50 hover:from-amber-100 hover:to-yellow-100 dark:hover:from-amber-900/50 dark:hover:to-yellow-900/50 transition-all duration-200"
                 onClick={() => toggleSection("certificates")}
               >
-                <Award className="w-6 h-6 mr-2 text-blue-600" />
-                <h2 className="text-2xl font-bold text-primary flex-1">
+                <div className="w-10 h-10 bg-gradient-to-r from-amber-500 to-yellow-600 rounded-xl flex items-center justify-center mr-4">
+                  <Award className="w-6 h-6 text-white" />
+                </div>
+                <h2 className="text-2xl font-bold bg-gradient-to-r from-amber-600 to-yellow-600 bg-clip-text text-transparent flex-1">
                   Certificates
                 </h2>
                 <span className="ml-2">
                   <ChevronDown
-                    className={`w-5 h-5 transition-transform ${
+                    className={`w-6 h-6 transition-transform duration-200 text-gray-500 ${
                       expanded ? "" : "rotate-180"
                     }`}
                   />
@@ -2183,20 +2092,23 @@ ${lang.language}: ${lang.fluency}
         );
 
       case "languages":
+        if (!cvData.languages || cvData.languages.length === 0) return null;
         return (
           <section className="mb-8">
-            <div className="bg-card border border-border rounded-lg shadow-md">
+            <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300">
               <div
-                className="flex items-center cursor-pointer select-none bg-sectionheader px-6 py-4 rounded-t-lg border-b border-border"
+                className="flex items-center cursor-pointer select-none bg-gradient-to-r from-rose-50 to-pink-50 dark:from-rose-900/30 dark:to-pink-900/30 px-8 py-6 rounded-t-2xl border-b border-gray-200/50 dark:border-gray-700/50 hover:from-rose-100 hover:to-pink-100 dark:hover:from-rose-900/50 dark:hover:to-pink-900/50 transition-all duration-200"
                 onClick={() => toggleSection("languages")}
               >
-                <Globe className="w-6 h-6 mr-2 text-blue-600" />
-                <h2 className="text-2xl font-bold text-primary flex-1">
+                <div className="w-10 h-10 bg-gradient-to-r from-rose-500 to-pink-600 rounded-xl flex items-center justify-center mr-4">
+                  <Globe className="w-6 h-6 text-white" />
+                </div>
+                <h2 className="text-2xl font-bold bg-gradient-to-r from-rose-600 to-pink-600 bg-clip-text text-transparent flex-1">
                   Languages
                 </h2>
                 <span className="ml-2">
                   <ChevronDown
-                    className={`w-5 h-5 transition-transform ${
+                    className={`w-6 h-6 transition-transform duration-200 text-gray-500 ${
                       expanded ? "" : "rotate-180"
                     }`}
                   />
@@ -2254,18 +2166,20 @@ ${lang.language}: ${lang.fluency}
           return null;
         return (
           <section className="mb-8">
-            <div className="bg-card border border-border rounded-lg shadow-md">
+            <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300">
               <div
-                className="flex items-center cursor-pointer select-none bg-sectionheader px-6 py-4 rounded-t-lg border-b border-border"
+                className="flex items-center cursor-pointer select-none bg-gradient-to-r from-teal-50 to-blue-50 dark:from-teal-900/30 dark:to-blue-900/30 px-8 py-6 rounded-t-2xl border-b border-gray-200/50 dark:border-gray-700/50 hover:from-teal-100 hover:to-blue-100 dark:hover:from-teal-900/50 dark:hover:to-blue-900/50 transition-all duration-200"
                 onClick={() => toggleSection("coverLetters")}
               >
-                <FileText className="w-6 h-6 mr-2 text-blue-600" />
-                <h2 className="text-2xl font-bold text-primary flex-1">
+                <div className="w-10 h-10 bg-gradient-to-r from-teal-500 to-blue-600 rounded-xl flex items-center justify-center mr-4">
+                  <FileText className="w-6 h-6 text-white" />
+                </div>
+                <h2 className="text-2xl font-bold bg-gradient-to-r from-teal-600 to-blue-600 bg-clip-text text-transparent flex-1">
                   Cover Letters
                 </h2>
                 <span className="ml-2">
                   <ChevronDown
-                    className={`w-5 h-5 transition-transform ${
+                    className={`w-6 h-6 transition-transform duration-200 text-gray-500 ${
                       expanded ? "" : "rotate-180"
                     }`}
                   />
@@ -2523,32 +2437,35 @@ ${lang.language}: ${lang.fluency}
     });
 
   return (
-    <div className="homepage-container min-h-screen bg-bg text-text">
-      <link rel="stylesheet" href="styles.css" />
-      <div className="flex justify-end p-4">
-        {/* Remove the old ThemeToggle from the top right outside the header. */}
-      </div>
-      <div className="max-w-4xl mx-auto px-2 sm:px-4 md:px-6 py-4 md:py-6 select-none" style={{ userSelect: 'none', WebkitUserSelect: 'none', MozUserSelect: 'none', msUserSelect: 'none' }}>
-        {/* Header */}
-        <header className="flex flex-row items-center justify-between mb-8 gap-2">
-          <div className="text-2xl font-bold text-primary">Rony.DB</div>
-          <div className="flex items-center gap-1 sm:gap-4">
-
-            {/* <button
-              onClick={downloadAsJSON}
-              className="bg-card text-primary rounded-full hover:bg-sectionheader transition-colors flex items-center justify-center w-10 h-10 border border-border"
-              title="Download as JSON"
-              aria-label="Download as JSON"
-            >
-              <Download className="w-5 h-5" />
-            </button> */}
-            <ThemeToggle />
+    <div className="homepage-container min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-900 dark:to-blue-900 text-text">
+      {/* Modern Fixed Header */}
+      <header className="fixed top-0 left-0 right-0 bg-white/90 dark:bg-gray-900/90 backdrop-blur-md border-b border-gray-200/50 dark:border-gray-700/50 shadow-lg z-50">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+          <div className="flex justify-between items-center h-20">
+            <div className="flex items-center space-x-4">
+              <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
+                <User className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                  Rony.DB
+                </h1>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Personal Database</p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-6">
+              <ThemeToggle />
+            </div>
           </div>
-        </header>
-
-        {/* Render all sections in tabOrder (built-in and custom) */}
-        {renderAllSections()}
-      </div>
+        </div>
+      </header>
+      <main className="pt-20">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8 py-12">
+          <div className="space-y-8">
+            {renderAllSections()}
+          </div>
+        </div>
+      </main>
 
       {/* Google Sheet DB Modal */}
       {showSheetModal && (

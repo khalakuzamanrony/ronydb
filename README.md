@@ -1,8 +1,8 @@
 # Rony.DB - Personal CV & Portfolio Management System
 
-**Version 3.0.0**
+**Version 3.2.0**
 
-A sophisticated, secure web application for managing and showcasing professional CV and portfolio data. Built with modern React, TypeScript, and Supabase, featuring advanced security, real-time data sync, and comprehensive content management capabilities.
+A sophisticated, secure web application for managing and showcasing personal data. Built with modern React, TypeScript, and Supabase, featuring advanced security, real-time data sync, and comprehensive content management capabilities.
 
 ## ✨ Key Features
 
