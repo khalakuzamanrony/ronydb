@@ -196,9 +196,8 @@ VALUES ('main', 'initialized');
 -- Demo Data Insertion
 -- ============================================
 
--- Demo User (Login: khalekuzzamanrony3@gmail.com / Password: #Rony7669!)
 INSERT INTO public.allowed_emails (email, password_hash, name, role) VALUES 
-('U2FsdGVkX1+aGYgWmEL/iZGDm574lEp4gw0aGC51WNHnLMsU7c7TVe9c0XKoaJ4t', 'U2FsdGVkX19Mhsk237SKr0CZV0J4MDnfbshS4DcHA4WOqHMRQLiwbP1wUdJrekhkuCxKCImY/az1FkOLcXunudMKrqyZfxcXxk66923R7tNCjtzxSA1d7j/CMZFMDpNc', 'U2FsdGVkX1/zyyVQ4gloZ/yEjchjuM2r+01BNfHYxn6BDG0dGARD5N0bi8donAaP', 'admin');
+('U2FsdGVkX1+aGYgWmEL/iZGDm574lEp4gw0aGC51WNHnLMsU7c7TVe9c0XKoaJ4t', 'U2FsdGVkX1/+ZvnkPpTmy0DXJkcCUQfI7bMZb/2CTEbAZMhYQSQAO3tS1ecfSoO5KV8t+J2A0tHyoNTnecWg86jxdn/jblYhuMBCiKnt0hWeHw2w/mdc5AEdNHoewfgQ', 'U2FsdGVkX1/zyyVQ4gloZ/yEjchjuM2r+01BNfHYxn6BDG0dGARD5N0bi8donAaP', 'admin');
 
 -- Initial CV Data (encrypted JSON)
 INSERT INTO public.cv_data (id, data) VALUES 
