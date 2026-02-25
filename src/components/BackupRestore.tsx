@@ -1,11 +1,9 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Download, Upload, Save, List, RefreshCw } from "lucide-react"; // Key import removed
+import { Download, Upload, Save, List, RefreshCw } from "lucide-react"; 
 import { supabase } from "../utils/supabaseClient";
 import { encryptData, decryptData } from "../utils/encryption";
 import { CVData } from "../types/cv";
 import Toast from "./Toast";
-// CopyButton import removed as it's no longer needed
-import CryptoJS from 'crypto-js';
 
 interface BackupRestoreProps {
   cvData: CVData | null;
@@ -13,13 +11,11 @@ interface BackupRestoreProps {
   setCvData: (data: CVData) => void;
 }
 
-// SecretKeyState interface removed as it's no longer needed
-
 interface Backup {
   id: string;
   backup_number: number;
   created_at: string;
-  data?: string; // Encrypted data
+  data?: string; 
 }
 
 const BackupRestore: React.FC<BackupRestoreProps> = ({ cvData, onDataChange, setCvData }) => {
@@ -28,27 +24,12 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ cvData, onDataChange, set
   const [showBackups, setShowBackups] = useState<boolean>(false);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-  // Secret key state variables removed as they are no longer needed
 
-  // Fetch backups when showBackups is true
   useEffect(() => {
     if (showBackups) {
       fetchBackups();
     }
   }, [showBackups]);
-
-  // Function to get environment variables consistently
-  const getEnv = (key: string): string => {
-    if (typeof process !== 'undefined' && process.env && process.env[key]) {
-      return process.env[key] as string;
-    }
-    if (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env[key]) {
-      return import.meta.env[key] as string;
-    }
-    return '';
-  };
-
-  // Encryption key fetching useEffect removed as it's no longer needed
 
   const fetchBackups = async () => {
     setLoading(true);
@@ -76,7 +57,6 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ cvData, onDataChange, set
     
     setLoading(true);
     try {
-      // 1. Get current backups to determine new backup number
       const { data: currentBackups, error: fetchError } = await supabase
         .from('backup-restore')
         .select('id,backup_number')
@@ -84,21 +64,16 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ cvData, onDataChange, set
 
       if (fetchError) throw fetchError;
 
-      // 2. Shift existing backup numbers (increment all by 1)
-      if (currentBackups && currentBackups.length > 0) {
-        const updatePromises = currentBackups.map(backup => 
-          supabase
-            .from('backup-restore')
-            .update({ backup_number: backup.backup_number + 1 })
-            .eq('id', backup.id)
-        );
-        
-        await Promise.all(updatePromises);
-      }
+      const updatePromises = currentBackups.map(backup => 
+        supabase
+          .from('backup-restore')
+          .update({ backup_number: backup.backup_number + 1 })
+          .eq('id', backup.id)
+      );
+      
+      await Promise.all(updatePromises);
 
-      // 3. Insert new backup with number 0 (latest)
       const now = new Date();
-      // Convert to GMT+6 (Bangladesh Time)
       const bdTime = new Date(now.getTime() + 6 * 60 * 60 * 1000);
       const createdAt = `Backup created at ${bdTime.toISOString().slice(0, 10)} + ${bdTime.toISOString().slice(11, 19)} BD`;
       
@@ -112,7 +87,6 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ cvData, onDataChange, set
 
       if (insertError) throw insertError;
 
-      // 4. Delete backups with backup_number >= 3 (keep only 0, 1, 2)
       const { error: deleteError } = await supabase
         .from('backup-restore')
         .delete()
@@ -122,7 +96,6 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ cvData, onDataChange, set
 
       setToast({ message: 'Backup created successfully!', type: 'success' });
       
-      // Refresh the backup list if it's currently shown
       if (showBackups) {
         fetchBackups();
       }
@@ -149,7 +122,6 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ cvData, onDataChange, set
     try {
       setLoading(true);
       
-      // Fetch the specific backup
       const { data: backup, error } = await supabase
         .from('backup-restore')
         .select('*')
@@ -159,11 +131,9 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ cvData, onDataChange, set
       if (error) throw error;
       if (!backup) throw new Error('Backup not found');
 
-      // Decrypt the data
       const decryptedData = decryptData(backup.data);
       if (!decryptedData) throw new Error('Failed to decrypt backup data');
 
-      // Create and download the file
       const now = new Date();
       const bdTime = new Date(now.getTime() + 6 * 60 * 60 * 1000);
       const date = bdTime.toISOString().slice(0, 10);
@@ -193,7 +163,6 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ cvData, onDataChange, set
     try {
       setLoading(true);
       
-      // Fetch the specific backup
       const { data: backup, error } = await supabase
         .from('backup-restore')
         .select('*')
@@ -203,30 +172,23 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ cvData, onDataChange, set
       if (error) throw error;
       if (!backup) throw new Error('Backup not found');
 
-      // Decrypt the data
       const decryptedData = decryptData(backup.data);
       if (!decryptedData) throw new Error('Failed to decrypt backup data');
 
-      // Restore to cv_data table
       for (const record of decryptedData) {
         const { error: updateError } = await supabase
           .from('cv_data')
-          .upsert([record], { onConflict: ['id'] });
+          .upsert([record], { onConflict: 'id' });
 
         if (updateError) throw updateError;
       }
 
-      // Update the UI with the restored data
-      // Make sure decryptedData is in the correct format
       if (decryptedData && typeof decryptedData === 'object') {
         setCvData(decryptedData);
         
-        // Ensure the parent component is updated
         if (onDataChange) {
-          // Use setTimeout to ensure the state update happens after the current execution context
           setTimeout(() => {
             onDataChange();
-            // Reload the page after data restoration
             window.location.reload();
           }, 0);
         }
@@ -251,39 +213,52 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ cvData, onDataChange, set
       setLoading(true);
       const text = await file.text();
       const json = JSON.parse(text);
-      
-      // Basic validation
-      if (!Array.isArray(json)) {
-        throw new Error('Invalid backup file format');
-      }
-      
-      // Restore to cv_data table
-      for (const record of json) {
+
+      if (json && typeof json === 'object' && !Array.isArray(json) && 'basics' in json) {
+        const encrypted = encryptData(json);
         const { error: updateError } = await supabase
           .from('cv_data')
-          .upsert([record], { onConflict: ['id'] });
+          .upsert([{ id: 'main', data: encrypted }], { onConflict: 'id' });
 
         if (updateError) throw updateError;
+        setCvData(json as CVData);
       }
+      else if (Array.isArray(json)) {
+        const normalizedRecords = json
+          .filter((r: any) => r && typeof r === 'object')
+          .map((r: any) => {
+            if (typeof r.data === 'object' && r.data !== null) {
+              return { ...r, data: encryptData(r.data) };
+            }
+            return r;
+          });
 
-      // Update the UI with the restored data
-      const decryptedData = decryptData(json[0].data);
-      
-      // Make sure decryptedData is in the correct format
-      if (decryptedData && typeof decryptedData === 'object') {
-        setCvData(decryptedData);
-        
-        // Ensure the parent component is updated
-        if (onDataChange) {
-          // Use setTimeout to ensure the state update happens after the current execution context
-          setTimeout(() => {
-            onDataChange();
-            // Reload the page after data restoration
-            window.location.reload();
-          }, 0);
+        for (const record of normalizedRecords) {
+          const { error: updateError } = await supabase
+            .from('cv_data')
+            .upsert([record], { onConflict: 'id' });
+
+          if (updateError) throw updateError;
+        }
+
+        const firstData = json[0]?.data;
+        if (typeof firstData === 'object' && firstData !== null) {
+          setCvData(firstData as CVData);
+        } else if (typeof firstData === 'string') {
+          const decrypted = decryptData(firstData);
+          if (decrypted && typeof decrypted === 'object') {
+            setCvData(decrypted as CVData);
+          }
         }
       } else {
-        throw new Error('Invalid data format after decryption');
+        throw new Error('Invalid backup file format');
+      }
+
+      if (onDataChange) {
+        setTimeout(() => {
+          onDataChange();
+          window.location.reload();
+        }, 0);
       }
       
       setToast({ message: 'Backup file restored successfully!', type: 'success' });
@@ -292,7 +267,6 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ cvData, onDataChange, set
       setToast({ message: 'Failed to restore from file', type: 'error' });
     } finally {
       setLoading(false);
-      // Reset the file input
       if (fileInputRef.current) fileInputRef.current.value = '';
     }
   };
